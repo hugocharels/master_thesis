@@ -1,0 +1,7 @@
+[package]
+name = "reduction_to_sat"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+rustsat = "0.7.3"

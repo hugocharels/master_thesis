@@ -1,0 +1,3 @@
+from generators.base_generator import BaseGenerator
+from generators.manual_generator import ManualGenerator
+from generators.registry import GENERATOR_REGISTRY, register_generator

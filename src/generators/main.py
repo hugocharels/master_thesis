@@ -12,8 +12,10 @@ def display(env: LLE):
 
 def main():
     world = World(10, 10)
-    world.add_entity(Agent((0, 0), 0))
-    world.add_entity(Entity((9, 9), CellType.EXIT))
+    world.add_entity((0, 0), Agent(0))
+    world.add_entity((0, 9), Agent(1))
+    world.add_entity((9, 9), Entity(CellType.EXIT))
+    world.add_entity((9, 0), Entity(CellType.EXIT))
     display(LLE.from_str(world.to_str()).build())
 
 

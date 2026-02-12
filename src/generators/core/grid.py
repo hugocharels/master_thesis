@@ -13,10 +13,11 @@ class Grid(Generic[T]):
         x, y = pos
         return 0 <= x < self.height and 0 <= y < self.width
 
-    def get(self, pos: Position) -> Optional[T]:
-        if not self.is_within_bounds(pos):
-            return None
+    def safe_get(self, pos: Position) -> T:
         return self.grid[pos[0]][pos[1]]
+
+    def get(self, pos: Position) -> Optional[T]:
+        return self.grid[pos[0]][pos[1]] if self.is_within_bounds(pos) else None
 
     def set(self, pos: Position, value: T) -> bool:
         if not self.is_within_bounds(pos):

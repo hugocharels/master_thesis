@@ -36,11 +36,17 @@ class CellType(Enum):
 
 @dataclass(frozen=True)
 class Entity:
-    position: Position
     entity_type: CellType
 
+    def __eq__(self, value: object, /) -> bool:
+        if isinstance(value, CellType):
+            return self.entity_type == value
+        return NotImplemented
+
     def to_str(self) -> str:
-        if self.entity_type == CellType.WALL:
+        if self.entity_type == CellType.EMPTY:
+            return "."
+        elif self.entity_type == CellType.WALL:
             return "@"
         elif self.entity_type == CellType.VOID:
             return "V"

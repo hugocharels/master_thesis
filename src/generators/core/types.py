@@ -23,6 +23,17 @@ class Direction(Enum):
             return "W"
         return "?"
 
+    def id(self) -> int:
+        if self == Direction.NORTH:
+            return 0
+        elif self == Direction.SOUTH:
+            return 1
+        elif self == Direction.EAST:
+            return 2
+        elif self == Direction.WEST:
+            return 3
+        raise ValueError("Invalid direction")
+
 
 class CellType(Enum):
     EMPTY = 0

@@ -21,7 +21,8 @@ class World:
 
     def to_str(self) -> str:
         return "\n".join(
-            " ".join(self.grid[pos].to_str() for pos in self.grid.positions())
+            " ".join(self.grid[(x, y)].to_str() for y in range(self.width))
+            for x in range(self.height)
         )
 
     def get_entities_by_type(

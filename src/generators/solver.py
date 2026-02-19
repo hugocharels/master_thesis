@@ -1,10 +1,8 @@
 from itertools import combinations
 
-from core import World
+from core import Direction, World
 from pysat.formula import CNF, IDPool
 from pysat.solvers import Minisat22
-
-from src.generators.core.types import Direction
 
 ################### VARIABLES ####################
 

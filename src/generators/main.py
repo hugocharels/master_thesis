@@ -1,7 +1,5 @@
 import matplotlib.pyplot as plt
 from cli import build_parser
-from core.types import Agent, CellType, Direction, Entity, Laser
-from core.world import World
 from lle import LLE
 
 from generators import GENERATOR_REGISTRY

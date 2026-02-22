@@ -1,8 +1,9 @@
 from itertools import combinations
 
-from core import Direction, World
 from pysat.formula import CNF, IDPool
 from pysat.solvers import Minisat22
+
+from core import Direction, World
 
 ################### VARIABLES ####################
 
@@ -19,13 +20,6 @@ class ID:
         Agent with color c at position (x, y) at time t
         """
         return ID.vpool.id(f"a_{c}_{x}_{y}_{t}")
-
-    @staticmethod
-    def s(c: int, d: int, x: int, y: int):
-        """
-        Laser source with color c, direction d at position (x, y)
-        """
-        return ID.vpool.id(f"s_{c}_{d}_{x}_{y}")
 
     @staticmethod
     def w(x: int, y: int):
@@ -55,8 +49,6 @@ class ID:
         """
         return ID.vpool.id(f"b_{c}_{d}_{x}_{y}_{t}")
 
-    # add tseitin transformation variables
-
 
 ##################################################
 
@@ -73,10 +65,23 @@ class WorldSolver:
         self.exits = world.get_exits()
         self.T_MAX = T_MAX  # Maximum time steps to consider
 
-    def generate(self):
+    def solve(self):
         cnf = CNF()
         for clause in self._get_clauses():
             cnf.append(clause)
+
+        cnf_print = []
+        for clause in cnf.clauses:
+            l = []
+            for lit in clause:
+                var_name = ID.vpool.obj(abs(lit))
+                if lit < 0:
+                    l.append(f"-{var_name}")
+                else:
+                    l.append(var_name)
+            cnf_print.append(l)
+        print("CNF Clauses:", *cnf_print, sep="\n")
+
         solver = Minisat22()
         solver.append_formula(cnf)
         return solver.solve(), solver.get_model()
@@ -89,18 +94,15 @@ class WorldSolver:
     def _get_constraints(self) -> list:
         return [
             self._initialize_agents_pos,
-            self._initialize_lasers,
-            self._initialize_walls,
-            self._initialize_exits,
-            self._one_position_per_agent,
-            self._agent_movement,
+            self._initialize_lasers_beam,
+            # self._initialize_walls,
+            self._agents_movements,
+            self._agents_cannot_be_in_two_places_at_once,
             self._agent_must_be_on_exit_to_win,
-            self._agent_cannot_step_on_wall,
-            self._agent_cannot_step_on_laser_sources,
             self._agent_cannot_step_on_other_agents,
-            self._agent_cannot_step_on_active_lasers,
-            self._laser_beam_propagation,
-            self._link_var_l_and_b,
+            # self._agent_cannot_step_on_active_lasers,
+            # self._laser_beam_propagation,
+            # self._link_var_l_and_b,
         ]
 
     ########## CONSTRAINTS ##########
@@ -110,62 +112,54 @@ class WorldSolver:
         for agent, (x, y) in self.agents:
             yield [ID.a(agent.color, x, y, 0)]
 
-    def _initialize_lasers(self):
+    def _initialize_lasers_beam(self):
         for laser, (x, y) in self.lasers:
-            yield [ID.s(laser.color, laser.direction.id(), x, y)]
+            for t in range(self.T_MAX):
+                yield [ID.b(laser.color, laser.direction.id(), x, y, t)]
 
     def _initialize_walls(self):
         for x, y in self.walls:
             yield [ID.w(x, y)]
 
-    def _initialize_exits(self):
-        for x, y in self.exits:
-            yield [ID.e(x, y)]
-
     # Agents contraints
-    def _one_position_per_agent(self):
-        for agent, _ in self.agents:
-            c = agent.color
-            for t in range(self.T_MAX):
-                # At least one position
-                yield [ID.a(c, x, y, t) for x, y in self.world.grid.positions()]
-                # At most one position - only generate clauses for distinct pairs
-                for (x1, y1), (x2, y2) in combinations(self.world.grid.positions(), 2):
-                    yield [-ID.a(c, x1, y1, t), -ID.a(c, x2, y2, t)]
-
-    def _agent_movement(self):
+    def _agents_movements(self):
         for agent, _ in self.agents:
             c = agent.color
             for t in range(self.T_MAX):
                 for x, y in self.world.grid.positions():
                     # If agent is at (x, y) at time t, it can move to adjacent positions at time t+1
-                    adjacent_positions = self.world.grid.get_neighbors((x, y))
                     yield [-ID.a(c, x, y, t), ID.a(c, x, y, t + 1)] + [
-                        ID.a(c, nx, ny, t + 1) for (nx, ny), _ in adjacent_positions
+                        ID.a(c, nx, ny, t + 1)
+                        for (nx, ny), _ in self.world.grid.get_neighbors((x, y))
+                        if (nx, ny) not in self.walls
+                    ]
+                    yield [-ID.a(c, x, y, t + 1), ID.a(c, x, y, t)] + [
+                        ID.a(c, nx, ny, t)
+                        for (nx, ny), _ in self.world.grid.get_neighbors((x, y))
+                        if (nx, ny) not in self.walls
                     ]
 
-    def _agent_must_be_on_exit_to_win(self):
-        """
-        This version says that at the final time step, the agent must be on an exit. This is a weaker constraint than saying that at some point in time, the agent must be on an exit.
-        """
-        for x, y in self.exits:
-            yield [ID.a(agent.color, x, y, self.T_MAX - 1) for agent, _ in self.agents]
-
-    # Agent steping constraints
-    def _agent_cannot_step_on_wall(self):
+    def _agents_cannot_be_in_walls(self):
         for agent, _ in self.agents:
             c = agent.color
             for t in range(self.T_MAX):
                 for x, y in self.walls:
                     yield [-ID.a(c, x, y, t)]
 
-    def _agent_cannot_step_on_laser_sources(self):
+    def _agents_cannot_be_in_two_places_at_once(self):
         for agent, _ in self.agents:
             c = agent.color
             for t in range(self.T_MAX):
-                for _, (x, y) in self.lasers:
-                    yield [-ID.a(c, x, y, t)]
+                for pos1, pos2 in combinations(
+                    [ID.a(c, x, y, t) for x, y in self.world.grid.positions()], 2
+                ):
+                    yield [-pos1, -pos2]
 
+    def _agent_must_be_on_exit_to_win(self):
+        for x, y in self.exits:
+            yield [ID.a(agent.color, x, y, self.T_MAX) for agent, _ in self.agents]
+
+    # Agent steping constraints
     def _agent_cannot_step_on_other_agents(self):
         for agent1, _ in self.agents:
             c1 = agent1.color
@@ -173,7 +167,7 @@ class WorldSolver:
                 c2 = agent2.color
                 if c1 >= c2:
                     continue  # Avoid duplicate pairs and self-pairing
-                for t in range(self.T_MAX):
+                for t in range(1, self.T_MAX):
                     for x, y in self.world.grid.positions():
                         yield [-ID.a(c1, x, y, t), -ID.a(c2, x, y, t)]
 
@@ -190,15 +184,8 @@ class WorldSolver:
 
     # Laser constraints
     def _laser_beam_propagation(self):
-        for laser, (x, y) in self.lasers:
-            c = laser.color
-            d = laser.direction.id()
-            for t in range(self.T_MAX):
-                # If laser source is active, then the beam is active at the source position
-                yield [-ID.s(c, d, x, y), ID.b(c, d, x, y, t)]
-                yield [ID.s(c, d, x, y), -ID.b(c, d, x, y, t)]
 
-        for c in range(len(self.lasers)):
+        for c in range(len(self.lasers)):  # TODO: CHANGE
             for dir in (
                 Direction.NORTH,
                 Direction.SOUTH,
@@ -243,6 +230,16 @@ class WorldSolver:
                     ]
 
     #################################
+
+    # def print_model(self, model):
+    #     m = []
+    #     for lit in model:
+    #         var_name = ID.vpool.obj(abs(lit))
+    #         if lit < 0:
+    #             m.append(f"-{var_name}")
+    #         else:
+    #             m.append(var_name)
+    #     print(m)
 
 
 ##################################################

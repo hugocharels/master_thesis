@@ -94,15 +94,15 @@ class WorldSolver:
     def _get_constraints(self) -> list:
         return [
             self._initialize_agents_pos,
-            # self._initialize_lasers_beam,
-            # self._initialize_walls,
+            self._initialize_lasers_beam,
+            self._initialize_walls,
             self._agents_movements,
             self._agents_cannot_be_in_two_places_at_once,
             self._agent_cannot_step_on_other_agents,
             self._agent_must_be_on_exit_to_win,
-            # self._agent_cannot_step_on_active_lasers,
-            # self._laser_beam_propagation,
-            # self._link_var_l_and_b,
+            self._agent_cannot_step_on_active_lasers,
+            self._laser_beam_propagation,
+            self._link_var_l_and_b,
         ]
 
     ########## CONSTRAINTS ##########

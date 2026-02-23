@@ -47,6 +47,26 @@ def make_world(width, height, agents=(), exits=(), walls=(), lasers=()):
         (2, 2, [(0, 0)], [(1, 1)], [(0, 1), (1, 0)], [], 2, False),
         (2, 2, [(0, 0)], [(1, 1)], [(0, 1)], [], 2, True),
         (2, 2, [(0, 0)], [(1, 1)], [(1, 0)], [], 2, True),
+        (
+            5,
+            5,
+            [(2, 2)],
+            [(4, 4)],
+            [(1, 1), (1, 2), (1, 4), (2, 1), (2, 4), (3, 1), (3, 2), (3, 3), (3, 4)],
+            [],
+            13,
+            False,
+        ),
+        (
+            5,
+            5,
+            [(2, 2)],
+            [(4, 4)],
+            [(1, 1), (1, 2), (1, 4), (2, 1), (2, 4), (3, 1), (3, 2), (3, 3), (3, 4)],
+            [],
+            14,
+            True,
+        ),
         # 2 agent, 2 exit, no walls, no lasers
         (2, 2, [(0, 0), (0, 1)], [(1, 0), (1, 1)], [], [], 1, True),
         (3, 3, [(0, 0), (0, 2)], [(2, 0), (2, 2)], [], [], 1, False),
@@ -95,6 +115,11 @@ def make_world(width, height, agents=(), exits=(), walls=(), lasers=()):
             5,
             True,
         ),
+        # 1 agent, 1 exit, no walls, 1 laser
+        # own laser
+        (3, 3, [(0, 2)], [(2, 2)], [], [(0, (1, 0), Direction.EAST)], 2, True),
+        # other laser
+        # (3, 3, [(0, 2)], [(2, 2)], [], [(1, (1, 0), Direction.EAST)], 2, False),
     ],
 )
 def test_solver(width, height, agents, exits, walls, lasers, t, expected):

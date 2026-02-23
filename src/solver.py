@@ -80,7 +80,7 @@ class WorldSolver:
                 else:
                     l.append(var_name)
             cnf_print.append(l)
-        print("CNF Clauses:", *cnf_print, sep="\n")
+        # print("CNF Clauses:", *cnf_print, sep="\n")
 
         solver = Minisat22()
         solver.append_formula(cnf)
@@ -94,12 +94,12 @@ class WorldSolver:
     def _get_constraints(self) -> list:
         return [
             self._initialize_agents_pos,
-            self._initialize_lasers_beam,
+            # self._initialize_lasers_beam,
             # self._initialize_walls,
             self._agents_movements,
             self._agents_cannot_be_in_two_places_at_once,
-            self._agent_must_be_on_exit_to_win,
             self._agent_cannot_step_on_other_agents,
+            self._agent_must_be_on_exit_to_win,
             # self._agent_cannot_step_on_active_lasers,
             # self._laser_beam_propagation,
             # self._link_var_l_and_b,
@@ -114,7 +114,7 @@ class WorldSolver:
 
     def _initialize_lasers_beam(self):
         for laser, (x, y) in self.lasers:
-            for t in range(self.T_MAX):
+            for t in range(self.T_MAX + 1):
                 yield [ID.b(laser.color, laser.direction.id(), x, y, t)]
 
     def _initialize_walls(self):
@@ -128,36 +128,27 @@ class WorldSolver:
             for t in range(self.T_MAX):
                 for x, y in self.world.grid.positions():
                     # If agent is at (x, y) at time t, it can move to adjacent positions at time t+1
-                    yield [-ID.a(c, x, y, t), ID.a(c, x, y, t + 1)] + [
-                        ID.a(c, nx, ny, t + 1)
+                    next_positions = [(x, y)] + [
+                        (nx, ny)
                         for (nx, ny), _ in self.world.grid.get_neighbors((x, y))
                         if (nx, ny) not in self.walls
                     ]
-                    yield [-ID.a(c, x, y, t + 1), ID.a(c, x, y, t)] + [
-                        ID.a(c, nx, ny, t)
-                        for (nx, ny), _ in self.world.grid.get_neighbors((x, y))
-                        if (nx, ny) not in self.walls
+                    yield [-ID.a(c, x, y, t)] + [
+                        ID.a(c, nx, ny, t + 1) for (nx, ny) in next_positions
                     ]
 
-    def _agents_cannot_be_in_walls(self):
-        for agent, _ in self.agents:
-            c = agent.color
-            for t in range(self.T_MAX):
-                for x, y in self.walls:
-                    yield [-ID.a(c, x, y, t)]
+                    yield [-ID.a(c, x, y, t + 1)] + [
+                        ID.a(c, nx, ny, t) for (nx, ny) in next_positions
+                    ]
 
     def _agents_cannot_be_in_two_places_at_once(self):
         for agent, _ in self.agents:
             c = agent.color
-            for t in range(self.T_MAX):
+            for t in range(self.T_MAX + 1):
                 for pos1, pos2 in combinations(
                     [ID.a(c, x, y, t) for x, y in self.world.grid.positions()], 2
                 ):
                     yield [-pos1, -pos2]
-
-    def _agent_must_be_on_exit_to_win(self):
-        for x, y in self.exits:
-            yield [ID.a(agent.color, x, y, self.T_MAX) for agent, _ in self.agents]
 
     # Agent steping constraints
     def _agent_cannot_step_on_other_agents(self):
@@ -167,9 +158,13 @@ class WorldSolver:
                 c2 = agent2.color
                 if c1 >= c2:
                     continue  # Avoid duplicate pairs and self-pairing
-                for t in range(1, self.T_MAX):
+                for t in range(1, self.T_MAX + 1):
                     for x, y in self.world.grid.positions():
                         yield [-ID.a(c1, x, y, t), -ID.a(c2, x, y, t)]
+
+    def _agent_must_be_on_exit_to_win(self):
+        for x, y in self.exits:
+            yield [ID.a(agent.color, x, y, self.T_MAX) for agent, _ in self.agents]
 
     def _agent_cannot_step_on_active_lasers(self):
         for agent, _ in self.agents:
@@ -178,7 +173,7 @@ class WorldSolver:
                 c2 = laser.color
                 if c1 == c2:
                     continue  # An agent can step on its own laser
-                for t in range(self.T_MAX):
+                for t in range(self.T_MAX + 1):
                     for x, y in self.world.grid.positions():
                         yield [-ID.a(c1, x, y, t), -ID.l(c2, x, y, t)]
 
@@ -231,15 +226,15 @@ class WorldSolver:
 
     #################################
 
-    # def print_model(self, model):
-    #     m = []
-    #     for lit in model:
-    #         var_name = ID.vpool.obj(abs(lit))
-    #         if lit < 0:
-    #             m.append(f"-{var_name}")
-    #         else:
-    #             m.append(var_name)
-    #     print(m)
+    def print_model(self, model):
+        m = []
+        for lit in model:
+            var_name = ID.vpool.obj(abs(lit))
+            if lit < 0:
+                m.append(f"-{var_name}")
+            else:
+                m.append(var_name)
+        print(m)
 
 
 ##################################################

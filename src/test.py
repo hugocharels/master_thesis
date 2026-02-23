@@ -1,5 +1,3 @@
-from pickletools import dis
-
 from core import Agent, CellType, Entity, World
 from solver import WorldSolver
 
@@ -16,16 +14,18 @@ def display_world(world: World):
 
 def main():
 
-    world = World(3, 3)
+    world = World(2, 3)
     world.add_entity((0, 0), Agent(0))
-    world.add_entity((0, 2), Agent(1))
+    # world.add_entity((0, 2), Agent(1))
     world.add_entity((2, 0), Entity(CellType.EXIT))
-    world.add_entity((2, 2), Entity(CellType.EXIT))
-    solver = WorldSolver(world, T_MAX=1)
+    # world.add_entity((2, 2), Entity(CellType.EXIT))
+    world.add_entity((1, 0), Entity(CellType.WALL))
+    # world.add_entity((1, 2), Entity(CellType.WALL))
+    solver = WorldSolver(world, T_MAX=2)
 
     is_solvable, model = solver.solve()
     print("Solvable:", is_solvable)
-    # solver.print_model(model)
+    solver.print_model(model)
 
     display_world(world)
 

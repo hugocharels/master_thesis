@@ -40,6 +40,9 @@ def make_world(width, height, agents=(), exits=(), walls=(), lasers=()):
         (2, 2, [(0, 0)], [(1, 1)], [], [], 1, False),
         (2, 2, [(0, 0)], [(1, 1)], [], [], 2, True),
         (2, 2, [(0, 0)], [(1, 1)], [], [], 3, True),
+        (3, 3, [(0, 0)], [(2, 0)], [(1, 0)], [], 2, False),
+        (3, 3, [(0, 0)], [(2, 0)], [(1, 0)], [], 3, False),
+        (3, 3, [(0, 0)], [(2, 0)], [(1, 0)], [], 4, True),
         # 1 agent, 1 exit, walls, no lasers
         (2, 2, [(0, 0)], [(1, 1)], [(0, 1), (1, 0)], [], 2, False),
         (2, 2, [(0, 0)], [(1, 1)], [(0, 1)], [], 2, True),
@@ -49,23 +52,35 @@ def make_world(width, height, agents=(), exits=(), walls=(), lasers=()):
         (3, 3, [(0, 0), (0, 2)], [(2, 0), (2, 2)], [], [], 1, False),
         (3, 3, [(0, 0), (0, 2)], [(2, 0), (2, 2)], [], [], 2, True),
         # 2 agent, 2 exit, walls, no lasers
+        # agents can't reach exits
         (
             4,
             4,
             [(0, 0), (0, 3)],
             [(3, 0), (3, 3)],
-            [(2, 0), (2, 1), (2, 2)],
+            [(2, 0), (2, 1), (2, 2), (2, 3)],
             [],
             3,
             False,
         ),
+        (
+            4,
+            4,
+            [(0, 0), (0, 3)],
+            [(3, 0), (3, 3)],
+            [(2, 0), (2, 1), (2, 2), (2, 3)],
+            [],
+            10,
+            False,
+        ),
         # 2 agent, 2 exit, walls, no lasers, only one entrance to exits
+        # agents have to wait for each other to pass through the narrow corridor
         (
             3,
             3,
             [(0, 0), (0, 2)],
             [(2, 0), (2, 2)],
-            [(1, 0), (1, 1), (1, 2)],
+            [(1, 0), (1, 2)],
             [],
             4,
             False,
@@ -75,10 +90,10 @@ def make_world(width, height, agents=(), exits=(), walls=(), lasers=()):
             3,
             [(0, 0), (0, 2)],
             [(2, 0), (2, 2)],
-            [(1, 0), (1, 1), (1, 2)],
+            [(1, 0), (1, 2)],
             [],
             5,
-            False,
+            True,
         ),
     ],
 )

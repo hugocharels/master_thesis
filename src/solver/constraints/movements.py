@@ -19,6 +19,7 @@ class MovementConstraints(Constraint):
                         (nx, ny)
                         for (nx, ny), _ in self.world.grid.get_neighbors((x, y))
                         if (nx, ny) not in self.world.get_walls()
+                        and (nx, ny) not in [pos for _, pos in self.world.get_lasers()]
                     ]
                     yield [-self.var.agent(c, x, y, t)] + [
                         self.var.agent(c, nx, ny, t + 1) for (nx, ny) in n_pos

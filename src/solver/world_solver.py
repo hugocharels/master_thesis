@@ -1,3 +1,5 @@
+from enum import Enum
+
 from pysat.solvers import Minisat22
 
 from .constraints import (
@@ -7,6 +9,14 @@ from .constraints import (
 )
 from .model import SATModel
 from .variables import VariableFactory
+
+
+class Action(Enum):
+    Stay = 0
+    North = 1
+    South = 2
+    West = 3
+    East = 4
 
 
 class WorldSolver:
@@ -36,3 +46,53 @@ class WorldSolver:
         for lit in model:
             name = self.var.name(lit)
             print(f"{'-' if lit < 0 else ''}{name}")
+
+    def extract_plan(self, model):
+        """
+        Returns:
+            tuple of length T_MAX
+            each element is a tuple of size (#agents)
+            containing Action enums
+        """
+
+        # 1. Extract positions from model
+        positions = {}  # positions[color][t] = (x,y)
+        for lit in model:
+            if lit <= 0:
+                continue
+            obj = self.var.pool.obj(abs(lit))
+            if not obj or obj[0] != "agent":
+                continue
+            _, color, (x, y), t = obj
+            positions.setdefault(color, {})[t] = (x, y)
+
+        # 2. Sort agents for deterministic ordering
+        agent_colors = sorted(positions.keys())
+        num_agents = len(agent_colors)
+
+        # 3. Build plan per timestep
+        plan = []
+        for t in range(self.T_MAX):
+            timestep_actions = []
+
+            for color in agent_colors:
+                x1, y1 = positions[color][t]
+                x2, y2 = positions[color][t + 1]
+                dx, dy = x2 - x1, y2 - y1
+                if dx == 0 and dy == 0:
+                    action = Action.Stay
+                elif dx == -1 and dy == 0:
+                    action = Action.North
+                elif dx == 1 and dy == 0:
+                    action = Action.South
+                elif dx == 0 and dy == -1:
+                    action = Action.West
+                elif dx == 0 and dy == 1:
+                    action = Action.East
+                else:
+                    raise ValueError(
+                        f"Invalid movement for agent {color} between t={t} and t={t + 1}"
+                    )
+                timestep_actions.append(action)
+            plan.append(tuple(timestep_actions))
+        return plan

@@ -34,11 +34,18 @@ def main():
 
     # world.add_entity(pos, Entity(CellType.WALL))
     world.add_entity((1, 0), Laser(1, Direction.EAST))
+    #
+    # world = World(3, 3)
+    # world.add_entity((0, 0), Agent(0))
+    # world.add_entity((0, 2), Agent(1))
+    # world.add_entity((2, 2), Entity(CellType.EXIT))
+    # world.add_entity((2, 0), Entity(CellType.EXIT))
     solver = WorldSolver(world, T_MAX=4)
 
     is_solvable, model = solver.solve()
     print("Solvable:", is_solvable)
-    # solver.print_model(model)
+    if is_solvable:
+        print(solver.extract_plan(model))
 
     display_world(world)
 

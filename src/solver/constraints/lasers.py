@@ -6,7 +6,7 @@ from .base import Constraint
 class LaserConstraints(Constraint):
     def generate(self):
         yield from self._no_step_on_active_laser()
-        yield from self._beam_propagation()
+        # yield from self._beam_propagation()
         yield from self._link_beam_and_laser()
 
     def _no_step_on_active_laser(self):
@@ -22,7 +22,7 @@ class LaserConstraints(Constraint):
 
     def _beam_propagation(self):
         # TODO:
-        yield []
+        ...
 
     def _link_beam_and_laser(self):
         for laser, _ in self.world.get_lasers():

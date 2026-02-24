@@ -19,7 +19,7 @@ class WorldSolver:
         self.constraints = [
             InitializationConstraints(world, self.var, T_MAX),
             MovementConstraints(world, self.var, T_MAX),
-            # LaserConstraints(world, self.var, T_MAX),
+            LaserConstraints(world, self.var, T_MAX),
         ]
 
     def build_model(self):

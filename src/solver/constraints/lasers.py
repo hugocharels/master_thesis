@@ -32,20 +32,20 @@ class LaserConstraints(Constraint):
                     )
                     for t in range(self.T_MAX + 1):
                         if self.world.grid[nx, ny] == CellType.WALL:
-                            yield [-self.var.beam(c, laser.direction.id(), nx, ny, t)]
+                            yield [-self.var.beam(c, laser.direction, nx, ny, t)]
                         else:
                             yield [
-                                -self.var.beam(c, laser.direction.id(), x, y, t),
+                                -self.var.beam(c, laser.direction, x, y, t),
                                 self.var.agent(c, nx, ny, t),
-                                self.var.beam(c, laser.direction.id(), nx, ny, t),
+                                self.var.beam(c, laser.direction, nx, ny, t),
                             ]
                             yield [
-                                self.var.beam(c, laser.direction.id(), x, y, t),
-                                -self.var.beam(c, laser.direction.id(), nx, ny, t),
+                                self.var.beam(c, laser.direction, x, y, t),
+                                -self.var.beam(c, laser.direction, nx, ny, t),
                             ]
                             yield [
                                 -self.var.agent(c, nx, ny, t),
-                                -self.var.beam(c, laser.direction.id(), nx, ny, t),
+                                -self.var.beam(c, laser.direction, nx, ny, t),
                             ]
                 except IndexError:
                     continue
@@ -56,10 +56,10 @@ class LaserConstraints(Constraint):
             for x, y in self.world.grid.positions():
                 for t in range(self.T_MAX + 1):
                     yield [
-                        -self.var.beam(c, laser.direction.id(), x, y, t),
+                        -self.var.beam(c, laser.direction, x, y, t),
                         self.var.laser(c, x, y, t),
                     ]
                     yield [
-                        self.var.beam(c, laser.direction.id(), x, y, t),
+                        self.var.beam(c, laser.direction, x, y, t),
                         -self.var.laser(c, x, y, t),
                     ]

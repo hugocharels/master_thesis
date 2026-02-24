@@ -118,8 +118,28 @@ def make_world(width, height, agents=(), exits=(), walls=(), lasers=()):
         # 1 agent, 1 exit, no walls, 1 laser
         # own laser
         (3, 3, [(0, 2)], [(2, 2)], [], [(0, (1, 0), Direction.EAST)], 2, True),
-        # other laser
-        # (3, 3, [(0, 2)], [(2, 2)], [], [(1, (1, 0), Direction.EAST)], 2, False),
+        # 2 agents, 2 exits, no walls, 2 lasers
+        # lasers block the path to the exits
+        (
+            3,
+            3,
+            [(0, 0), (0, 2)],
+            [(2, 0), (2, 2)],
+            [],
+            [(0, (1, 0), Direction.EAST)],
+            3,
+            False,
+        ),
+        (
+            3,
+            3,
+            [(0, 0), (0, 2)],
+            [(2, 0), (2, 2)],
+            [],
+            [(0, (1, 0), Direction.EAST)],
+            4,
+            True,
+        ),
     ],
 )
 def test_solver(width, height, agents, exits, walls, lasers, t, expected):

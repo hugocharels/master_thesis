@@ -13,4 +13,4 @@ class InitializationConstraints(Constraint):
     def _lasers_initial_beam(self):
         for laser, (x, y) in self.world.get_lasers():
             for t in range(self.T_MAX + 1):
-                yield [self.var.beam(laser.color, laser.direction.id(), x, y, t)]
+                yield [self.var.beam(laser.color, laser.direction, x, y, t)]

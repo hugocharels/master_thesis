@@ -33,5 +33,14 @@ class Grid(Generic[T]):
                 neighbors.append((new_pos, self[new_pos]))
         return neighbors
 
+    def get_neighbor(
+        self, pos: Position, direction: Tuple[int, int]
+    ) -> Tuple[Position, T]:
+        new_pos = (pos[0] + direction[0], pos[1] + direction[1])
+        if self.is_within_bounds(new_pos):
+            return new_pos, self[new_pos]
+        else:
+            raise IndexError("Neighbor position is out of bounds")
+
     def positions(self) -> Iterator[Position]:
         yield from ((i, j) for i in range(self.height) for j in range(self.width))

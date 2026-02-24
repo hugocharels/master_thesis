@@ -1,12 +1,14 @@
 from itertools import combinations
 
+from core import CellType
+
 from .base import Constraint
 
 
 class LaserConstraints(Constraint):
     def generate(self):
         yield from self._no_step_on_active_laser()
-        # yield from self._beam_propagation()
+        yield from self._beam_propagation()
         yield from self._link_beam_and_laser()
 
     def _no_step_on_active_laser(self):
@@ -21,8 +23,32 @@ class LaserConstraints(Constraint):
                     yield [-self.var.agent(c1, x, y, t), -self.var.laser(c2, x, y, t)]
 
     def _beam_propagation(self):
-        # TODO:
-        ...
+        for laser, _ in self.world.get_lasers():
+            c = laser.color
+            for x, y in self.world.grid.positions():
+                try:
+                    (nx, ny), _ = self.world.grid.get_neighbor(
+                        (x, y), laser.direction.value
+                    )
+                    for t in range(self.T_MAX + 1):
+                        if self.world.grid[nx, ny] == CellType.WALL:
+                            yield [-self.var.beam(c, laser.direction.id(), nx, ny, t)]
+                        else:
+                            yield [
+                                -self.var.beam(c, laser.direction.id(), x, y, t),
+                                self.var.agent(c, nx, ny, t),
+                                self.var.beam(c, laser.direction.id(), nx, ny, t),
+                            ]
+                            yield [
+                                self.var.beam(c, laser.direction.id(), x, y, t),
+                                -self.var.beam(c, laser.direction.id(), nx, ny, t),
+                            ]
+                            yield [
+                                -self.var.agent(c, nx, ny, t),
+                                -self.var.beam(c, laser.direction.id(), nx, ny, t),
+                            ]
+                except IndexError:
+                    continue
 
     def _link_beam_and_laser(self):
         for laser, _ in self.world.get_lasers():

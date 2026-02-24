@@ -8,12 +8,6 @@ class VariableFactory:
     def agent(self, color, x, y, t):
         return self.pool.id(("agent", color, x, y, t))
 
-    def wall(self, x, y):
-        return self.pool.id(("wall", x, y))
-
-    def exit(self, x, y):
-        return self.pool.id(("exit", x, y))
-
     def laser(self, color, x, y, t):
         return self.pool.id(("laser", color, x, y, t))
 

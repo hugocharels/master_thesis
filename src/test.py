@@ -12,7 +12,19 @@ def display_world(world: World):
     plt.show()
 
 
+def display_lle(level):
+    import matplotlib.pyplot as plt
+    from lle import LLE
+
+    env = LLE.level(level).build()
+    plt.imshow(env.get_image())
+    plt.axis("off")
+    plt.show()
+
+
 def main():
+
+    # display_lle(1)
 
     world = World(3, 3)
     world.add_entity((0, 2), Agent(0))

@@ -249,7 +249,7 @@ def make_world(width, height, agents=(), exits=(), walls=(), lasers=()):
                 (8, 12),
             ],
             [(1, (6, 12), Direction.WEST), (2, (0, 2), Direction.SOUTH)],
-            18,
+            19,
             True,
         ),
         (
@@ -275,7 +275,7 @@ def make_world(width, height, agents=(), exits=(), walls=(), lasers=()):
                 (8, 12),
             ],
             [(1, (6, 12), Direction.WEST), (2, (0, 2), Direction.SOUTH)],
-            17,
+            18,
             False,
         ),
         # Level 6: 4 agents, 2 exits, walls, 3 lasers
@@ -306,7 +306,7 @@ def make_world(width, height, agents=(), exits=(), walls=(), lasers=()):
                 (2, (0, 2), Direction.SOUTH),
                 (0, (4, 0), Direction.EAST),
             ],
-            19,
+            20,
             True,
         ),
         (
@@ -336,7 +336,7 @@ def make_world(width, height, agents=(), exits=(), walls=(), lasers=()):
                 (2, (0, 2), Direction.SOUTH),
                 (0, (4, 0), Direction.EAST),
             ],
-            18,
+            19,
             False,
         ),
     ],

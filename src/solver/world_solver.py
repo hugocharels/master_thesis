@@ -1,5 +1,4 @@
-from enum import Enum
-
+from lle import Action
 from pysat.solvers import Minisat22
 
 from .constraints import (
@@ -9,14 +8,6 @@ from .constraints import (
 )
 from .model import SATModel
 from .variables import VariableFactory
-
-
-class Action(Enum):
-    Stay = 0
-    North = 1
-    South = 2
-    West = 3
-    East = 4
 
 
 class WorldSolver:
@@ -68,7 +59,6 @@ class WorldSolver:
 
         # 2. Sort agents for deterministic ordering
         agent_colors = sorted(positions.keys())
-        num_agents = len(agent_colors)
 
         # 3. Build plan per timestep
         plan = []
@@ -80,15 +70,15 @@ class WorldSolver:
                 x2, y2 = positions[color][t + 1]
                 dx, dy = x2 - x1, y2 - y1
                 if dx == 0 and dy == 0:
-                    action = Action.Stay
+                    action = Action.STAY
                 elif dx == -1 and dy == 0:
-                    action = Action.North
+                    action = Action.NORTH
                 elif dx == 1 and dy == 0:
-                    action = Action.South
+                    action = Action.SOUTH
                 elif dx == 0 and dy == -1:
-                    action = Action.West
+                    action = Action.WEST
                 elif dx == 0 and dy == 1:
-                    action = Action.East
+                    action = Action.EAST
                 else:
                     raise ValueError(
                         f"Invalid movement for agent {color} between t={t} and t={t + 1}"

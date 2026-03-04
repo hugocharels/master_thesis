@@ -9,6 +9,9 @@ class InitializationConstraints(Constraint):
     def _agents_initial_position(self):
         for agent, (x, y) in self.world.get_agents():
             yield [self.var.agent(agent.color, x, y, 0)]
+            for other_x, other_y in self.world.grid.positions():
+                if (other_x, other_y) != (x, y):
+                    yield [-self.var.agent(agent.color, other_x, other_y, 0)]
 
     def _lasers_initial_beam(self):
         for laser, (x, y) in self.world.get_lasers():

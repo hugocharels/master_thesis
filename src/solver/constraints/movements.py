@@ -6,7 +6,7 @@ from .base import Constraint
 class MovementConstraints(Constraint):
     def generate(self):
         yield from self._movement_rules()
-        yield from self._unique_position()
+        # yield from self._unique_position()
         yield from self._no_overlap()
         yield from self._must_be_on_exit()
 
@@ -15,6 +15,11 @@ class MovementConstraints(Constraint):
             c = agent.color
             for t in range(self.T_MAX):
                 for x, y in self.world.grid.positions():
+                    if (x, y) in self.world.get_walls() or (x, y) in [
+                        pos for _, pos in self.world.get_lasers()
+                    ]:
+                        continue
+                    # TODO if (x, y) in self.world.get_exits() then only STAY is allowed
                     n_pos = [(x, y)] + [
                         (nx, ny)
                         for (nx, ny), _ in self.world.grid.get_neighbors((x, y))
@@ -27,11 +32,18 @@ class MovementConstraints(Constraint):
                     yield [-self.var.agent(c, x, y, t + 1)] + [
                         self.var.agent(c, nx, ny, t) for (nx, ny) in n_pos
                     ]
+                    # Ensure that the agent cannot be in two positions at the same time
+                    # On when _unique_position is not used
+                    for (x1, y1), (x2, y2) in combinations(n_pos, 2):
+                        yield [
+                            -self.var.agent(c, x1, y1, t + 1),
+                            -self.var.agent(c, x2, y2, t + 1),
+                        ]
 
     def _unique_position(self):
         for agent, _ in self.world.get_agents():
             c = agent.color
-            for t in range(self.T_MAX + 1):
+            for t in range(1, self.T_MAX + 1):
                 for (x1, y1), (x2, y2) in combinations(self.world.grid.positions(), 2):
                     yield [-self.var.agent(c, x1, y1, t), -self.var.agent(c, x2, y2, t)]
 
@@ -41,6 +53,14 @@ class MovementConstraints(Constraint):
             for t in range(self.T_MAX + 1):
                 for x, y in self.world.grid.positions():
                     yield [-self.var.agent(c1, x, y, t), -self.var.agent(c2, x, y, t)]
+                    yield [
+                        -self.var.agent(c1, x, y, t + 1),
+                        -self.var.agent(c2, x, y, t),
+                    ]
+                    yield [
+                        -self.var.agent(c1, x, y, t),
+                        -self.var.agent(c2, x, y, t + 1),
+                    ]
 
     def _must_be_on_exit(self):
         for x, y in self.world.get_exits():

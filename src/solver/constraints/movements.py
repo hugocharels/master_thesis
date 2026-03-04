@@ -9,6 +9,7 @@ class MovementConstraints(Constraint):
         # yield from self._unique_position()
         yield from self._no_overlap()
         yield from self._must_be_on_exit()
+        yield from self._stays_on_exit()
 
     def _movement_rules(self):
         for agent, _ in self.world.get_agents():
@@ -68,3 +69,13 @@ class MovementConstraints(Constraint):
                 self.var.agent(agent.color, x, y, self.T_MAX)
                 for agent, _ in self.world.get_agents()
             ]
+
+    def _stays_on_exit(self):
+        for agent, _ in self.world.get_agents():
+            c = agent.color
+            for t in range(self.T_MAX):
+                for x, y in self.world.get_exits():
+                    yield [
+                        -self.var.agent(c, x, y, t),
+                        self.var.agent(c, x, y, t + 1),
+                    ]

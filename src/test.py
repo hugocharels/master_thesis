@@ -1,6 +1,8 @@
+import os
+
 import matplotlib.pyplot as plt
 from lle import LLE
-from typing_extensions import Dict
+from matplotlib.animation import FuncAnimation, PillowWriter
 
 from core import Agent, CellType, Direction, Entity, Laser, World
 from solver import WorldSolver
@@ -43,6 +45,7 @@ def display_sequence_interactive(world, solver, model):
             env.world.step(actions)
             images.append(env.get_image())
         except Exception as e:
+            print(e)
             plt.imshow(env.get_image())
             plt.axis("off")
             plt.show()
@@ -77,52 +80,119 @@ def display_sequence_interactive(world, solver, model):
     plt.show()
 
 
+def create_gif(world, solver, model, filename="agent_movement.gif", duration=500):
+    """
+    Create a GIF showing the agent moving from start to end.
+
+    Args:
+        world: The world object
+        solver: The WorldSolver instance
+        model: The solved model
+        filename: Name of the output GIF file (default: "agent_movement.gif")
+        duration: Duration between frames in milliseconds (default: 500ms)
+    """
+    env = LLE.from_str(world.to_str()).build()
+
+    # Collect all images first
+    images = [env.get_image()]
+    step_count = 0
+
+    print(f"Creating GIF with initial state...")
+
+    for actions in solver.extract_plan(model):
+        try:
+            env.world.step(actions)
+            images.append(env.get_image())
+            step_count += 1
+            print(f"Added step {step_count}")
+        except Exception as e:
+            print(f"Error at step {step_count}: {e}")
+            break
+
+    print(f"Total frames: {len(images)}")
+
+    # Create the animation
+    fig, ax = plt.subplots(figsize=(8, 8))
+    ax.axis("off")
+
+    # Display first image
+    im = ax.imshow(images[0])
+    title = ax.set_title(f"Step 0/{len(images) - 1}")
+
+    def animate(frame):
+        im.set_array(images[frame])
+        title.set_text(f"Step {frame}/{len(images) - 1}")
+        return [im, title]
+
+    # Create animation
+    anim = FuncAnimation(
+        fig, animate, frames=len(images), interval=duration, blit=True, repeat=True
+    )
+
+    # Save as GIF
+    print(f"Saving GIF as '{filename}'...")
+    writer = PillowWriter(fps=int(1000 / duration))  # Convert duration to fps
+    anim.save(filename, writer=writer)
+
+    plt.close()
+    print(f"GIF saved successfully as '{filename}'")
+
+    # Return the absolute path
+    return os.path.abspath(filename)
+
+
+WORLD = (
+    13,
+    12,
+    [(0, 4), (0, 5), (0, 6), (0, 7)],
+    [(10, 9), (10, 10), (11, 9), (11, 10)],
+    [
+        (3, 0),
+        (3, 1),
+        (4, 12),
+        (4, 11),
+        (4, 10),
+        (4, 9),
+        (4, 8),
+        (4, 7),
+        (7, 7),
+        (8, 7),
+        (8, 8),
+        (8, 9),
+        (8, 10),
+        (8, 11),
+        (8, 12),
+    ],
+    [
+        (1, (6, 12), Direction.WEST),
+        (2, (0, 2), Direction.SOUTH),
+        (0, (4, 0), Direction.EAST),
+    ],
+)
+T_MAX = 20
+
+
 def main():
-
-    # world = make_world(
-    #     13,
-    #     12,
-    #     [(0, 4), (0, 5), (0, 6), (0, 7)],
-    #     [(10, 9), (10, 10), (11, 9), (11, 10)],
-    #     [
-    #         (3, 0),
-    #         (3, 1),
-    #         (4, 12),
-    #         (4, 11),
-    #         (4, 10),
-    #         (4, 9),
-    #         (4, 8),
-    #         (4, 7),
-    #         (7, 7),
-    #         (8, 7),
-    #         (8, 8),
-    #         (8, 9),
-    #         (8, 10),
-    #         (8, 11),
-    #         (8, 12),
-    #     ],
-    #     [
-    #         (1, (6, 12), Direction.WEST),
-    #         (2, (0, 2), Direction.SOUTH),
-    #         (0, (4, 0), Direction.EAST),
-    #     ],
-    # )
-    T_MAX = 5
-    world = make_world(3, 3, [(0, 0)], [(2, 0)], [(1, 0)], [])
-
+    world = make_world(*WORLD)
     solver = WorldSolver(world, T_MAX)
-
-    # world = make_world(3, 3, [(0, 0), (0, 2)], [(2, 0), (2, 2)], [(1, 0), (1, 2)], [])
-    # solver = WorldSolver(world, T_MAX=6)
 
     is_solvable, model = solver.solve()
     print("Solvable:", is_solvable)
 
     if is_solvable:
-        # solver.print_model(model)
+        solver.print_model(model)
         print(solver.extract_plan(model))
 
-    display_sequence_interactive(world, solver, model)
+        # Create GIF
+        gif_path = create_gif(
+            world, solver, model, "agent_solution_level6.gif", duration=500
+        )
+        print(f"GIF created at: {gif_path}")
+
+        # Still show interactive display
+        display_sequence_interactive(world, solver, model)
+    else:
+        print("No solution found, cannot create GIF")
 
 
 if __name__ == "__main__":

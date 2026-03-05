@@ -5,11 +5,17 @@ from .base import Constraint
 
 class MovementConstraints(Constraint):
     def generate(self):
-        yield from self._movement_rules()
-        # yield from self._unique_position()
-        yield from self._no_overlap()
-        yield from self._must_be_on_exit()
-        yield from self._stays_on_exit()
+        all_clauses = []
+        all_clauses.extend(self._profile_method("movement_rules", self._movement_rules))
+        # all_clauses.extend(
+        #     self._profile_method("unique_position", self._unique_position)
+        # )
+        all_clauses.extend(self._profile_method("no_overlap", self._no_overlap))
+        all_clauses.extend(
+            self._profile_method("must_be_on_exit", self._must_be_on_exit)
+        )
+        all_clauses.extend(self._profile_method("stays_on_exit", self._stays_on_exit))
+        return all_clauses
 
     def _movement_rules(self):
         for agent, _ in self.world.get_agents():

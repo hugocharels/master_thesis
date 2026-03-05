@@ -5,9 +5,19 @@ from .base import Constraint
 
 class LaserConstraints(Constraint):
     def generate(self):
-        yield from self._no_step_on_active_laser()
-        yield from self._beam_propagation()
-        yield from self._link_beam_and_laser()
+        all_clauses = []
+        all_clauses.extend(
+            self._profile_method(
+                "no_step_on_active_laser", self._no_step_on_active_laser
+            )
+        )
+        all_clauses.extend(
+            self._profile_method("beam_propagation", self._beam_propagation)
+        )
+        all_clauses.extend(
+            self._profile_method("link_beam_and_laser", self._link_beam_and_laser)
+        )
+        return all_clauses
 
     def _no_step_on_active_laser(self):
         for laser, _ in self.world.get_lasers():

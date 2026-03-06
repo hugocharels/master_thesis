@@ -8,23 +8,29 @@ from .constraints import (
     LaserConstraints,
     MovementConstraints,
 )
+from .constraints.movements import METHOD_LOCAL
 from .model import SATModel
 from .profiler import SolverProfiler
 from .variables import VariableFactory
 
 
 class WorldSolver:
-    def __init__(self, world, T_MAX=10, enable_profiling=False):
+    def __init__(
+        self, world, T_MAX=10, enable_profiling=False, movement_method=METHOD_LOCAL
+    ):
         self.world = world
         self.T_MAX = T_MAX
         self.var = VariableFactory()
         self.model = SATModel()
         self.enable_profiling = enable_profiling
         self.profiler = SolverProfiler() if enable_profiling else None
+        self.movement_method = movement_method
 
         self.constraints = [
             InitializationConstraints(world, self.var, T_MAX),
-            MovementConstraints(world, self.var, T_MAX),
+            MovementConstraints(
+                world, self.var, T_MAX, movement_method=movement_method
+            ),
             LaserConstraints(world, self.var, T_MAX),
         ]
 

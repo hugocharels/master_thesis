@@ -4,6 +4,7 @@ from lle import Action
 from pysat.solvers import Minisat22
 
 from .constraints import (
+    ConstraintContext,
     InitializationConstraints,
     LaserConstraints,
     MovementConstraints,
@@ -26,12 +27,13 @@ class WorldSolver:
         self.profiler = SolverProfiler() if enable_profiling else None
         self.movement_method = movement_method
 
+        # Build once, share across all constraints
+        self.ctx = ConstraintContext(world, self.var, T_MAX)
+
         self.constraints = [
-            InitializationConstraints(world, self.var, T_MAX),
-            MovementConstraints(
-                world, self.var, T_MAX, movement_method=movement_method
-            ),
-            LaserConstraints(world, self.var, T_MAX),
+            InitializationConstraints(self.ctx),
+            MovementConstraints(self.ctx, movement_method=movement_method),
+            LaserConstraints(self.ctx),
         ]
 
     def build_model(self):

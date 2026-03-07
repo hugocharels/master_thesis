@@ -9,5 +9,4 @@ class SATModel:
         self.cnf.append(clause)
 
     def extend(self, clauses):
-        for clause in clauses:
-            self.add_clause(clause)
+        self.cnf.clauses.extend(clauses)

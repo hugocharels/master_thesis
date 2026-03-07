@@ -15,16 +15,13 @@ Usage:
 import argparse
 import json
 import os
-import sys
-import time
-from pathlib import Path
 
 import matplotlib.pyplot as plt
 import numpy as np
-from constraints.movements import METHOD_GLOBAL, METHOD_LOCAL
-from world_solver import WorldSolver
 
 from core import Agent, CellType, Direction, Entity, Laser, World
+from solver.constraints.movements import METHOD_GLOBAL, METHOD_LOCAL
+from solver.world_solver import WorldSolver
 
 # ============================================================
 # LLE Default Levels 1-6 definitions

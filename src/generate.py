@@ -1,7 +1,6 @@
 import matplotlib.pyplot as plt
-from cli import build_parser
-from lle import LLE
 
+from cli import build_parser
 from generators import GENERATOR_REGISTRY
 
 
@@ -13,26 +12,22 @@ def main():
     generator = generator_cls.from_args(args)
 
     for i in range(args.number):
-        level = generator.generate()
+        world = generator.generate()
 
         if args.display or args.save:
-            env = LLE.from_str(level.to_str()).build()
-
             if args.display:
-                plt.imshow(env.get_image())
+                plt.imshow(world.get_image())
                 plt.axis("off")
                 plt.show()
 
             if args.save:
                 args.save.mkdir(parents=True, exist_ok=True)
                 filepath = args.save / f"level_{i}.txt"
-                with open(filepath, "w") as f:
-                    f.write(level.to_str())
+                world.save(str(filepath))
 
-                img_path = args.save / f"level_{i}.png"
-                plt.imshow(env.get_image())
+                plt.imshow(world.get_image())
                 plt.axis("off")
-                plt.savefig(img_path)
+                plt.savefig(args.save / f"level_{i}.png")
 
 
 if __name__ == "__main__":

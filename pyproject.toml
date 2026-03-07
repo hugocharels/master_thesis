@@ -1,0 +1,12 @@
+[project]
+name = "master-thesis"
+version = "0.1.0"
+dependencies = [
+    "laser-learning-environment",
+    "python-sat",
+    "matplotlib",
+    "pytest",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]

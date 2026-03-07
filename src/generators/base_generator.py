@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-from core import World
+from lle import World
 
 
 class BaseGenerator(ABC):
@@ -16,4 +16,5 @@ class BaseGenerator(ABC):
 
     @abstractmethod
     def generate(self) -> World:
+        """Generate and return a fully constructed lle.World."""
         pass

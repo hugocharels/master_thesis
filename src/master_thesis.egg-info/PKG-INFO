@@ -1,0 +1,7 @@
+Metadata-Version: 2.4
+Name: master-thesis
+Version: 0.1.0
+Requires-Dist: laser-learning-environment
+Requires-Dist: python-sat
+Requires-Dist: matplotlib
+Requires-Dist: pytest

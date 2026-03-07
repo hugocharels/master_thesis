@@ -1,0 +1,384 @@
+{
+  "local": {
+    "1": {
+      "total_clauses": 16927,
+      "constraint_clauses": {
+        "InitializationConstraints": 156,
+        "MovementConstraints": 16771,
+        "LaserConstraints": 0
+      },
+      "constraint_method_clauses": {
+        "InitializationConstraints": {
+          "agents_initial_position": 156,
+          "lasers_initial_beam": 0
+        },
+        "MovementConstraints": {
+          "movement_rules": 16760,
+          "no_overlap": 0,
+          "must_be_on_exit": 1,
+          "stays_on_exit": 10
+        },
+        "LaserConstraints": {
+          "no_step_on_active_laser": 0,
+          "beam_propagation": 0,
+          "link_beam_and_laser": 0
+        }
+      },
+      "mean_gen_time": 0.004728980987565592,
+      "std_gen_time": 0.0027638706673682603,
+      "mean_solve_time": 5.234700161963701e-05,
+      "std_solve_time": 5.476136208253949e-06,
+      "mean_total_time": 0.004781327989185229,
+      "satisfiable": true
+    },
+    "2": {
+      "total_clauses": 39022,
+      "constraint_clauses": {
+        "InitializationConstraints": 312,
+        "MovementConstraints": 38710,
+        "LaserConstraints": 0
+      },
+      "constraint_method_clauses": {
+        "InitializationConstraints": {
+          "agents_initial_position": 312,
+          "lasers_initial_beam": 0
+        },
+        "MovementConstraints": {
+          "movement_rules": 33520,
+          "no_overlap": 5148,
+          "must_be_on_exit": 2,
+          "stays_on_exit": 40
+        },
+        "LaserConstraints": {
+          "no_step_on_active_laser": 0,
+          "beam_propagation": 0,
+          "link_beam_and_laser": 0
+        }
+      },
+      "mean_gen_time": 0.01050592600251548,
+      "std_gen_time": 0.00406549409344223,
+      "mean_solve_time": 0.00012000399525277316,
+      "std_solve_time": 9.919951167346835e-06,
+      "mean_total_time": 0.010625929997768253,
+      "satisfiable": true
+    },
+    "3": {
+      "total_clauses": 48573,
+      "constraint_clauses": {
+        "InitializationConstraints": 323,
+        "MovementConstraints": 38350,
+        "LaserConstraints": 9900
+      },
+      "constraint_method_clauses": {
+        "InitializationConstraints": {
+          "agents_initial_position": 312,
+          "lasers_initial_beam": 11
+        },
+        "MovementConstraints": {
+          "movement_rules": 33160,
+          "no_overlap": 5148,
+          "must_be_on_exit": 2,
+          "stays_on_exit": 40
+        },
+        "LaserConstraints": {
+          "no_step_on_active_laser": 1716,
+          "beam_propagation": 4752,
+          "link_beam_and_laser": 3432
+        }
+      },
+      "mean_gen_time": 0.012527059013955295,
+      "std_gen_time": 0.00421537739510795,
+      "mean_solve_time": 0.0002774050016887486,
+      "std_solve_time": 2.14127663186074e-05,
+      "mean_total_time": 0.012804464015644043,
+      "satisfiable": true
+    },
+    "4": {
+      "total_clauses": 58124,
+      "constraint_clauses": {
+        "InitializationConstraints": 334,
+        "MovementConstraints": 37990,
+        "LaserConstraints": 19800
+      },
+      "constraint_method_clauses": {
+        "InitializationConstraints": {
+          "agents_initial_position": 312,
+          "lasers_initial_beam": 22
+        },
+        "MovementConstraints": {
+          "movement_rules": 32800,
+          "no_overlap": 5148,
+          "must_be_on_exit": 2,
+          "stays_on_exit": 40
+        },
+        "LaserConstraints": {
+          "no_step_on_active_laser": 3432,
+          "beam_propagation": 9504,
+          "link_beam_and_laser": 6864
+        }
+      },
+      "mean_gen_time": 0.016359944003634153,
+      "std_gen_time": 0.006628703338989604,
+      "mean_solve_time": 0.0004183859983459115,
+      "std_solve_time": 2.9917609598147086e-05,
+      "mean_total_time": 0.016778330001980066,
+      "satisfiable": true
+    },
+    "5": {
+      "total_clauses": 206956,
+      "constraint_clauses": {
+        "InitializationConstraints": 664,
+        "MovementConstraints": 158992,
+        "LaserConstraints": 47300
+      },
+      "constraint_method_clauses": {
+        "InitializationConstraints": {
+          "agents_initial_position": 624,
+          "lasers_initial_beam": 40
+        },
+        "MovementConstraints": {
+          "movement_rules": 102524,
+          "no_overlap": 56160,
+          "must_be_on_exit": 4,
+          "stays_on_exit": 304
+        },
+        "LaserConstraints": {
+          "no_step_on_active_laser": 18720,
+          "beam_propagation": 16100,
+          "link_beam_and_laser": 12480
+        }
+      },
+      "mean_gen_time": 0.06400959200051147,
+      "std_gen_time": 0.008944889573371733,
+      "mean_solve_time": 0.00393690700060688,
+      "std_solve_time": 0.00018096924568406015,
+      "mean_total_time": 0.06794649900111835,
+      "satisfiable": true
+    },
+    "6": {
+      "total_clauses": 241548,
+      "constraint_clauses": {
+        "InitializationConstraints": 687,
+        "MovementConstraints": 166332,
+        "LaserConstraints": 74529
+      },
+      "constraint_method_clauses": {
+        "InitializationConstraints": {
+          "agents_initial_position": 624,
+          "lasers_initial_beam": 63
+        },
+        "MovementConstraints": {
+          "movement_rules": 107040,
+          "no_overlap": 58968,
+          "must_be_on_exit": 4,
+          "stays_on_exit": 320
+        },
+        "LaserConstraints": {
+          "no_step_on_active_laser": 29484,
+          "beam_propagation": 25389,
+          "link_beam_and_laser": 19656
+        }
+      },
+      "mean_gen_time": 0.07609538099786732,
+      "std_gen_time": 0.008550996639662323,
+      "mean_solve_time": 0.004850218997453339,
+      "std_solve_time": 0.0005257554687266499,
+      "mean_total_time": 0.08094559999532067,
+      "satisfiable": true
+    }
+  },
+  "global": {
+    "1": {
+      "total_clauses": 122627,
+      "constraint_clauses": {
+        "InitializationConstraints": 156,
+        "MovementConstraints": 122471,
+        "LaserConstraints": 0
+      },
+      "constraint_method_clauses": {
+        "InitializationConstraints": {
+          "agents_initial_position": 156,
+          "lasers_initial_beam": 0
+        },
+        "MovementConstraints": {
+          "movement_rules": 1560,
+          "unique_position": 120900,
+          "no_overlap": 0,
+          "must_be_on_exit": 1,
+          "stays_on_exit": 10
+        },
+        "LaserConstraints": {
+          "no_step_on_active_laser": 0,
+          "beam_propagation": 0,
+          "link_beam_and_laser": 0
+        }
+      },
+      "mean_gen_time": 0.0251710509986151,
+      "std_gen_time": 0.00739777962657476,
+      "mean_solve_time": 0.0007124539976939559,
+      "std_solve_time": 5.132883747748204e-05,
+      "mean_total_time": 0.025883504996309058,
+      "satisfiable": true
+    },
+    "2": {
+      "total_clauses": 250422,
+      "constraint_clauses": {
+        "InitializationConstraints": 312,
+        "MovementConstraints": 250110,
+        "LaserConstraints": 0
+      },
+      "constraint_method_clauses": {
+        "InitializationConstraints": {
+          "agents_initial_position": 312,
+          "lasers_initial_beam": 0
+        },
+        "MovementConstraints": {
+          "movement_rules": 3120,
+          "unique_position": 241800,
+          "no_overlap": 5148,
+          "must_be_on_exit": 2,
+          "stays_on_exit": 40
+        },
+        "LaserConstraints": {
+          "no_step_on_active_laser": 0,
+          "beam_propagation": 0,
+          "link_beam_and_laser": 0
+        }
+      },
+      "mean_gen_time": 0.055275245006196204,
+      "std_gen_time": 0.006848099288389013,
+      "mean_solve_time": 0.0005826030002208427,
+      "std_solve_time": 2.5691236127231922e-05,
+      "mean_total_time": 0.05585784800641705,
+      "satisfiable": true
+    },
+    "3": {
+      "total_clauses": 260313,
+      "constraint_clauses": {
+        "InitializationConstraints": 323,
+        "MovementConstraints": 250090,
+        "LaserConstraints": 9900
+      },
+      "constraint_method_clauses": {
+        "InitializationConstraints": {
+          "agents_initial_position": 312,
+          "lasers_initial_beam": 11
+        },
+        "MovementConstraints": {
+          "movement_rules": 3100,
+          "unique_position": 241800,
+          "no_overlap": 5148,
+          "must_be_on_exit": 2,
+          "stays_on_exit": 40
+        },
+        "LaserConstraints": {
+          "no_step_on_active_laser": 1716,
+          "beam_propagation": 4752,
+          "link_beam_and_laser": 3432
+        }
+      },
+      "mean_gen_time": 0.06107818899967242,
+      "std_gen_time": 0.007603998598739187,
+      "mean_solve_time": 0.0010075550002511592,
+      "std_solve_time": 4.145301105494593e-05,
+      "mean_total_time": 0.06208574399992358,
+      "satisfiable": true
+    },
+    "4": {
+      "total_clauses": 270204,
+      "constraint_clauses": {
+        "InitializationConstraints": 334,
+        "MovementConstraints": 250070,
+        "LaserConstraints": 19800
+      },
+      "constraint_method_clauses": {
+        "InitializationConstraints": {
+          "agents_initial_position": 312,
+          "lasers_initial_beam": 22
+        },
+        "MovementConstraints": {
+          "movement_rules": 3080,
+          "unique_position": 241800,
+          "no_overlap": 5148,
+          "must_be_on_exit": 2,
+          "stays_on_exit": 40
+        },
+        "LaserConstraints": {
+          "no_step_on_active_laser": 3432,
+          "beam_propagation": 9504,
+          "link_beam_and_laser": 6864
+        }
+      },
+      "mean_gen_time": 0.06602002099563833,
+      "std_gen_time": 0.006559350262295958,
+      "mean_solve_time": 0.001500009997980669,
+      "std_solve_time": 6.759395360585414e-05,
+      "mean_total_time": 0.067520030993619,
+      "satisfiable": true
+    },
+    "5": {
+      "total_clauses": 1033836,
+      "constraint_clauses": {
+        "InitializationConstraints": 664,
+        "MovementConstraints": 985872,
+        "LaserConstraints": 47300
+      },
+      "constraint_method_clauses": {
+        "InitializationConstraints": {
+          "agents_initial_position": 624,
+          "lasers_initial_beam": 40
+        },
+        "MovementConstraints": {
+          "movement_rules": 10564,
+          "unique_position": 918840,
+          "no_overlap": 56160,
+          "must_be_on_exit": 4,
+          "stays_on_exit": 304
+        },
+        "LaserConstraints": {
+          "no_step_on_active_laser": 18720,
+          "beam_propagation": 16100,
+          "link_beam_and_laser": 12480
+        }
+      },
+      "mean_gen_time": 0.298320296999882,
+      "std_gen_time": 0.014594621293328718,
+      "mean_solve_time": 0.03767095200077165,
+      "std_solve_time": 0.0008756227580885772,
+      "mean_total_time": 0.33599124900065364,
+      "satisfiable": true
+    },
+    "6": {
+      "total_clauses": 1112748,
+      "constraint_clauses": {
+        "InitializationConstraints": 687,
+        "MovementConstraints": 1037532,
+        "LaserConstraints": 74529
+      },
+      "constraint_method_clauses": {
+        "InitializationConstraints": {
+          "agents_initial_position": 624,
+          "lasers_initial_beam": 63
+        },
+        "MovementConstraints": {
+          "movement_rules": 11040,
+          "unique_position": 967200,
+          "no_overlap": 58968,
+          "must_be_on_exit": 4,
+          "stays_on_exit": 320
+        },
+        "LaserConstraints": {
+          "no_step_on_active_laser": 29484,
+          "beam_propagation": 25389,
+          "link_beam_and_laser": 19656
+        }
+      },
+      "mean_gen_time": 0.3431599200080382,
+      "std_gen_time": 0.017750550350876745,
+      "mean_solve_time": 0.011513422998832538,
+      "std_solve_time": 0.00041685968668812016,
+      "mean_total_time": 0.3546733430068707,
+      "satisfiable": true
+    }
+  }
+}

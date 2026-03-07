@@ -195,5 +195,42 @@ def main():
         print("No solution found, cannot create GIF")
 
 
+def main2():
+
+    # Create solver with profiling enabled
+    solver = WorldSolver(make_world(*WORLD), T_MAX=T_MAX, enable_profiling=True)
+
+    # Solve the problem
+    result, model = solver.solve()
+
+    # Get profiling data as dictionary
+    profiling_data = solver.get_profiling_data()
+    if profiling_data is None:
+        print("No profiling data available")
+        return
+
+    print("Total clauses generated:", profiling_data["total_clauses"])
+    print("Total generation time:", profiling_data["total_generation_time"])
+    print("Solve time:", profiling_data["solve_time"])
+
+    # Export to JSON
+    solver.export_profiling_json("profiling_results_level6.json")
+
+    # Export to CSV
+    solver.export_profiling_csv("profiling_results_level6.csv")
+
+    # Print constraint breakdown
+    for constraint_name, constraint_data in profiling_data["constraints"].items():
+        print(f"\n{constraint_name}:")
+        print(f"  Total clauses: {constraint_data['num_clauses']}")
+        print(f"  Generation time: {constraint_data['generation_time']:.4f}s")
+        print("  Methods:")
+        for method_name, method_data in constraint_data["method_profiles"].items():
+            print(
+                f"    {method_name}: {method_data['clauses']} clauses, {method_data['time']:.4f}s"
+            )
+
+
 if __name__ == "__main__":
-    main()
+    # main()
+    main2()

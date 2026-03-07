@@ -1,37 +1,92 @@
+import time
+
 from lle import Action
 from pysat.solvers import Minisat22
 
 from .constraints import (
+    ConstraintContext,
     InitializationConstraints,
     LaserConstraints,
     MovementConstraints,
 )
+from .constraints.movements import METHOD_LOCAL
 from .model import SATModel
+from .profiler import SolverProfiler
 from .variables import VariableFactory
 
 
 class WorldSolver:
-    def __init__(self, world, T_MAX=10):
+    def __init__(
+        self, world, T_MAX=10, enable_profiling=False, movement_method=METHOD_LOCAL
+    ):
         self.world = world
         self.T_MAX = T_MAX
         self.var = VariableFactory()
         self.model = SATModel()
+        self.enable_profiling = enable_profiling
+        self.profiler = SolverProfiler() if enable_profiling else None
+        self.movement_method = movement_method
+
+        # Build once, share across all constraints
+        self.ctx = ConstraintContext(world, self.var, T_MAX)
 
         self.constraints = [
-            InitializationConstraints(world, self.var, T_MAX),
-            MovementConstraints(world, self.var, T_MAX),
-            LaserConstraints(world, self.var, T_MAX),
+            InitializationConstraints(self.ctx),
+            MovementConstraints(self.ctx, movement_method=movement_method),
+            LaserConstraints(self.ctx),
         ]
 
     def build_model(self):
         for constraint in self.constraints:
-            self.model.extend(constraint.generate())
+            constraint_name = constraint.__class__.__name__
+
+            if self.profiler:
+                with self.profiler.start_constraint(
+                    constraint_name
+                ) as constraint_profiler:
+                    constraint.set_profiler(constraint_profiler)
+                    clauses = constraint.generate()
+                    self.model.extend(clauses)
+            else:
+                self.model.extend(constraint.generate())
 
     def solve(self):
+        # Build the model
         self.build_model()
+
+        # Solve with timing
         solver = Minisat22()
         solver.append_formula(self.model.cnf)
-        return solver.solve(), solver.get_model()
+
+        start_solve_time = time.perf_counter()
+        result = solver.solve()
+        solve_time = time.perf_counter() - start_solve_time
+
+        model = solver.get_model() if result else None
+
+        # Record solve results in profiler
+        if self.profiler:
+            self.profiler.set_solve_results(solve_time, result)
+
+        return result, model
+
+    def get_profiling_data(self):
+        """Get profiling data if available"""
+        return self.profiler.to_dict() if self.profiler else None
+
+    def export_profiling_json(self, filepath: str):
+        """Export profiling data as JSON"""
+        if self.profiler:
+            return self.profiler.to_json(filepath)
+        else:
+            raise ValueError("Profiling is not enabled")
+
+    def export_profiling_csv(self, filepath: str):
+        """Export profiling data as CSV"""
+        if self.profiler:
+            return self.profiler.to_csv(filepath)
+        else:
+            raise ValueError("Profiling is not enabled")
 
     def print_model(self, model):
         for lit in model:

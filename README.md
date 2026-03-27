@@ -25,7 +25,7 @@ Rather than manually designing levels, this project explores **procedural genera
 ## 🎮 Laser Learning Environment (LLE)
 
 <p align="center">
-  <img src="lvl6-annotated.png" alt="Example LLE Level" width="500"/>
+  <img src="assets/lvl6-annotated.png" alt="Example LLE Level" width="500"/>
 </p>
 
 The Laser Learning Environment (LLE) is a 2D grid-based cooperative puzzle game where:

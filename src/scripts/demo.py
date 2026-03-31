@@ -8,6 +8,8 @@ from matplotlib.animation import FuncAnimation, PillowWriter
 
 from solver import LLEAdapter, WorldSolver
 
+from .custom_levels import CUSTOM_BENCHMARK_LEVELS
+
 
 def display_sequence_interactive(world: World, solver, model):
     """Step through the solution with arrow keys."""
@@ -87,15 +89,20 @@ def main():
     world = World.level(6)
     world.reset()
 
+    level = "5x5_agents=3_lasers=2"
+
+    world = CUSTOM_BENCHMARK_LEVELS[level][0]
     adapted = LLEAdapter(world)
-    solver = WorldSolver(adapted, T_MAX=21)
+
+    solver = WorldSolver(adapted, T_MAX=CUSTOM_BENCHMARK_LEVELS[level][1])
+    # solver = WorldSolver(adapted, T_MAX=15)
 
     is_solvable, model = solver.solve()
     print("Solvable:", is_solvable)
 
     if is_solvable:
         print(solver.extract_plan(model))
-        create_gif(world, solver, model, "agent_solution_level6.gif", duration=500)
+        create_gif(world, solver, model, f"{level}.gif", duration=500)
         display_sequence_interactive(world, solver, model)
     else:
         print("No solution found")

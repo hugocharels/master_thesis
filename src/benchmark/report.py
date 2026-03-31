@@ -3,18 +3,22 @@
 import json
 import os
 
-from levels import LLE_LEVELS
-
 from .runner import METHODS
+
+
+def _sort_level_keys(level_keys):
+    """Sort numeric keys numerically, otherwise sort by string representation."""
+    return sorted(level_keys, key=lambda k: (not isinstance(k, (int, float)), str(k)))
 
 
 def print_summary_table(results):
     """Print a summary table to the console."""
-    levels = sorted(LLE_LEVELS.keys())
+    first_method_key = next(iter(METHODS))
+    levels = _sort_level_keys(results[first_method_key].keys())
 
     print("\n" + "=" * 90)
     print(
-        f"{'Level':<10} {'Method':<30} {'Clauses':>10} "
+        f"{'Level':<18} {'Method':<30} {'Clauses':>10} "
         f"{'Gen (s)':>12} {'Solve (s)':>12} {'Total (s)':>12}"
     )
     print("=" * 90)
@@ -23,7 +27,7 @@ def print_summary_table(results):
         for method_key, method_label in METHODS.items():
             data = results[method_key][lvl]
             print(
-                f"{'Lvl ' + str(lvl):<10} "
+                f"{str(lvl):<18} "
                 f"{method_label:<30} "
                 f"{data['total_clauses']:>10,} "
                 f"{data['mean_gen_time']:>12.4f} "

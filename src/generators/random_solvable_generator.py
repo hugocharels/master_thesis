@@ -1,0 +1,174 @@
+import random
+from typing import Iterable
+
+from lle import World
+
+from generators.base_generator import BaseGenerator
+from generators.registry import register_generator
+from generators.world_builder import Direction, WorldBuilder
+from solver import LLEAdapter, WorldSolver
+
+
+@register_generator("random_solvable")
+class RandomSolvableGenerator(BaseGenerator):
+    """
+    Random world generator that keeps sampling until it finds a world that:
+      1) can be successfully built by LLE, and
+      2) is solvable by the SAT solver within T_MAX steps.
+    """
+
+    def __init__(
+        self,
+        size: tuple[int, int],
+        agents: int = 2,
+        lasers: int | None = None,
+        num_walls: int | None = None,
+        t_max: int | None = None,
+        max_attempts: int = 10_000,
+        seed: int | None = None,
+    ):
+        self.rows, self.cols = size
+        self.area = self.rows * self.cols
+
+        self.agents = agents
+        self.lasers = (agents - 1) if lasers is None else lasers
+        self.num_walls = (self.area // 10) if num_walls is None else num_walls
+        self.t_max = (self.area // 2) if t_max is None else t_max
+        self.max_attempts = max_attempts
+
+        # Only requested logical constraint
+        if self.num_walls >= (self.area / 2):
+            raise ValueError(
+                f"num_walls must be < size/2. Got num_walls={self.num_walls}, size={self.area}"
+            )
+
+        self._rng = random.Random(seed)
+
+    @staticmethod
+    def add_arguments(parser):
+        parser.add_argument(
+            "--size",
+            nargs=2,
+            type=int,
+            metavar=("ROWS", "COLS"),
+            required=True,
+            help="Grid size as two integers: ROWS COLS",
+        )
+        parser.add_argument(
+            "--agents",
+            type=int,
+            default=2,
+            help="Number of agents (default: 2)",
+        )
+        parser.add_argument(
+            "--lasers",
+            type=int,
+            default=None,
+            help="Number of lasers (default: agents-1)",
+        )
+        parser.add_argument(
+            "--num-walls",
+            type=int,
+            default=None,
+            help="Number of walls (default: (rows*cols)//10)",
+        )
+        parser.add_argument(
+            "--t-max",
+            type=int,
+            default=None,
+            help="Solver horizon T_MAX (default: (rows*cols)//2)",
+        )
+        parser.add_argument(
+            "--max-attempts",
+            type=int,
+            default=10_000,
+            help="Maximum random samples before failing (default: 10000)",
+        )
+        parser.add_argument(
+            "--seed",
+            type=int,
+            default=None,
+            help="Optional RNG seed for reproducibility",
+        )
+
+    @classmethod
+    def from_args(cls, args):
+        return cls(
+            size=tuple(args.size),
+            agents=args.agents,
+            lasers=args.lasers,
+            num_walls=args.num_walls,
+            t_max=args.t_max,
+            max_attempts=args.max_attempts,
+            seed=args.seed,
+        )
+
+    def _sample_unique_positions(self, k: int) -> list[tuple[int, int]]:
+        all_positions = [(r, c) for r in range(self.rows) for c in range(self.cols)]
+        return self._rng.sample(all_positions, k)
+
+    def _random_direction(self) -> Direction:
+        return self._rng.choice(
+            [Direction.NORTH, Direction.SOUTH, Direction.EAST, Direction.WEST]
+        )
+
+    def _place_entities(self) -> WorldBuilder:
+        b = WorldBuilder(self.cols, self.rows)
+
+        total_needed = self.agents + self.agents + self.num_walls + self.lasers
+        chosen = self._sample_unique_positions(total_needed)
+
+        idx = 0
+        agent_positions = chosen[idx : idx + self.agents]
+        idx += self.agents
+
+        exit_positions = chosen[idx : idx + self.agents]
+        idx += self.agents
+
+        wall_positions = chosen[idx : idx + self.num_walls]
+        idx += self.num_walls
+
+        laser_positions = chosen[idx : idx + self.lasers]
+
+        for agent_id, pos in enumerate(agent_positions):
+            b.add_agent(agent_id, pos)
+
+        for pos in exit_positions:
+            b.add_exit(pos)
+
+        for pos in wall_positions:
+            b.add_wall(pos)
+
+        for i, pos in enumerate(laser_positions):
+            # Keep laser owner ids valid even when lasers > agents
+            owner = i % self.agents if self.agents > 0 else 0
+            b.add_laser(owner, pos, self._random_direction())
+
+        return b
+
+    def _is_solvable(self, world: World) -> bool:
+        world.reset()
+        adapted = LLEAdapter(world)
+        solver = WorldSolver(adapted, T_MAX=self.t_max)
+        result, _ = solver.solve()
+        return bool(result)
+
+    def generate(self) -> World:
+        for _ in range(self.max_attempts):
+            try:
+                builder = self._place_entities()
+                world = builder.build()  # May fail on invalid LLE world
+            except Exception:
+                # Bad world encoding/config for LLE; just resample
+                continue
+
+            try:
+                if self._is_solvable(world):
+                    return world
+            except Exception:
+                # If solver/adaptation fails for sampled world, resample
+                continue
+
+        raise RuntimeError(
+            f"Could not find a valid solvable world in {self.max_attempts} attempts."
+        )

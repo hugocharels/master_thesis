@@ -22,12 +22,13 @@ def main():
 
             if args.save:
                 args.save.mkdir(parents=True, exist_ok=True)
-                filepath = args.save / f"level_{i}.txt"
-                world.save(str(filepath))
+                filepath = args.save / f"generated_level_{i}.txt"
+                with open(filepath, "w") as f:
+                    f.write(world.world_string)
 
                 plt.imshow(world.get_image())
                 plt.axis("off")
-                plt.savefig(args.save / f"level_{i}.png")
+                plt.savefig(args.save / f"generated_level_{i}.png")
 
 
 if __name__ == "__main__":

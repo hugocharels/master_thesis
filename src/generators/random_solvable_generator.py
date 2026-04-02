@@ -1,5 +1,6 @@
 import random
-from typing import Iterable
+from dataclasses import dataclass
+from typing import Any
 
 from lle import World
 
@@ -9,12 +10,23 @@ from generators.world_builder import Direction, WorldBuilder
 from solver import LLEAdapter, WorldSolver
 
 
+@dataclass(frozen=True)
+class CandidateLayout:
+    agents: list[tuple[int, int]]
+    exits: list[tuple[int, int]]
+    walls: list[tuple[int, int]]
+    lasers: list[tuple[int, tuple[int, int], Direction]]  # (owner, pos, dir)
+
+
 @register_generator("random_solvable")
 class RandomSolvableGenerator(BaseGenerator):
     """
     Random world generator that keeps sampling until it finds a world that:
       1) can be successfully built by LLE, and
       2) is solvable by the SAT solver within T_MAX steps.
+
+    This class is designed for extension: subclasses can override
+    `validate_candidate` to enforce additional layout constraints.
     """
 
     def __init__(
@@ -36,7 +48,7 @@ class RandomSolvableGenerator(BaseGenerator):
         self.t_max = (self.area // 2) if t_max is None else t_max
         self.max_attempts = max_attempts
 
-        # Only requested logical constraint
+        # Requested logical constraint
         if self.num_walls >= (self.area / 2):
             raise ValueError(
                 f"num_walls must be < size/2. Got num_walls={self.num_walls}, size={self.area}"
@@ -54,42 +66,12 @@ class RandomSolvableGenerator(BaseGenerator):
             required=True,
             help="Grid size as two integers: ROWS COLS",
         )
-        parser.add_argument(
-            "--agents",
-            type=int,
-            default=2,
-            help="Number of agents (default: 2)",
-        )
-        parser.add_argument(
-            "--lasers",
-            type=int,
-            default=None,
-            help="Number of lasers (default: agents-1)",
-        )
-        parser.add_argument(
-            "--num-walls",
-            type=int,
-            default=None,
-            help="Number of walls (default: (rows*cols)//10)",
-        )
-        parser.add_argument(
-            "--t-max",
-            type=int,
-            default=None,
-            help="Solver horizon T_MAX (default: (rows*cols)//2)",
-        )
-        parser.add_argument(
-            "--max-attempts",
-            type=int,
-            default=10_000,
-            help="Maximum random samples before failing (default: 10000)",
-        )
-        parser.add_argument(
-            "--seed",
-            type=int,
-            default=None,
-            help="Optional RNG seed for reproducibility",
-        )
+        parser.add_argument("--agents", type=int, default=2)
+        parser.add_argument("--lasers", type=int, default=None)
+        parser.add_argument("--num-walls", type=int, default=None)
+        parser.add_argument("--t-max", type=int, default=None)
+        parser.add_argument("--max-attempts", type=int, default=10_000)
+        parser.add_argument("--seed", type=int, default=None)
 
     @classmethod
     def from_args(cls, args):
@@ -103,6 +85,9 @@ class RandomSolvableGenerator(BaseGenerator):
             seed=args.seed,
         )
 
+    # ----------------------------
+    # Sampling helpers
+    # ----------------------------
     def _sample_unique_positions(self, k: int) -> list[tuple[int, int]]:
         all_positions = [(r, c) for r in range(self.rows) for c in range(self.cols)]
         return self._rng.sample(all_positions, k)
@@ -112,9 +97,7 @@ class RandomSolvableGenerator(BaseGenerator):
             [Direction.NORTH, Direction.SOUTH, Direction.EAST, Direction.WEST]
         )
 
-    def _place_entities(self) -> WorldBuilder:
-        b = WorldBuilder(self.cols, self.rows)
-
+    def _make_candidate_layout(self) -> CandidateLayout:
         total_needed = self.agents + self.agents + self.num_walls + self.lasers
         chosen = self._sample_unique_positions(total_needed)
 
@@ -130,22 +113,48 @@ class RandomSolvableGenerator(BaseGenerator):
 
         laser_positions = chosen[idx : idx + self.lasers]
 
-        for agent_id, pos in enumerate(agent_positions):
+        lasers = []
+        for i, pos in enumerate(laser_positions):
+            owner = i % self.agents if self.agents > 0 else 0
+            lasers.append((owner, pos, self._random_direction()))
+
+        return CandidateLayout(
+            agents=agent_positions,
+            exits=exit_positions,
+            walls=wall_positions,
+            lasers=lasers,
+        )
+
+    def _build_world_from_layout(self, layout: CandidateLayout) -> World:
+        b = WorldBuilder(self.cols, self.rows)
+
+        for agent_id, pos in enumerate(layout.agents):
             b.add_agent(agent_id, pos)
 
-        for pos in exit_positions:
+        for pos in layout.exits:
             b.add_exit(pos)
 
-        for pos in wall_positions:
+        for pos in layout.walls:
             b.add_wall(pos)
 
-        for i, pos in enumerate(laser_positions):
-            # Keep laser owner ids valid even when lasers > agents
-            owner = i % self.agents if self.agents > 0 else 0
-            b.add_laser(owner, pos, self._random_direction())
+        for owner, pos, direction in layout.lasers:
+            b.add_laser(owner, pos, direction)
 
-        return b
+        return b.build()
 
+    # ----------------------------
+    # Extension hook
+    # ----------------------------
+    def validate_candidate(self, layout: CandidateLayout) -> tuple[bool, str]:
+        """
+        Subclasses override this to enforce extra constraints before build/solve.
+        Return (True, "ok") if accepted; otherwise (False, "<reason>").
+        """
+        return True, "ok"
+
+    # ----------------------------
+    # Solvability
+    # ----------------------------
     def _is_solvable(self, world: World) -> bool:
         world.reset()
         adapted = LLEAdapter(world)
@@ -155,18 +164,21 @@ class RandomSolvableGenerator(BaseGenerator):
 
     def generate(self) -> World:
         for _ in range(self.max_attempts):
+            layout = self._make_candidate_layout()
+
+            valid, _reason = self.validate_candidate(layout)
+            if not valid:
+                continue
+
             try:
-                builder = self._place_entities()
-                world = builder.build()  # May fail on invalid LLE world
+                world = self._build_world_from_layout(layout)  # LLE may reject
             except Exception:
-                # Bad world encoding/config for LLE; just resample
                 continue
 
             try:
                 if self._is_solvable(world):
                     return world
             except Exception:
-                # If solver/adaptation fails for sampled world, resample
                 continue
 
         raise RuntimeError(

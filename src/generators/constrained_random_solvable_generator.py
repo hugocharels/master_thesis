@@ -30,6 +30,7 @@ class ConstrainedRandomSolvableGenerator(RandomSolvableGenerator):
             lasers=args.lasers,
             num_walls=args.num_walls,
             t_max=args.t_max,
+            t_min=args.t_min,
             max_attempts=args.max_attempts,
             seed=args.seed,
         )
@@ -139,17 +140,26 @@ class ConstrainedRandomSolvableGenerator(RandomSolvableGenerator):
                 continue
 
             try:
-                if self._is_solvable(world):
+                if self._meets_difficulty_window(world):
                     if self.debug_rejections:
-                        print(f"[accept #{attempts}] solvable")
+                        print(
+                            f"[accept #{attempts}] sat@t_max={self.t_max} "
+                            f"and (t_min={self.t_min} respected)"
+                        )
                     return world
+
                 if self.debug_rejections:
-                    print(f"[reject #{attempts}] unsat")
+                    print(
+                        f"[reject #{attempts}] "
+                        f"outside_difficulty_window[t_min={self.t_min}, t_max={self.t_max}]"
+                    )
             except Exception as e:
                 if self.debug_rejections:
                     print(f"[reject #{attempts}] solver_error={type(e).__name__}")
                 continue
 
         raise RuntimeError(
-            f"Could not find a valid constrained solvable world in {self.max_attempts} attempts."
+            "Could not find a valid constrained solvable world in "
+            f"{self.max_attempts} attempts for window "
+            f"t_min={self.t_min}, t_max={self.t_max}."
         )

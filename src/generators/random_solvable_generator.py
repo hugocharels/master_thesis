@@ -1,6 +1,5 @@
 import random
 from dataclasses import dataclass
-from typing import Any
 
 from lle import World
 
@@ -22,11 +21,9 @@ class CandidateLayout:
 class RandomSolvableGenerator(BaseGenerator):
     """
     Random world generator that keeps sampling until it finds a world that:
-      1) can be successfully built by LLE, and
-      2) is solvable by the SAT solver within T_MAX steps.
-
-    This class is designed for extension: subclasses can override
-    `validate_candidate` to enforce additional layout constraints.
+      1) can be successfully built by LLE,
+      2) is solvable by the SAT solver within T_MAX,
+      3) optionally requires at least T_MIN steps (if T_MIN is set).
     """
 
     def __init__(
@@ -36,6 +33,7 @@ class RandomSolvableGenerator(BaseGenerator):
         lasers: int | None = None,
         num_walls: int | None = None,
         t_max: int | None = None,
+        t_min: int = 0,
         max_attempts: int = 10_000,
         seed: int | None = None,
     ):
@@ -46,12 +44,21 @@ class RandomSolvableGenerator(BaseGenerator):
         self.lasers = (agents - 1) if lasers is None else lasers
         self.num_walls = (self.area // 10) if num_walls is None else num_walls
         self.t_max = (self.area // 2) if t_max is None else t_max
+        self.t_min = t_min
         self.max_attempts = max_attempts
 
         # Requested logical constraint
         if self.num_walls >= (self.area / 2):
             raise ValueError(
                 f"num_walls must be < size/2. Got num_walls={self.num_walls}, size={self.area}"
+            )
+
+        if self.t_min < 0:
+            raise ValueError(f"t_min must be >= 0. Got {self.t_min}")
+
+        if self.t_min > self.t_max:
+            raise ValueError(
+                f"t_min must be <= t_max. Got t_min={self.t_min}, t_max={self.t_max}"
             )
 
         self._rng = random.Random(seed)
@@ -70,6 +77,12 @@ class RandomSolvableGenerator(BaseGenerator):
         parser.add_argument("--lasers", type=int, default=None)
         parser.add_argument("--num-walls", type=int, default=None)
         parser.add_argument("--t-max", type=int, default=None)
+        parser.add_argument(
+            "--t-min",
+            type=int,
+            default=0,
+            help="Minimum number of steps required for a valid level (default: 0)",
+        )
         parser.add_argument("--max-attempts", type=int, default=10_000)
         parser.add_argument("--seed", type=int, default=None)
 
@@ -81,13 +94,11 @@ class RandomSolvableGenerator(BaseGenerator):
             lasers=args.lasers,
             num_walls=args.num_walls,
             t_max=args.t_max,
+            t_min=args.t_min,
             max_attempts=args.max_attempts,
             seed=args.seed,
         )
 
-    # ----------------------------
-    # Sampling helpers
-    # ----------------------------
     def _sample_unique_positions(self, k: int) -> list[tuple[int, int]]:
         all_positions = [(r, c) for r in range(self.rows) for c in range(self.cols)]
         return self._rng.sample(all_positions, k)
@@ -142,25 +153,27 @@ class RandomSolvableGenerator(BaseGenerator):
 
         return b.build()
 
-    # ----------------------------
-    # Extension hook
-    # ----------------------------
     def validate_candidate(self, layout: CandidateLayout) -> tuple[bool, str]:
-        """
-        Subclasses override this to enforce extra constraints before build/solve.
-        Return (True, "ok") if accepted; otherwise (False, "<reason>").
-        """
         return True, "ok"
 
-    # ----------------------------
-    # Solvability
-    # ----------------------------
-    def _is_solvable(self, world: World) -> bool:
+    def _is_satisfiable(self, world: World, t: int) -> bool:
         world.reset()
         adapted = LLEAdapter(world)
-        solver = WorldSolver(adapted, T_MAX=self.t_max)
+        solver = WorldSolver(adapted, T_MAX=t)
         result, _ = solver.solve()
         return bool(result)
+
+    def _meets_difficulty_window(self, world: World) -> bool:
+        # Must be solvable by t_max
+        if not self._is_satisfiable(world, self.t_max):
+            return False
+
+        # If t_min == 0, no lower-bound constraint
+        if self.t_min == 0:
+            return True
+
+        # Must NOT be solvable by t_min - 1
+        return not self._is_satisfiable(world, self.t_min - 1)
 
     def generate(self) -> World:
         for _ in range(self.max_attempts):
@@ -171,16 +184,17 @@ class RandomSolvableGenerator(BaseGenerator):
                 continue
 
             try:
-                world = self._build_world_from_layout(layout)  # LLE may reject
+                world = self._build_world_from_layout(layout)
             except Exception:
                 continue
 
             try:
-                if self._is_solvable(world):
+                if self._meets_difficulty_window(world):
                     return world
             except Exception:
                 continue
 
         raise RuntimeError(
-            f"Could not find a valid solvable world in {self.max_attempts} attempts."
+            f"Could not find a valid solvable world in {self.max_attempts} attempts "
+            f"for window t_min={self.t_min}, t_max={self.t_max}."
         )

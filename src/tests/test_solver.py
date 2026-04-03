@@ -10,7 +10,7 @@ def solve(world: World, t: int) -> bool:
     world.reset()
     adapted = LLEAdapter(world)
     solver = WorldSolver(adapted, T_MAX=t)
-    return solver.solve()[0]
+    return bool(solver.solve()[0])
 
 
 N, S, E, W = Direction.NORTH, Direction.SOUTH, Direction.EAST, Direction.WEST
@@ -116,7 +116,7 @@ def _world(width, height, agents=(), exits=(), walls=(), lasers=()):
             6,
             True,
         ),
-        # Own laser (agent 0 can walk through laser 0)
+        # One laser (agent 0 can walk through laser 0)
         (3, 3, [(0, 2)], [(2, 2)], [], [(0, (1, 0), E)], 2, True),
         # Laser blocks path
         (

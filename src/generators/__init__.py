@@ -1,4 +1,7 @@
 from generators.base_generator import BaseGenerator
+from generators.constrained_random_cooperative_generator import (
+    ConstrainedRandomCooperativeGenerator,
+)
 from generators.constrained_random_solvable_generator import (
     ConstrainedRandomSolvableGenerator,
 )

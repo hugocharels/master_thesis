@@ -1,6 +1,5 @@
 // imports
 #import "@preview/dashy-todo:0.1.0": todo
-#import "@preview/gantty:0.4.0": gantt
 
 // Set things
 
@@ -98,30 +97,45 @@
 #counter(page).update(0)
 #set page(numbering: "1")
 
+// ── Chapter 1 ────────────────────────────────────────────────────────────────
 = Introduction
 
-== Observations
+#include "chapters/introduction.typ"
 
-
+// ── Chapter 2 ────────────────────────────────────────────────────────────────
 = Background
 
+#include "chapters/background.typ"
+
+// ── Chapter 3 ────────────────────────────────────────────────────────────────
 = Related Work
 
+#include "chapters/related_work.typ"
+
+// ── Chapter 4 ────────────────────────────────────────────────────────────────
 = Methods
 
+#include "chapters/methods/formalization.typ"
 
-
-== Solver by Reduction to SAT
-
+== Solver by Reduction to SAT <sat-reduction>
 
 #include "chapters/sat_reduction.typ"
 
+#include "chapters/methods/cooperation.typ"
 
+#include "chapters/methods/generators.typ"
 
+#include "chapters/methods/benchmarking.typ"
 
+// ── Chapter 5 ────────────────────────────────────────────────────────────────
 = Experiments
 
+#include "chapters/experiments.typ"
+
+// ── Chapter 6 ────────────────────────────────────────────────────────────────
 = Conclusion
+
+#include "chapters/conclusion.typ"
 
 
 #pagebreak()

@@ -128,7 +128,7 @@
 #include "chapters/methods/benchmarking.typ"
 
 // ── Chapter 5 ────────────────────────────────────────────────────────────────
-= Experiments
+= Experiments <experiments>
 
 #include "chapters/experiments.typ"
 

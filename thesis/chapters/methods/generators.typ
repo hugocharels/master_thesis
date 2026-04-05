@@ -45,7 +45,7 @@ This reduces the rejection rate compared to the fully random generator while pre
 
 Extends the random solvable generator with a second SAT call (strict solver). A level is accepted
 only if it is solvable (standard SAT) and requires cooperation (strict UNSAT). As established in
-@cooperation-detection, this guarantees that every accepted level structurally requires inter-agent
+<cooperation-detection>, this guarantees that every accepted level structurally requires inter-agent
 coordination.
 
 // Acceptance condition: standard SAT ∧ strict UNSAT

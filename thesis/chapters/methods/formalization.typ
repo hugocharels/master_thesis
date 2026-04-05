@@ -1,20 +1,20 @@
 == Problem Formalization
 
 We now formally define the objects and properties at the center of this thesis. This section operates
-at the level of the game semantics; the SAT encoding of these properties follows in @sat-reduction.
+at the level of the game semantics; the SAT encoding of these properties follows in <sat-reduction>.
 
 === LLE Level
 
 An LLE level is a tuple $L = (H, W, cal(A), s, cal(W), cal(S), cal(E))$ where:
 
 - $H, W in NN^+$: height and width of the grid.
-- $P = {(x, y) mid 0 <= x < W, 0 <= y < H}$: set of all grid positions.
+- $P = {(x, y) | 0 <= x < W, 0 <= y < H}$: set of all grid positions.
 - $cal(A) = {0, 1, ..., n_a - 1}$: set of agents, each identified by a color. $n_a >= 1$.
 - $s : cal(A) -> P$: initial position of each agent.
 - $cal(W) subset.eq P$: set of wall positions.
 - $cal(S) subset.eq cal(A) times D times P$: set of laser sources, where $D = {N, S, E, W}$.
   A source $(c, d, p) in cal(S)$ emits a laser of color $c$ in direction $d$ from position $p$.
-- $cal(E) : cal(A) -> P$: exit position for each agent. We require $|{cal(E)(c) mid c in cal(A)}| = n_a$
+- $cal(E) : cal(A) -> P$: exit position for each agent. We require $|{cal(E)(c) | c in cal(A)}| = n_a$
   (distinct exits).
 
 
@@ -27,7 +27,7 @@ time step $t$.
 A joint trajectory is *valid* if it satisfies:
 
 + *Initialization:* $p_0(c) = s(c)$ for all $c in cal(A)$.
-+ *Movement:* For all $t < T$ and all $c in cal(A)$, $p_{t+1}(c)$ is reachable from $p_t(c)$
++ *Movement:* For all $t < T$ and all $c in cal(A)$, $p_(t+1)(c)$ is reachable from $p_t(c)$
   in one step (adjacent or same cell, not a wall, not a laser source cell).
 + *No collision:* $p_t(c_1) eq.not p_t(c_2)$ for all $t$ and all $c_1 eq.not c_2$.
 + *Laser safety:* No agent $c_1$ occupies a cell at time $t$ where a laser of color
@@ -62,4 +62,4 @@ matching. A valid trajectory under strict semantics is a *strict trajectory*.
 + $L$ admits no valid strict trajectory reaching all exits.
 
 The formal proof that this definition correctly captures the intuitive notion of cooperation is
-given in @cooperation-detection.
+given in <cooperation-detection>.

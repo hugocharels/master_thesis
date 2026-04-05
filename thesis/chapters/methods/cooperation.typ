@@ -2,7 +2,7 @@
 
 === Strict Laser Semantics
 
-Recall from @sat-reduction that the standard encoding allows agent $c$ to occupy a cell where a
+Recall from <sat-reduction> that the standard encoding allows agent $c$ to occupy a cell where a
 laser of color $c$ is active — the agent is immune to its own color. The *strict* variant removes
 this immunity: every agent is blocked by every laser, regardless of color.
 
@@ -13,7 +13,7 @@ $
   and.big_(c in cal(A)) and.big_((x,y) in P) and.big_(t in T) not l_(c,x,y,t) or not a_(c,x,y,t)
 $
 
-All other constraints from @sat-reduction remain unchanged. We call the resulting CNF formula
+All other constraints from <sat-reduction> remain unchanged. We call the resulting CNF formula
 $Phi_("strict")(L, T)$ and the corresponding solver $"StrictSolver"$.
 
 
@@ -51,7 +51,7 @@ act. Therefore $Phi_("strict")(L, T)$ is unsatisfiable. $square.stroked$
 $(arrow.l)$ Assume $Phi(L, T)$ is satisfiable and $Phi_("strict")(L, T)$ is unsatisfiable. The
 first condition means $L$ is solvable. The second means there is no valid strict trajectory
 reaching all exits — i.e., every valid standard solution contains at least one time step $t$ and
-agent $c$ such that $a_{c,x,y,t}$ and $l_{c,x,y,t}$ are both true for some $(x, y)$: agent $c$
+agent $c$ such that $a_(c,x,y,t)$ and $l_(c,x,y,t)$ are both true for some $(x, y)$: agent $c$
 occupies a cell where its own laser is active. As argued above, this act is only beneficial to
 other agents. Therefore every solution requires at least one cooperative act, so $L$ requires
 cooperation. $square.stroked$

@@ -6,7 +6,7 @@
 #set page(
   paper: "presentation-16-9",
   margin: 1cm,
-  footer: align(bottom, toolbox.full-width-block(inset: 8pt)[#align(right, text(size: 12pt, ( toolbox.slide-number)))]),
+  footer: align(bottom, toolbox.full-width-block(inset: 8pt)[#align(right, text(size: 12pt, (toolbox.slide-number)))]),
 )
 
 #let beamerbox(title, body, color: rgb("#1f77b4")) = block(
@@ -90,21 +90,21 @@
     top + right,
     dx: 0cm,
     dy: 0cm,
-    image(height: 20%, "../../assets/logos/MLG_logo.png")
+    image(height: 20%, "../../assets/logos/MLG_logo.png"),
   )
 
   #place(
     top + left,
     dx: 0cm,
     dy: 0cm,
-    image(height: 20%, "../../assets/logos/Université_libre_de_Bruxelles_logo.svg")
+    image(height: 20%, "../../assets/logos/Université_libre_de_Bruxelles_logo.svg"),
   )
 
   #place(
     bottom + right,
     dx: 0.5cm,
     dy: -1cm,
-    image(height: 60%, "../../assets/lvl6-annotated.png")
+    image(height: 60%, "../../assets/lvl6-annotated.png"),
   )
 
   #text("")
@@ -172,7 +172,7 @@
 
 #my-slide[
 
-    // just explain what is SAT because after I will make a reduction of my problem to SAT and I want the audience to understand what I am talking about
+  // just explain what is SAT because after I will make a reduction of my problem to SAT and I want the audience to understand what I am talking about
 
   = Background: Satisfiability Problem
 
@@ -202,14 +202,14 @@
 
 #my-slide[
 
-    // suppose to initiate the reduction like give only essential information to understand what I talk after
+  // suppose to initiate the reduction like give only essential information to understand what I talk after
 
   = Solver
 
   #definition(name: [Reduction])[
-      A *reduction* from a problem $A$ to a problem $B$ is a transformation
-      that maps any instance of $A$ to an instance of $B$ such that the answer
-      is preserved. In particular, solving $B$ allows us to solve $A$.
+    A *reduction* from a problem $A$ to a problem $B$ is a transformation
+    that maps any instance of $A$ to an instance of $B$ such that the answer
+    is preserved. In particular, solving $B$ allows us to solve $A$.
   ]
 
   == Variables
@@ -221,20 +221,20 @@
   == Constraints
 
   #toolbox.side-by-side()[
-      === Initialization
-      - starting tiles
-      - laser sources
+    === Initialization
+    - starting tiles
+    - laser sources
   ][
-      === Movements
-      - legal movements
-      - unique position
-      - no overlap between agents
-      - exit tiles
+    === Movements
+    - legal movements
+    - unique position
+    - no overlap between agents
+    - exit tiles
   ][
-      === Lasers
-      - beam propagation
-      - no step on active laser
-      - link between beams and lasers
+    === Lasers
+    - beam propagation
+    - no step on active laser
+    - link between beams and lasers
   ]
 
 ]
@@ -243,27 +243,33 @@
 
   = Agents movements
 
-  Legal movement: $ and.big_(c in C) and.big_(t in T) and.big_((x,y) in P) a_(c,x,y,t) arrow.r or.big_((x',y') in  "next"(x,y)) a_(c,x',y',t+1) $
+  Legal movement: $ and.big_(c in C) and.big_(t in T) and.big_((x,y) in P) a_(c,x,y,t) arrow.r or.big_((x',y') in "next"(x,y)) a_(c,x',y',t+1) $
 
-  #toolbox.side-by-side(gutter: 5%,)[
+  #toolbox.side-by-side(gutter: 5%)[
 
     #uncover((2, 3, 4, 5))[
-    #uncover((3, 4, 5))[== Global]
+      #uncover((3, 4, 5))[== Global]
 
-    At most one agent per tile:
-    $ and.big_(c in C) and.big_(t in T) and.big_((x_1,y_1), \ (x_2,y_2) in P \ (x_1,y_1) eq.not (x_2,y_2)) not a_(c,x_1,y_1,t) or not a_(c,x_2,y_2,t) $
+      At most one agent per tile:
+      $
+        and.big_(c in C) and.big_(t in T) and.big_((x_1,y_1), \ (x_2,y_2) in P \ (x_1,y_1) eq.not (x_2,y_2)) not a_(c,x_1,y_1,t) or not a_(c,x_2,y_2,t)
+      $
     ]
   ][
     #uncover((4, 5))[== Local]
 
     #uncover(5)[
-    Agent should come from a legal movement:
+      Agent should come from a legal movement:
 
-    $ and.big_(c in C) and.big_(t in T) and.big_((x,y) in P) a_(c,x,y,t+1) arrow.r or.big_((x',y') in "next"(x,y)) a_(c,x',y',t) $
+      $
+        and.big_(c in C) and.big_(t in T) and.big_((x,y) in P) a_(c,x,y,t+1) arrow.r or.big_((x',y') in "next"(x,y)) a_(c,x',y',t)
+      $
 
-    At most one future position:
+      At most one future position:
 
-    $ and.big_(c in C) and.big_(t in T) and.big_((x',y'), (x'',y'') in "next"(x,y) \ (x',y') eq.not (x'',y'')) not a_(c,x',y',t) or not a_(c,x'',y'',t) $
+      $
+        and.big_(c in C) and.big_(t in T) and.big_((x',y'), (x'',y'') in "next"(x,y) \ (x',y') eq.not (x'',y'')) not a_(c,x',y',t) or not a_(c,x'',y'',t)
+      $
     ]
   ]
 
@@ -275,7 +281,7 @@
 
   // #set align(horizon)
 
-  #toolbox.side-by-side(gutter: 5%,)[
+  #toolbox.side-by-side(gutter: 5%)[
 
 
     Legal movement: $ and.big_(c in C) and.big_(t in T) and.big_((x,y) in P) a_(c,x,y,t) arrow.r or.big_((x',y') in \ "next"(x,y)) a_(c,x',y',t+1) $
@@ -283,7 +289,9 @@
     == Global
 
     At most one agent per tile:
-    $ and.big_(c in C) and.big_(t in T) and.big_((x_1,y_1), \ (x_2,y_2) in P \ (x_1,y_1) eq.not (x_2,y_2)) not a_(c,x_1,y_1,t) or not a_(c,x_2,y_2,t) $
+    $
+      and.big_(c in C) and.big_(t in T) and.big_((x_1,y_1), \ (x_2,y_2) in P \ (x_1,y_1) eq.not (x_2,y_2)) not a_(c,x_1,y_1,t) or not a_(c,x_2,y_2,t)
+    $
 
     // #uncover((1, 2, 3))[- $f(x) = (x-1)x/2 approx O(n^2)$]
 
@@ -292,11 +300,15 @@
 
     Agent should come from a legal movement:
 
-    $ and.big_(c in C) and.big_(t in T) and.big_((x,y) in P) a_(c,x,y,t+1) arrow.r or.big_((x',y') in "next"(x,y)) a_(c,x',y',t) $
+    $
+      and.big_(c in C) and.big_(t in T) and.big_((x,y) in P) a_(c,x,y,t+1) arrow.r or.big_((x',y') in "next"(x,y)) a_(c,x',y',t)
+    $
 
     At most one future position:
 
-    $ and.big_(c in C) and.big_(t in T) and.big_((x',y'), (x'',y'') in "next"(x,y) \ (x',y') eq.not (x'',y'')) not a_(c,x',y',t) or not a_(c,x'',y'',t) $
+    $
+      and.big_(c in C) and.big_(t in T) and.big_((x',y'), (x'',y'') in "next"(x,y) \ (x',y') eq.not (x'',y'')) not a_(c,x',y',t) or not a_(c,x'',y'',t)
+    $
 
     // #uncover((2, 3))[- $g(n) = (f(5) + 1)n = 11n approx O(n)$]
   ]
@@ -304,7 +316,7 @@
 
   #set align(center)
   #toolbox.side-by-side()[
-    #uncover((1, 2, 3))[$f(n) = binom(n,2) = ((n-1)n)/2 in O(n^2)$]
+    #uncover((1, 2, 3))[$f(n) = binom(n, 2) = ((n-1)n)/2 in O(n^2)$]
   ][
     #uncover((2, 3))[$g(n) = (f(5) + 1)n = 11n in O(n)$]
   ]
@@ -333,28 +345,28 @@
   #set align(center + horizon)
 
   #toolbox.side-by-side(columns: (1fr, 2fr))[
-      #toolbox.side-by-side()[
-        #image("results/level_3x3_agents_2_lasers_1.png", height: 20%)
+    #toolbox.side-by-side()[
+      #image("../../results/MLG-Student-Day/level_3x3_agents_2_lasers_1.png", height: 20%)
     ][
-        #image("results/level_5x5_agents_3_lasers_2.png", height: 20%)
+      #image("../../results/MLG-Student-Day/level_5x5_agents_3_lasers_2.png", height: 20%)
     ]
     #toolbox.side-by-side[
-        #image("results/level_8x8_agents_4_lasers_3.png", width: 90%)
+      #image("../../results/MLG-Student-Day/level_8x8_agents_4_lasers_3.png", width: 90%)
     ][
-        #image("results/level_lle_level6.png", width: 90%)
+      #image("../../results/MLG-Student-Day/level_lle_level6.png", width: 90%)
     ]
   ][
-    #image("results/clauses_per_level.png")
+    #image("../../results/MLG-Student-Day/clauses_per_level.png")
   ]
 
 ]
 
 #my-slide[
-    = Plots time difference
+  = Plots time difference
 
-    #set align(center + horizon)
+  #set align(center + horizon)
 
-    #image("results/times_per_level.png", width: 100%)
+  #image("../../results/MLG-Student-Day/times_per_level.png", width: 100%)
 
 ]
 
@@ -393,21 +405,21 @@
     top + right,
     dx: 0cm,
     dy: 0cm,
-    image(height: 15%, "../../assets/logos/MLG_logo.png")
+    image(height: 15%, "../../assets/logos/MLG_logo.png"),
   )
 
   #place(
     top + right,
     dx: -9cm,
     dy: 0cm,
-    image(height: 15%, "../../assets/logos/Université_libre_de_Bruxelles_logo.svg")
+    image(height: 15%, "../../assets/logos/Université_libre_de_Bruxelles_logo.svg"),
   )
 
   #place(
     bottom + right,
     dx: -1cm,
     dy: -2cm,
-    image(height: 60%, "../../assets/qr-code_repo-link.png")
+    image(height: 60%, "../../assets/qr-code_repo-link.png"),
   )
 
 

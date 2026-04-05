@@ -63,3 +63,20 @@ matching. A valid trajectory under strict semantics is a *strict trajectory*.
 
 The formal proof that this definition correctly captures the intuitive notion of cooperation is
 given in <cooperation-detection>.
+
+#v(16pt)
+
+#figure(
+  grid(
+    columns: 3,
+    gutter: 10pt,
+    align: center,
+    [*(a)* Unsolvable \ _no valid joint trajectory_],
+    [*(b)* Solvable, no cooperation \ _agents reach exits independently_],
+    [*(c)* Solvable and cooperative \ _laser blocking required_],
+    image("../../../assets/unsolvable_map_example.png", width: 100%),
+    image("../../../assets/bad_map_example.png", width: 100%),
+    image("../../../assets/good_map_example.png", width: 100%),
+  ),
+  caption: [The three level categories defined by the solvability and cooperation properties.],
+)

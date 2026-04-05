@@ -2,7 +2,9 @@
 
 ## Project Purpose
 
-Procedural generation of solvable, cooperative levels for the Laser Learning Environment (LLE), a multi-agent reinforcement learning benchmark. The project uses SAT solving to guarantee solvability and cooperation properties during generation.
+This is a **Master Thesis in Computer Science** (ULB, 2025–2026) by Hugo Charels, supervised by Tom Lenaerts and Yannick Molinghen.
+
+The subject is procedural generation of solvable, cooperative levels for the Laser Learning Environment (LLE), a multi-agent reinforcement learning benchmark. The project uses SAT solving to guarantee solvability and cooperation properties during generation.
 
 ## Architecture
 
@@ -37,36 +39,54 @@ src/
 
 ## Python Version
 
-Python 3.13 is required (`requires-python = ">=3.13"` in `pyproject.toml`).
+Python 3.13 is required (`requires-python = "=3.13"` in `pyproject.toml`).
 
 ## Development Commands
 
 ```bash
-pytest src/tests/
+python3.13 -m pytest
 ruff check src/
-cd src && python generate.py random_solvable --size 5 5 --agents 2
-cd src && python generate.py random_cooperative --size 6 6 --agents 2
+python3.13 src/generate.py random_solvable --size 5 5 --agents 2
+python3.13 src/generate.py random_cooperative --size 6 6 --agents 2
 ```
 
 ## Key Design Decisions
 
 ### WorldData Protocol
+
 `WorldData` is a structural Protocol that decouples the solver from LLE entirely. The solver never imports `lle` directly. `LLEAdapter` bridges `lle.World` to `WorldData`. New level sources must implement this Protocol.
 
 ### Cooperation Definition
+
 A level requires cooperation iff: standard solver SAT **and** strict laser solver UNSAT. Strict semantics = agents cannot block a laser of their own color.
 
 ### SAT Encoding
+
 Levels encoded as CNF over timesteps `T=0..T_MAX`. Variables represent agent positions, laser states, and beam propagation per timestep.
 
 ### Generator Pattern
+
 Extend `BaseGenerator`, register with `@register_generator`, expose `from_args(cls, args)` classmethod for CLI wiring.
 
 ### Constraint Pattern
+
 `Constraint` ABC with `generate()` that yields CNF clauses. Composed by `WorldSolver`.
+
+## Thesis and Writing
+
+The thesis report is written in **Typst** and lives in `thesis/`:
+
+- `thesis/main.typ` — main document (structure, chapters)
+- `thesis/chapters/sat_reduction.typ` — SAT encoding chapter (the only written chapter so far)
+- `thesis/bibliography.bib` — references
+
+**Mathematical rigor is critical.** When editing thesis files: all formulas must be unambiguous, variable indices must be consistent, quantifiers must be precise (correct domains, correct time ranges), and prose must use "we" (not "I"). Every formula should be verifiable by a CS professor.
+
+`preparatory_work/` contains earlier Typst documents (preparatory report and slides). Do not modify these.
 
 ## Off-Limits Directories
 
 - `presentation/MLG-Student-Day/` — read-only, do not modify
+- `preparatory_work/` — read-only, do not modify
 - `first_try/` — old generated outputs, ignore
 - `results/` — benchmark results, do not modify programmatically

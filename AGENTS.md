@@ -1,35 +1,92 @@
-# AGENTS.md — Rules and Guidance for AI Agents
+# CLAUDE.md — Project Guide for AI Agents
 
-## Project Orientation
+## Project Purpose
 
-Python research project implementing procedural level generation for LLE (Laser Learning Environment) using SAT-based solvability guarantees. See CLAUDE.md for full architecture.
+This is a **Master Thesis in Computer Science** (ULB, 2025–2026) by Hugo Charels, supervised by Tom Lenaerts and Yannick Molinghen.
 
-## Rules
+The subject is procedural generation of solvable, cooperative levels for the Laser Learning Environment (LLE), a multi-agent reinforcement learning benchmark. The project uses SAT solving to guarantee solvability and cooperation properties during generation.
 
-- Run `pytest src/tests/` after any code change and ensure all tests pass before finishing.
-- Run `ruff check src/` and resolve all lint errors before finishing.
-- Do not modify files outside `src/` except README.md and top-level config files.
-- Never touch: `presentation/MLG-Student-Day/`, `first_try/`, `results/`.
+## Architecture
 
-## Architecture Guidance
+```
+src/
+  solver/                         SAT-based solver (pysat / Minisat22)
+    world_data.py                 WorldData Protocol — solver/LLE boundary (do not break)
+    adapter.py                    LLEAdapter: wraps lle.World as WorldData
+    world_solver.py               WorldSolver: builds CNF model, calls SAT solver
+    world_solver_strict_laser.py  Variant: agents cannot block their own color laser
+    cooperation_solver.py         Detects cooperation requirement (UNSAT strict = needs cooperation)
+    constraints/                  SAT constraint modules
+    variables.py                  VariableFactory wrapping pysat IDPool
+    model.py                      SATModel: thin CNF wrapper
+    profiler.py                   SolverProfiler for timing
+  generators/                     Level generators
+    base_generator.py             Abstract BaseGenerator
+    registry.py                   @register_generator decorator + generator lookup
+    world_builder.py              Programmatic lle.World construction
+    random_solvable_generator.py
+    constrained_random_solvable_generator.py
+    random_cooperative_generator.py
+    constrained_random_cooperative_generator.py
+    manual_generator.py
+  benchmark/                      Benchmarking runner, plots, report generation
+  scripts/                        Demo and utility scripts
+  tests/                          pytest test suite
+  cli.py                          CLI argument parser builder
+  generate.py                     CLI entry point (main())
+  levels.py                       LLE default levels registry
+```
 
-### WorldData is the solver/LLE boundary — do not break it
-`src/solver/world_data.py` defines the `WorldData` Protocol. The solver depends only on this interface. Never add `lle` imports inside the solver package. Implement `WorldData` for new level sources; do not subclass it.
+## Python Version
 
-### Adding a generator
-1. Create `src/generators/my_generator.py` extending `BaseGenerator`.
-2. Decorate the class with `@register_generator("my_name")`.
-3. Implement `from_args(cls, args)` classmethod for CLI wiring.
-4. Add CLI arguments in `add_arguments(parser)`.
+Python 3.13 is required (`requires-python = "=3.13"` in `pyproject.toml`).
 
-### Adding a constraint
-1. Create a module in `src/solver/constraints/`.
-2. Implement the `Constraint` ABC with a `generate()` method that yields CNF clauses.
-3. Compose it in `WorldSolver` or `WorldSolverStrictLaser` as appropriate.
+## Development Commands
 
-### Cooperation detection
-Use `CooperationSolver` from `src/solver/cooperation_solver.py`. Do not reimplement the standard+strict dual-solver pattern elsewhere.
+```bash
+python3.13 -m pytest
+ruff check src/
+python3.13 src/generate.py random_solvable --size 5 5 --agents 2
+python3.13 src/generate.py random_cooperative --size 6 6 --agents 2
+```
 
-## Future Work (not yet implemented)
+## Key Design Decisions
 
-A cooperation metrics analyzer is planned. It will define cooperation quality metrics such as "all agents must block at least one laser" or "laser blocking is on the critical path". The metrics need to be formally defined before implementation — do not implement prematurely.
+### WorldData Protocol
+
+`WorldData` is a structural Protocol that decouples the solver from LLE entirely. The solver never imports `lle` directly. `LLEAdapter` bridges `lle.World` to `WorldData`. New level sources must implement this Protocol.
+
+### Cooperation Definition
+
+A level requires cooperation iff: standard solver SAT **and** strict laser solver UNSAT. Strict semantics = agents cannot block a laser of their own color.
+
+### SAT Encoding
+
+Levels encoded as CNF over timesteps `T=0..T_MAX`. Variables represent agent positions, laser states, and beam propagation per timestep.
+
+### Generator Pattern
+
+Extend `BaseGenerator`, register with `@register_generator`, expose `from_args(cls, args)` classmethod for CLI wiring.
+
+### Constraint Pattern
+
+`Constraint` ABC with `generate()` that yields CNF clauses. Composed by `WorldSolver`.
+
+## Thesis and Writing
+
+The thesis report is written in **Typst** and lives in `thesis/`:
+
+- `thesis/main.typ` — main document (structure, chapters)
+- `thesis/chapters/sat_reduction.typ` — SAT encoding chapter (the only written chapter so far)
+- `thesis/bibliography.bib` — references
+
+**Mathematical rigor is critical.** When editing thesis files: all formulas must be unambiguous, variable indices must be consistent, quantifiers must be precise (correct domains, correct time ranges), and prose must use "we" (not "I"). Every formula should be verifiable by a CS professor.
+
+`preparatory_work/` contains earlier Typst documents (preparatory report and slides). Do not modify these.
+
+## Off-Limits Directories
+
+- `presentation/MLG-Student-Day/` — read-only, do not modify
+- `preparatory_work/` — read-only, do not modify
+- `first_try/` — old generated outputs, ignore
+- `results/` — benchmark results, do not modify programmatically

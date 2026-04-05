@@ -2,7 +2,7 @@
 
 #show: typslides.with(
   ratio: "16-9",
-  theme: "bluey"
+  theme: "bluey",
 )
 
 #front-slide(
@@ -38,7 +38,7 @@
   #v(1em)
   *Our goal:* Generate levels that are:
   1. *Solvable* - Provably completable
-  2. *Learnable* - Discoverable through exploration  
+  2. *Learnable* - Discoverable through exploration
   3. *Cooperative* - Require multi-agent coordination
 ]
 
@@ -59,23 +59,23 @@
 #slide(title: "The Three Pillars")[
   #columns(3, gutter: 5%, [
     #align(center, [
-      #image("pictures/wrong_checkbox.png", width: 15%)
+      #image("../assets/wrong_checkbox.png", width: 15%)
       *Unsolvable*
-      #image("pictures/unsolvable_map_example.png", width: 90%)
+      #image("../assets/unsolvable_map_example.png", width: 90%)
       No valid path exists
     ])
     \
     #align(center, [
-      #image("pictures/wrong_checkbox.png", width: 15%)
+      #image("../assets/wrong_checkbox.png", width: 15%)
       *Trivial*
-      #image("pictures/bad_map_example.png", width: 90%)
+      #image("../assets/bad_map_example.png", width: 90%)
       Solvable without cooperation
     ])
     \
     #align(center, [
-      #image("pictures/right_checkbox.png", width: 15%)
+      #image("../assets/right_checkbox.png", width: 15%)
       *Target*
-      #image("pictures/good_map_example.png", width: 90%)
+      #image("../assets/good_map_example.png", width: 90%)
       Requires coordinated behavior
     ])
   ])
@@ -149,13 +149,13 @@
   #align(center, [
     #text(size: 32pt, [
       *Thank you for your attention!*
-      
+
       #v(2em)
-      
+
       Questions & Discussion
-      
+
       #v(1em)
-      
+
       #text(size: 20pt, [#link("mailto:hugo.charels@ulb.be")])
     ])
   ])

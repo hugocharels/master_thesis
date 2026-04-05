@@ -20,23 +20,24 @@
     if { 0 < chapter_num and chapter_num < 5 } {
       pagebreak()
       v(100pt)
-  
+
       let chapter = text(strong("Chapter " + str(chapter_num)), 22pt)
       let content = text(strong(it.body), 30pt)
       chapter + [ \ \ ] + content + [ \ \ ]
-    } else { // Table of Content + Bibliography
+    } else {
+      // Table of Content + Bibliography
       if it.body == [Conclusion] {
         pagebreak()
         v(100pt)
-    
+
         let content = text(strong(it.body), 30pt)
         content + [ \ \ ]
       } else {
         it
       }
     }
-  }
-  else { // Subsections
+  } else {
+    // Subsections
     [ \ ] + it
     v(10pt)
   }
@@ -49,9 +50,9 @@
 
 #v(10pt)
 
-#align( 
+#align(
   center,
-  [#image("cover/sceau-a-quadri.jpg", width: 50%)]
+  [#image("../assets/logos/sceau-a-quadri.jpg", width: 50%)],
 )
 
 #v(10pt)
@@ -82,7 +83,7 @@
     *Supervisors:* \
     Lenaerts Tom \
     Molinghen Yannick
-  ]
+  ],
 )
 
 #align(center + bottom, text(14pt)[
@@ -126,9 +127,9 @@ Procedural Generation is a method for automatically creating content instead of 
 
 = Introduction
 /*
-- **Context & Motivation**: Why is generating solvable levels important in MARL?  
-- **Research Problem**: What are the scientific questions we aim to answer?  
-- **Structure Overview**: What does each chapter contain?  
+- **Context & Motivation**: Why is generating solvable levels important in MARL?
+- **Research Problem**: What are the scientific questions we aim to answer?
+- **Structure Overview**: What does each chapter contain?
 */
 
 == Context
@@ -155,8 +156,8 @@ LLE has been used to evaluate several state-of-the-art value-based MARL algorith
 By design, LLE offers a structured yet flexible environment for studying cooperative behavior, with challenges emerging from both spatial constraints and temporal dependencies among agents. Its mechanics support a wide range of level configurations, making it a suitable foundation for procedural level generation targeting collaborative MARL.
 
 #figure(
-  image("slides/pictures/lvl6-annotated.png", width: 70%),
-  caption: [Annotated example of a LLE level]
+  image("../assets/lvl6-annotated.png", width: 70%),
+  caption: [Annotated example of a LLE level],
 )
 
 
@@ -202,9 +203,7 @@ The document also includes a conclusion and a bibliography of all cited works.
 #pagebreak()
 == Abreviation
 
-#set table(
-  stroke: {}
-)
+#set table(stroke: {})
 
 #table(
   columns: 2,
@@ -223,7 +222,7 @@ The document also includes a conclusion and a bibliography of all cited works.
   [WFC], [Wave Function Collapse],
   [MDP], [Markov Decision Process],
   [CA], [Cellular Automata],
-  [AI], [Artificial Intelligence]
+  [AI], [Artificial Intelligence],
 )
 
 
@@ -248,20 +247,19 @@ These principles are illustrated below, using examples from LLE level generation
   columns: 3,
   align: center,
   figure(
-    image("slides/pictures/unsolvable_map_example.png", width: 80%),
-    caption: [Unsolvable: No path.]
+    image("../assets/unsolvable_map_example.png", width: 80%),
+    caption: [Unsolvable: No path.],
   ),
-  
+
   figure(
-    image("slides/pictures/bad_map_example.png", width: 80%),
-    caption: [Uninteresting: Solvable without cooperation.]
+    image("../assets/bad_map_example.png", width: 80%),
+    caption: [Uninteresting: Solvable without cooperation.],
   ),
-  
+
   figure(
-    image("slides/pictures/good_map_example.png", width: 80%),
-    caption: [Desirable: Solvable and requires coordinated agent behavior.]
-  )
-  
+    image("../assets/good_map_example.png", width: 80%),
+    caption: [Desirable: Solvable and requires coordinated agent behavior.],
+  ),
 )
 
 
@@ -325,19 +323,19 @@ Example levels generated with white noise:
   align: center,
 
   figure(
-    image("examples/white_noise_1_density40.png", width: 80%),
-    caption: [density = $40$]
+    image("../assets/noises_examples/white_noise_1_density40.png", width: 80%),
+    caption: [density = $40$],
   ),
 
   figure(
-    image("examples/white_noise_2_density60.png", width: 80%),
-    caption: [density = $60$]
+    image("../assets/noises_examples/white_noise_2_density60.png", width: 80%),
+    caption: [density = $60$],
   ),
 
   figure(
-    image("examples/white_noise_3_density80.png", width: 80%),
-    caption: [density = $80$]
-  )
+    image("../assets/noises_examples/white_noise_3_density80.png", width: 80%),
+    caption: [density = $80$],
+  ),
 )
 
 
@@ -356,19 +354,19 @@ Example levels generated with value noise:
   align: center,
 
   figure(
-    image("examples/value_noise_1_scale10.0_th0.0.png", width: 80%),
-    caption: [\ scale=$10.0$, threshold=$0.0$]
+    image("../assets/noises_examples/value_noise_1_scale10.0_th0.0.png", width: 80%),
+    caption: [\ scale=$10.0$, threshold=$0.0$],
   ),
 
   figure(
-    image("examples/value_noise_2_scale5.0_th-0.1.png", width: 80%),
-    caption: [\ scale=$5.0$, threshold=$-0.1$]
+    image("../assets/noises_examples/value_noise_2_scale5.0_th-0.1.png", width: 80%),
+    caption: [\ scale=$5.0$, threshold=$-0.1$],
   ),
 
   figure(
-    image("examples/value_noise_3_scale15.0_th0.1.png", width: 80%),
-    caption: [\ scale=$15.0$, threshold=$0.1$]
-  )
+    image("../assets/noises_examples/value_noise_3_scale15.0_th0.1.png", width: 80%),
+    caption: [\ scale=$15.0$, threshold=$0.1$],
+  ),
 )
 
 
@@ -382,8 +380,8 @@ Gradient noise methods take value noise a step further by associating each latti
 - *OpenSimplex Noise* #footnote[https://en.wikipedia.org/wiki/OpenSimplex_noise]: A patent-free and visually cleaner alternative to Simplex noise, designed to avoid visual artifacts and directional bias in 2D and 3D environments.
 
 Main parameters (same as value noise):
-  - *scale* (float): Controls spatial frequency of changes.
-  - *threshold *(float): Defines the walkable/wall boundary.
+- *scale* (float): Controls spatial frequency of changes.
+- *threshold *(float): Defines the walkable/wall boundary.
 
 In LLE, gradient-based noise can be used to define large organic spaces or connectivity patterns between regions. For example, tunnels or open corridors can emerge naturally when applying appropriate thresholds to the noise field. These techniques are also useful in curriculum learning settings, where the degree of noise smoothness can modulate the difficulty of the level layout.
 
@@ -394,19 +392,19 @@ Example levels generated with Perlin noise:
   align: center,
 
   figure(
-    image("examples/perlin_noise_1_scale4.0_th-0.2.png", width: 80%),
-    caption: [\ scale=$4.0$, threshold=$-0.2$]
+    image("../assets/noises_examples/perlin_noise_1_scale4.0_th-0.2.png", width: 80%),
+    caption: [\ scale=$4.0$, threshold=$-0.2$],
   ),
 
   figure(
-    image("examples/perlin_noise_2_scale6.0_th0.0.png", width: 80%),
-    caption: [\ scale=$6.0$, threshold=$0.0$]
+    image("../assets/noises_examples/perlin_noise_2_scale6.0_th0.0.png", width: 80%),
+    caption: [\ scale=$6.0$, threshold=$0.0$],
   ),
 
   figure(
-    image("examples/perlin_noise_3_scale8.0_th0.2.png", width: 80%),
-    caption: [\ scale=$8.0$, threshold=$0.2$]
-  )
+    image("../assets/noises_examples/perlin_noise_3_scale8.0_th0.2.png", width: 80%),
+    caption: [\ scale=$8.0$, threshold=$0.2$],
+  ),
 )
 
 
@@ -426,19 +424,19 @@ Example levels generated with Worley noise:
   align: center,
 
   figure(
-    image("examples/worley_noise_1_points5_cutoff0.1.png", width: 80%),
-    caption: [points=$5$, cutoff=$0.1$]
+    image("../assets/noises_examples/worley_noise_1_points5_cutoff0.1.png", width: 80%),
+    caption: [points=$5$, cutoff=$0.1$],
   ),
 
   figure(
-    image("examples/worley_noise_2_points8_cutoff0.2.png", width: 80%),
-    caption: [points=$8$, cutoff=$0.2$]
+    image("../assets/noises_examples/worley_noise_2_points8_cutoff0.2.png", width: 80%),
+    caption: [points=$8$, cutoff=$0.2$],
   ),
 
   figure(
-    image("examples/worley_noise_3_points12_cutoff0.3.png", width: 80%),
-    caption: [points=$12$, cutoff=$0.3$]
-  )
+    image("../assets/noises_examples/worley_noise_3_points12_cutoff0.3.png", width: 80%),
+    caption: [points=$12$, cutoff=$0.3$],
+  ),
 )
 
 
@@ -446,12 +444,10 @@ Example levels generated with Worley noise:
 
 #table(
   inset: 8pt,
-  columns: (4),
+  columns: 4,
   stroke: black,
   align: horizon,
-  table.header(
-    [*Noise Type*], [*Spatial Coherence*], [*Level Structure*], [*Use Case in LLE*]
-  ),
+  table.header([*Noise Type*], [*Spatial Coherence*], [*Level Structure*], [*Use Case in LLE*]),
   [White Noise], [None], [Chaotic / Unusable alone], [Input to other methods],
   [Value Noise], [Low], [Smooth blobs/caves], [Cave levels, soft rooms],
   [Perlin/Simplex], [Medium to High], [Flowing terrain, patterns], [Organic layouts, open corridors],
@@ -504,19 +500,19 @@ Using same initial white noises grid with density of $60$ but with different ite
   align: center,
 
   figure(
-    image("examples/cellular_3_density60_it1.png", width: 80%),
-    caption: [iterations=$1$]
+    image("../assets/noises_examples/cellular_3_density60_it1.png", width: 80%),
+    caption: [iterations=$1$],
   ),
 
   figure(
-    image("examples/cellular_3_density60_it2.png", width: 80%),
-    caption: [iterations=$2$]
+    image("../assets/noises_examples/cellular_3_density60_it2.png", width: 80%),
+    caption: [iterations=$2$],
   ),
 
   figure(
-    image("examples/cellular_3_density60_it4.png", width: 80%),
-    caption: [iterations=$4$]
-  )
+    image("../assets/noises_examples/cellular_3_density60_it4.png", width: 80%),
+    caption: [iterations=$4$],
+  ),
 )
 
 
@@ -681,7 +677,7 @@ The reduction method relies on creating logical gadgets within the game world th
   - Activate paths corresponding to literals (either positive or negative) of those variables.
   - Ensure that each clause in the formula is “satisfied” (i.e., made traversable).
   - Finally, traverse a “check path” that visits all clauses and leads to the goal, but only if all clauses are unlocked.
-  
+
   This structure is shown schematically in the paper’s Figure 1 (not reproduced here), which illustrates a linear progression through variable choices, followed by clause satisfaction, and finally goal validation.
 
 2. Gadget Types and Their Purpose: \
@@ -689,16 +685,16 @@ The reduction method relies on creating logical gadgets within the game world th
 
   - *Variable Gadget* \
     Each variable in the formula is associated with a gadget that forces the player to commit to one of two mutually exclusive paths — either assigning the variable to true or to false. Once a choice is made, the alternative path becomes permanently inaccessible (e.g., by using one-way drops or destructible paths). These two paths then lead to the clause gadgets corresponding to the literal $(x)$ and its negation $(not x)$.
-  
+
   - *Clause Gadget* \
     Each clause is implemented as a gadget that initially blocks the player from traversing a "check path" that passes through it. However, the gadget can be unlocked from any of its three incoming literal paths. Visiting the clause from one of its literals (e.g., from the variable gadgets) performs an action (like pressing a switch or releasing a key) that permanently opens the clause’s check path. This simulates satisfying a clause by at least one literal.
-  
+
   - *Check Path* \
     After choosing variable assignments and visiting the relevant clauses, the player must traverse a final corridor that passes through all clause gadgets. If any clause is not satisfied (i.e., its path is still locked), then the player cannot proceed to the goal. This enforces the global constraint that all clauses must be satisfied to reach the goal.
-  
+
   - *Crossover Gadget* \
     In 2D grid-based levels, wires corresponding to literal paths often need to cross. Crossover gadgets are used to simulate wire crossing without leakage (i.e., without allowing the player to switch between paths). These gadgets are constructed using carefully constrained one-way interactions or game physics to prevent unintended traversal. Importantly, only unidirectional crossings are needed, and even then, only once per path — which simplifies implementation.
-  
+
   - *Start and Finish Gadgets* \
     These typically enforce preconditions on the player's state. For example, in Super Mario Bros., the player is forced to pick up a Super Mushroom at the start so that they are “big Mario,” which is required to break bricks in later gadgets.
 

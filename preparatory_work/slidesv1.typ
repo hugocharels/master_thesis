@@ -3,7 +3,7 @@
 #show: typslides.with(
   ratio: "16-9",
   //theme: "bluey", // other options: reddy, dusky, darky, etc.
-  theme: "bluey"
+  theme: "bluey",
 )
 
 #front-slide(
@@ -25,7 +25,7 @@
   - Each agent must cooperate to reach shared goals.
 
   #align(center, [
-    #image("pictures/lvl6-annotated.png", width: 65%)
+    #image("../assets/lvl6-annotated.png", width: 65%)
   ])
 ]
 
@@ -47,19 +47,19 @@
   \
   #columns(3, gutter: 0%, [
 
-      #align(center, [
-        #image("pictures/wrong_checkbox.png", width: 12%)
-        #image("pictures/unsolvable_map_example.png", width: 75%)
-      ])
-    
-      #align(center, [
-        #image("pictures/wrong_checkbox.png", width: 12%)
-        #image("pictures/bad_map_example.png", width: 75%)
-      ])
-      
-      #align(center, [
-        #image("pictures/right_checkbox.png", width: 12%)
-        #image("pictures/good_map_example.png", width: 75%)
+    #align(center, [
+      #image("../assets/wrong_checkbox.png", width: 12%)
+      #image("../assets/unsolvable_map_example.png", width: 75%)
+    ])
+
+    #align(center, [
+      #image("../assets/wrong_checkbox.png", width: 12%)
+      #image("../assets/bad_map_example.png", width: 75%)
+    ])
+
+    #align(center, [
+      #image("../assets/right_checkbox.png", width: 12%)
+      #image("../assets/good_map_example.png", width: 75%)
     ])
   ])
 ]
@@ -71,7 +71,7 @@
 #slide(title: "Related Work")[
   - *Increasing Generality in Machine Learning through Procedural Content Generation*
     A comprehensive survey of existing *PCG techniques* used in various machine learning contexts.
-  
+
   - *PCGRL: Procedural Content Generation via Reinforcement Learning*
     Trains an agent to *place tiles, obstacles, ...* (e.g., in Sokoban-like environments) by receiving *reward signals* based on level quality.
 

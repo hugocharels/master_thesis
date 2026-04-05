@@ -1,0 +1,56 @@
+# Planning for Thesis Project
+viewport-snap: day
+headers:
+  - month
+  - week
+start: 2025-09-01
+end: 2026-06-30
+
+taskgroups:
+  - name: Solvability
+    tasks:
+      - name: Complexity Proof of LLE
+        start: 2025-09-15
+        end: 2025-09-30
+
+  - name: Method Development
+    tasks:
+      - name: Methods literature & selection
+        start: 2025-10-01
+        end: 2025-10-31
+      - name: Prototype generator
+        start: 2025-10-31
+        end: 2026-02-01
+      - name: Verifier & solvability checks
+        start: 2026-01-01
+        end: 2026-01-31
+
+  - name: Experiments
+    tasks:
+      - name: Methods testing
+        start: 2026-01-01
+        end: 2026-04-15
+      - name: Analysis & visualizations
+        start: 2026-04-01
+        end: 2026-05-14
+
+  - name: Writing
+    tasks:
+      - name: Thesis writing
+        start: 2026-05-01
+        end: 2026-06-25
+      - name: Submission
+        start: 2026-06-25
+        end: 2026-06-30
+
+milestones:
+  - name: Complexity Proof Complete
+    date: 2025-10-01
+  - name: Generator Prototype Ready
+    date: 2026-02-01
+  - name: Experiments Complete
+    date: 2026-04-15
+  - name: Analysis Complete
+    date: 2026-05-14
+  - name: Thesis Submission
+    date: 2026-06-30

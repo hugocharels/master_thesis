@@ -73,15 +73,6 @@ class ConstrainedRandomSolvableGenerator(RandomSolvableGenerator):
 
         return tiles
 
-    def _beam_len_until_block(
-        self,
-        src: tuple[int, int],
-        direction: Direction,
-        wall_set: set[tuple[int, int]],
-        laser_set: set[tuple[int, int]],
-    ) -> int:
-        return len(self._beam_tiles(src, direction, wall_set, laser_set))
-
     def _points_out_immediately(
         self, src: tuple[int, int], direction: Direction
     ) -> bool:

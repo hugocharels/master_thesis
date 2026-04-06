@@ -2,6 +2,7 @@ import pytest
 from lle import World
 
 from generators.world_builder import Direction, WorldBuilder
+from levels import LLE_LEVELS
 from solver import LLEAdapter
 from solver.cooperation_solver import CooperationSolver
 
@@ -76,22 +77,22 @@ def test_cooperation_solver(width, height, agents, exits, walls, lasers, t, expe
 
 
 # ==========================================================
-# LLE default levels (all require cooperation)
+# LLE default levels
 # ==========================================================
 
 
 @pytest.mark.parametrize(
-    "level,t",
+    "level,expected",
     [
-        (1, 10),
-        (2, 10),
-        (3, 10),
-        (4, 10),
-        (5, 19),
-        (6, 21),
+        (1, False),
+        (2, False),
+        (3, True),
+        (4, True),
+        (5, True),
+        (6, True),
     ],
 )
-def test_cooperation_lle_levels(level, t):
-    world = World.level(level)
+def test_cooperation_lle_levels(level, expected):
+    world, t = LLE_LEVELS[level]
     result = cooperation_needed(world, t)
-    assert isinstance(result, bool)
+    assert result == expected

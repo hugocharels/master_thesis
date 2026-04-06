@@ -50,7 +50,9 @@ class ConstraintContext:
                 for x, y in self.all_positions:
                     self.beam_var[c, d, x, y, t] = var_factory.beam(c, d, x, y, t)
 
-        # Pre-compute beam propagation map per laser
+        # Pre-compute beam propagation map per laser.
+        # Beams never propagate into a laser source tile, which prevents a
+        # boundary-facing source from generating a backward beam into the grid.
         self.beam_propagation_map = {}
         for laser, _ in self.lasers:
             key = (laser.color, laser.direction)
@@ -61,7 +63,10 @@ class ConstraintContext:
                 ny = y + dj
                 if not world.is_within_bounds((nx, ny)):
                     continue
-                entries.append((x, y, nx, ny, world.is_wall((nx, ny))))
+                if (nx, ny) in self.laser_positions:
+                    continue
+                is_blocker = world.is_wall((nx, ny))
+                entries.append((x, y, nx, ny, is_blocker))
             self.beam_propagation_map[key] = entries
 
 

@@ -1,6 +1,11 @@
 """Demo script: solve a level and visualize the solution."""
 
 import os
+import sys
+from pathlib import Path
+
+if __package__ in (None, ""):
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 import matplotlib.pyplot as plt
 from lle import World
@@ -8,7 +13,10 @@ from matplotlib.animation import FuncAnimation, PillowWriter
 
 from solver import LLEAdapter, WorldSolver
 
-from .custom_levels import CUSTOM_BENCHMARK_LEVELS
+if __package__ in (None, ""):
+    from scripts.custom_levels import CUSTOM_BENCHMARK_LEVELS
+else:
+    from .custom_levels import CUSTOM_BENCHMARK_LEVELS
 
 
 def display_sequence_interactive(world: World, solver, model):

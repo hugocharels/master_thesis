@@ -2,6 +2,11 @@
 
 import argparse
 import os
+import sys
+from pathlib import Path
+
+if __package__ in (None, ""):
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 import matplotlib.pyplot as plt
 
@@ -80,7 +85,10 @@ def main():
 
     levels = None
     if args.custom_levels:
-        from .custom_levels import CUSTOM_BENCHMARK_LEVELS
+        if __package__ in (None, ""):
+            from scripts.custom_levels import CUSTOM_BENCHMARK_LEVELS
+        else:
+            from .custom_levels import CUSTOM_BENCHMARK_LEVELS
 
         levels = CUSTOM_BENCHMARK_LEVELS
         print("Using custom levels from scripts.custom_levels:CUSTOM_BENCHMARK_LEVELS")

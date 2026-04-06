@@ -12,7 +12,7 @@ LLE_LEVELS: dict[int, tuple[World, int]] = {}
 
 
 def _register():
-    t_max_per_level = {1: 10, 2: 10, 3: 10, 4: 10, 5: 19, 6: 20}
+    t_max_per_level = {1: 10, 2: 10, 3: 10, 4: 10, 5: 19, 6: 21}
     for level_num, t_max in t_max_per_level.items():
         world = World.level(level_num)
         world.reset()

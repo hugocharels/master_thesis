@@ -139,6 +139,8 @@ def _world(width, height, agents=(), exits=(), walls=(), lasers=()):
             4,
             True,
         ),
+        # Laser pointing out of bounds must not create a backward beam.
+        (3, 3, [(1, 1)], [(1, 2)], [], [(0, (2, 0), W)], 1, True),
     ],
 )
 def test_solver(width, height, agents, exits, walls, lasers, t, expected):

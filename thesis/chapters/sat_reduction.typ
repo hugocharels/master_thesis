@@ -1,18 +1,22 @@
 === Definition of Sets
 
-We consider a rectangular grid of height $H$ and width $W$. Positions are identified by pairs
-$(x, y)$, where $x in {0, ..., W - 1}$ denotes the column index and $y in {0, ..., H - 1}$
-denotes the row index. The following sets are used throughout.
+We reuse the level objects introduced in <formalization>: the grid dimensions $H$ and $W$, the
+position set $P$, the colour set $C$, the direction set $D$, the wall set $cal(W)$, the source
+set $cal(S)$, the exit set $cal(E)$, and the start map $s$.
 
-- $C = {0, 1, ..., n_a - 1}$: set of agent colours, where $n_a >= 1$ is the number of agents.
-- $D = {N, S, E, W}$: set of laser-beam directions (North, South, East, West).
-- $P = {(x, y) | 0 <= x < W, 0 <= y < H}$: set of all grid positions.
-- $cal(W) subset.eq P$: set of wall positions.
-- $cal(S) subset.eq C times D times P$: set of laser sources; $(c, d, p) in cal(S)$ denotes a
-  laser of colour $c$ shooting in direction $d$ from position $p in P$.
-- $P_("src") = {p in P | exists c in C, d in D : (c, d, p) in cal(S)}$: set of source positions.
-- $cal(E) subset.eq P$: set of exit positions, with $|cal(E)| = n_a$.
-- $T = {0, 1, ..., T_("max")}$: set of discrete time steps.
+The SAT reduction introduces a finite horizon $T_("max") in NN$, which is the maximum number of
+joint moves allowed in the bounded decision problem, together with the discrete time-step set
+$T = {0, 1, ..., T_("max")}$.
+
+We also define
+$
+  P_("src") = {p in P | exists c in C, d in D : (c, d, p) in cal(S)}
+$
+for the set of source positions.
+
+To match the benchmark and generated instances studied in this thesis, we assume that each colour
+appears in at most one laser source. Under this assumption, when a source of colour $c$ exists, its
+position and direction are uniquely determined by $c$.
 
 We also write $"start"(c) in P$ for the initial position of agent $c in C$.
 
@@ -22,8 +26,8 @@ We also write $"start"(c) in P$ for the initial position of agent $c in C$.
 We introduce three families of propositional variables.
 
 - $a_(c,x,y,t)$: true iff agent $c in C$ occupies position $(x, y) in P$ at time step $t in T$.
-- $b_(c,d,x,y,t)$: true iff the beam of laser source $(c, d, -) in cal(S)$ is active at position
-  $(x, y) in P$ at time $t in T$.
+- $b_(c,d,x,y,t)$: true iff there exists $p_s in P$ such that $(c, d, p_s) in cal(S)$ and the
+  beam emitted by that source is active at position $(x, y) in P$ at time $t in T$.
 - $l_(c,x,y,t)$: true iff a laser of colour $c in C$ is active at position $(x, y) in P$ at time
   $t in T$.
 
@@ -164,7 +168,7 @@ to one logical component of the bounded-horizon decision problem.
   - *Walls block beams:* \
     A beam cannot be active at a wall position:
     $
-      and.big_((c,d,-) in cal(S)) and.big_((x,y) in cal(W)) and.big_(t in T)
+      and.big_((c,d,p_s) in cal(S)) and.big_((x,y) in cal(W)) and.big_(t in T)
       not b_(c,d,x,y,t)
     $
 
@@ -175,35 +179,36 @@ to one logical component of the bounded-horizon decision problem.
     conditions, the beam is active at $(x', y')$ iff it is active at $(x, y)$ and no agent of
     colour $c$ occupies $(x', y')$:
     $
-      and.big_((c,d,-) in cal(S)) and.big_(t in T)
+      and.big_((c,d,p_s) in cal(S)) and.big_(t in T)
       and.big_((x,y) in P without cal(W), \ "next"_d(x,y) in P without cal(W), \ "next"_d(x,y) in.not P_("src"))
       b_(c,d,x',y',t) arrow.l.r (b_(c,d,x,y,t) and not a_(c,x',y',t))
       \ arrow.t.b.double \
-      and.big_((c,d,-) in cal(S)) and.big_(t in T)
+      and.big_((c,d,p_s) in cal(S)) and.big_(t in T)
       and.big_((x,y) in P without cal(W), \ "next"_d(x,y) in P without cal(W), \ "next"_d(x,y) in.not P_("src"))
       not b_(c,d,x,y,t) or a_(c,x',y',t) or b_(c,d,x',y',t)
       \
-      and.big_((c,d,-) in cal(S)) and.big_(t in T)
+      and.big_((c,d,p_s) in cal(S)) and.big_(t in T)
       and.big_((x,y) in P without cal(W), \ "next"_d(x,y) in P without cal(W), \ "next"_d(x,y) in.not P_("src"))
       b_(c,d,x,y,t) or not b_(c,d,x',y',t)
       \
-      and.big_((c,d,-) in cal(S)) and.big_(t in T)
+      and.big_((c,d,p_s) in cal(S)) and.big_(t in T)
       and.big_((x,y) in P without cal(W), \ "next"_d(x,y) in P without cal(W), \ "next"_d(x,y) in.not P_("src"))
       not a_(c,x',y',t) or not b_(c,d,x',y',t)
     $
 
   - *Link between beam and laser variables:* \
-    For each laser source $(c, d, -) in cal(S)$, the laser variable $l_(c,x,y,t)$ is true at a
-    position iff the beam of that source is active there:
+    Since each colour has at most one source in the instances considered here, the laser variable
+    $l_(c,x,y,t)$ is true at a position iff the beam of the unique source of colour $c$ is active
+    there:
     $
-      and.big_((c,d,-) in cal(S)) and.big_((x,y) in P) and.big_(t in T)
+      and.big_((c,d,p_s) in cal(S)) and.big_((x,y) in P) and.big_(t in T)
       b_(c,d,x,y,t) arrow.l.r l_(c,x,y,t)
     $
     $
       arrow.t.b.double
     $
     $
-      and.big_((c,d,-) in cal(S)) and.big_((x,y) in P) and.big_(t in T)
+      and.big_((c,d,p_s) in cal(S)) and.big_((x,y) in P) and.big_(t in T)
       (not b_(c,d,x,y,t) or l_(c,x,y,t)) and (not l_(c,x,y,t) or b_(c,d,x,y,t))
     $
 

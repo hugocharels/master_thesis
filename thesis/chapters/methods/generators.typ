@@ -14,6 +14,30 @@ All generators follow a common architecture built around three principles:
 #lorem(3) // TODO: add small code/pseudocode snippet showing the generator loop pattern
 
 
+=== Generation Targets
+
+Viewed through the solvability and cooperation definitions of <formalization>, the generator family
+targets the three level categories shown in Figure @fig-generator-categories. Solvable generators
+accept levels in categories (b) and (c), cooperative generators accept only levels in category (c),
+and unsolvable levels in category (a) are always rejected.
+
+#figure(
+  grid(
+    columns: 3,
+    gutter: 10pt,
+    align: center,
+    [*(a)* Unsolvable \ _rejected by all generators_],
+    [*(b)* Solvable, no cooperation \ _accepted only by solvable generators_],
+    [*(c)* Solvable and cooperative \ _target of cooperative generators_],
+
+    image("../../../assets/unsolvable_map_example.png", width: 100%),
+    image("../../../assets/bad_map_example.png", width: 100%),
+    image("../../../assets/good_map_example.png", width: 100%),
+  ),
+  caption: [Target level categories for the generator family.],
+) <fig-generator-categories>
+
+
 === Random Solvable Generator
 
 The simplest generator. It samples a level uniformly at random (wall placement, laser sources,

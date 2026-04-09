@@ -4,13 +4,16 @@ We now formally define the objects and properties at the centre of this thesis. 
 operates at the level of the game semantics; the SAT encoding of these properties follows in
 <sat-reduction>.
 
+The LLE environment supports between 1 and 4 agents. Accordingly, throughout this thesis we assume
+that $1 <= n_a <= 4$.
+
 === LLE Level
 
 An LLE level is a tuple $L = (H, W, C, s, cal(W), cal(S), cal(E))$ where:
 
 - $H, W in NN^+$ are the height and width of the grid.
 - $P = {(x, y) | 0 <= x < W, 0 <= y < H}$ is the set of all grid positions.
-- $C = {0, 1, ..., n_a - 1}$ is the set of agent colours, with $n_a >= 1$.
+- $C = {0, 1, ..., n_a - 1}$ is the set of agent colours, with $1 <= n_a <= 4$.
 - $s : C -> P$ assigns an initial position to each agent.
 - $cal(W) subset.eq P$ is the set of wall positions.
 - $D = {N, S, E, W}$ is the set of laser directions.
@@ -20,6 +23,8 @@ An LLE level is a tuple $L = (H, W, C, s, cal(W), cal(S), cal(E))$ where:
 
 
 === Joint Trajectory
+
+A *horizon* $T in NN$ is the maximum number of joint moves allowed in a candidate solution.
 
 A *joint trajectory* of length $T$ is a sequence of joint positions
 $sigma = (p_0, p_1, ..., p_T)$ where each $p_t : C -> P$ assigns a position to every agent at
@@ -58,8 +63,9 @@ it is solvable within a finite horizon bounded by the number of collision-free j
 
 === Cooperation Requirement
 
-Informally, a level *requires cooperation* if no solution exists unless at least one agent blocks a
-laser of its own colour to make progress possible for another agent.
+Informally, a level *requires cooperation* with horizon $T$ if no solution of length at most $T$
+exists unless at least one agent blocks a laser of its own colour to make progress possible for
+another agent.
 
 We make this precise via *strict laser semantics*. In the strict variant, agents are no longer
 immune to lasers of their own colour. Every agent is blocked by every active laser, regardless of
@@ -70,27 +76,15 @@ change the traversable space available to its teammates only by standing on a be
 colour. Strict semantics removes exactly this possibility while leaving the rest of the level
 dynamics unchanged.
 
-*Definition (Cooperation Requirement).* A level $L$ is said to *require cooperation* if:
+*Definition (Cooperation Requirement with horizon $T$).* A level $L$ is said to *require
+cooperation* with horizon $T$ if:
 
 + $L$ is solvable under the standard semantics, and
 + $L$ admits no valid strict trajectory whose final positions occupy all exit tiles.
 
+When the horizon is clear from context, we simply say that $L$ requires cooperation. This bounded
+form is the one used throughout the rest of the methods chapter, since both the SAT solver and the
+cooperation detector operate at a fixed finite horizon.
+
 The formal proof that this captures the intended notion of cooperation is given in
 <cooperation-detection>.
-
-#v(16pt)
-
-#figure(
-  grid(
-    columns: 3,
-    gutter: 10pt,
-    align: center,
-    [*(a)* Unsolvable \ _no valid joint trajectory_],
-    [*(b)* Solvable, no cooperation \ _agents reach the exits independently_],
-    [*(c)* Solvable and cooperative \ _laser blocking required_],
-    image("../../../assets/unsolvable_map_example.png", width: 100%),
-    image("../../../assets/bad_map_example.png", width: 100%),
-    image("../../../assets/good_map_example.png", width: 100%),
-  ),
-  caption: [The three level categories defined by the solvability and cooperation properties.],
-)

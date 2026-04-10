@@ -1,7 +1,7 @@
 from generators.constrained_random_solvable_generator import ConstrainedRandomSolvableGenerator
 from generators.registry import register_generator
 from solver import LLEAdapter
-from solver.cooperation_solver import CooperationSolver
+from solver.cooperation_profile_analyzer import CooperationProfileAnalyzer
 
 
 @register_generator("constrained_random_cooperative")
@@ -12,11 +12,37 @@ class ConstrainedRandomCooperativeGenerator(ConstrainedRandomSolvableGenerator):
     and additionally enforces that the level requires cooperation.
     """
 
-    def _is_cooperative(self, world) -> bool:
+    @staticmethod
+    def add_arguments(parser):
+        ConstrainedRandomSolvableGenerator.add_arguments(parser)
+        parser.add_argument(
+            "--profile",
+            choices=[
+                "cooperative",
+                "asymmetric",
+                "mutual",
+                "chain",
+                "distributed",
+                "fully_coupled",
+            ],
+            default="cooperative",
+            help="Target cooperation profile for accepted levels",
+        )
+
+    @classmethod
+    def from_args(cls, args):
+        obj = super().from_args(args)
+        obj.profile = args.profile
+        return obj
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.profile = "cooperative"
+
+    def _analyze_profile(self, world):
         world.reset()
         adapted = LLEAdapter(world)
-        result = CooperationSolver(adapted, T_MAX=self.t_max).analyze()
-        return result.cooperation_needed
+        return CooperationProfileAnalyzer(adapted, T_MAX=self.t_max).analyze()
 
     def generate(self):
         attempts = 0
@@ -46,13 +72,20 @@ class ConstrainedRandomCooperativeGenerator(ConstrainedRandomSolvableGenerator):
                         )
                     continue
 
-                if not self._is_cooperative(world):
+                analysis = self._analyze_profile(world)
+                if not analysis.matches_profile(self.profile):
                     if self.debug_rejections:
-                        print(f"[reject #{attempts}] non_cooperative")
+                        print(
+                            f"[reject #{attempts}] "
+                            f"profile={analysis.profile}, required={self.profile}"
+                        )
                     continue
 
                 if self.debug_rejections:
-                    print(f"[accept #{attempts}] constrained_cooperative_and_solvable")
+                    print(
+                        f"[accept #{attempts}] "
+                        f"profile={analysis.profile}, constrained_cooperative_and_solvable"
+                    )
                 return world
 
             except Exception as e:

@@ -1,7 +1,7 @@
 from generators.random_solvable_generator import RandomSolvableGenerator
 from generators.registry import register_generator
 from solver import LLEAdapter
-from solver.cooperation_solver import CooperationSolver
+from solver.cooperation_profile_analyzer import CooperationProfileAnalyzer
 
 
 @register_generator("random_cooperative")
@@ -14,6 +14,19 @@ class RandomCooperativeGenerator(RandomSolvableGenerator):
     @staticmethod
     def add_arguments(parser):
         RandomSolvableGenerator.add_arguments(parser)
+        parser.add_argument(
+            "--profile",
+            choices=[
+                "cooperative",
+                "asymmetric",
+                "mutual",
+                "chain",
+                "distributed",
+                "fully_coupled",
+            ],
+            default="cooperative",
+            help="Target cooperation profile for accepted levels",
+        )
         parser.add_argument(
             "--debug-rejections",
             action="store_true",
@@ -33,17 +46,18 @@ class RandomCooperativeGenerator(RandomSolvableGenerator):
             seed=args.seed,
         )
         obj.debug_rejections = bool(args.debug_rejections)
+        obj.profile = args.profile
         return obj
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.debug_rejections = False
+        self.profile = "cooperative"
 
-    def _is_cooperative(self, world) -> bool:
+    def _analyze_profile(self, world):
         world.reset()
         adapted = LLEAdapter(world)
-        result = CooperationSolver(adapted, T_MAX=self.t_max).analyze()
-        return result.cooperation_needed
+        return CooperationProfileAnalyzer(adapted, T_MAX=self.t_max).analyze()
 
     def generate(self):
         for attempt in range(1, self.max_attempts + 1):
@@ -68,13 +82,20 @@ class RandomCooperativeGenerator(RandomSolvableGenerator):
                         print(f"[reject #{attempt}] outside_difficulty_window")
                     continue
 
-                if not self._is_cooperative(world):
+                analysis = self._analyze_profile(world)
+                if not analysis.matches_profile(self.profile):
                     if self.debug_rejections:
-                        print(f"[reject #{attempt}] non_cooperative")
+                        print(
+                            f"[reject #{attempt}] "
+                            f"profile={analysis.profile}, required={self.profile}"
+                        )
                     continue
 
                 if self.debug_rejections:
-                    print(f"[accept #{attempt}] cooperative_and_solvable")
+                    print(
+                        f"[accept #{attempt}] "
+                        f"profile={analysis.profile}, cooperative_and_solvable"
+                    )
                 return world
 
             except Exception as e:

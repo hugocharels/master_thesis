@@ -44,57 +44,21 @@ class ConstrainedRandomCooperativeGenerator(ConstrainedRandomSolvableGenerator):
         adapted = LLEAdapter(world)
         return CooperationProfileAnalyzer(adapted, T_MAX=self.t_max).analyze()
 
-    def generate(self):
-        attempts = 0
-        while attempts < self.max_attempts:
-            attempts += 1
-            layout = self._make_candidate_layout()
+    def _accept_world(self, world):
+        accepted, reason = super()._accept_world(world)
+        if not accepted:
+            return accepted, reason
 
-            valid, reason = self.validate_candidate(layout)
-            if not valid:
-                if self.debug_rejections:
-                    print(f"[reject #{attempts}] {reason}")
-                continue
+        analysis = self._analyze_profile(world)
+        if not analysis.matches_profile(self.profile):
+            return (
+                False,
+                f"profile={analysis.profile}, required={self.profile}",
+            )
 
-            try:
-                world = self._build_world_from_layout(layout)
-            except Exception as e:
-                if self.debug_rejections:
-                    print(f"[reject #{attempts}] lle_build_error={type(e).__name__}")
-                continue
-
-            try:
-                if not self._meets_difficulty_window(world):
-                    if self.debug_rejections:
-                        print(
-                            f"[reject #{attempts}] outside_difficulty_window"
-                            f"[t_min={self.t_min}, t_max={self.t_max}]"
-                        )
-                    continue
-
-                analysis = self._analyze_profile(world)
-                if not analysis.matches_profile(self.profile):
-                    if self.debug_rejections:
-                        print(
-                            f"[reject #{attempts}] "
-                            f"profile={analysis.profile}, required={self.profile}"
-                        )
-                    continue
-
-                if self.debug_rejections:
-                    print(
-                        f"[accept #{attempts}] "
-                        f"profile={analysis.profile}, constrained_cooperative_and_solvable"
-                    )
-                return world
-
-            except Exception as e:
-                if self.debug_rejections:
-                    print(f"[reject #{attempts}] solver_error={type(e).__name__}")
-                continue
-
-        raise RuntimeError(
-            "Could not find a valid constrained cooperative world in "
-            f"{self.max_attempts} attempts for window "
-            f"t_min={self.t_min}, t_max={self.t_max}."
+        return True, (
+            f"profile={analysis.profile}, constrained_cooperative_and_solvable"
         )
+
+    def _failure_description(self) -> str:
+        return "a valid constrained cooperative world"

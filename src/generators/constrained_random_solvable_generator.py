@@ -111,46 +111,13 @@ class ConstrainedRandomSolvableGenerator(RandomSolvableGenerator):
 
         return True, "ok"
 
-    def generate(self):
-        attempts = 0
-        while attempts < self.max_attempts:
-            attempts += 1
-            layout = self._make_candidate_layout()
+    def _accept_world(self, world):
+        accepted, reason = super()._accept_world(world)
+        if accepted:
+            return True, (
+                f"sat@t_max={self.t_max} and (t_min={self.t_min} respected)"
+            )
+        return accepted, reason
 
-            valid, reason = self.validate_candidate(layout)
-            if not valid:
-                if self.debug_rejections:
-                    print(f"[reject #{attempts}] {reason}")
-                continue
-
-            try:
-                world = self._build_world_from_layout(layout)
-            except Exception as e:
-                if self.debug_rejections:
-                    print(f"[reject #{attempts}] lle_build_error={type(e).__name__}")
-                continue
-
-            try:
-                if self._meets_difficulty_window(world):
-                    if self.debug_rejections:
-                        print(
-                            f"[accept #{attempts}] sat@t_max={self.t_max} "
-                            f"and (t_min={self.t_min} respected)"
-                        )
-                    return world
-
-                if self.debug_rejections:
-                    print(
-                        f"[reject #{attempts}] "
-                        f"outside_difficulty_window[t_min={self.t_min}, t_max={self.t_max}]"
-                    )
-            except Exception as e:
-                if self.debug_rejections:
-                    print(f"[reject #{attempts}] solver_error={type(e).__name__}")
-                continue
-
-        raise RuntimeError(
-            "Could not find a valid constrained solvable world in "
-            f"{self.max_attempts} attempts for window "
-            f"t_min={self.t_min}, t_max={self.t_max}."
-        )
+    def _failure_description(self) -> str:
+        return "a valid constrained solvable world"

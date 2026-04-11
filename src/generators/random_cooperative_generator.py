@@ -59,52 +59,19 @@ class RandomCooperativeGenerator(RandomSolvableGenerator):
         adapted = LLEAdapter(world)
         return CooperationProfileAnalyzer(adapted, T_MAX=self.t_max).analyze()
 
-    def generate(self):
-        for attempt in range(1, self.max_attempts + 1):
-            layout = self._make_candidate_layout()
+    def _accept_world(self, world):
+        accepted, reason = super()._accept_world(world)
+        if not accepted:
+            return accepted, reason
 
-            valid, reason = self.validate_candidate(layout)
-            if not valid:
-                if self.debug_rejections:
-                    print(f"[reject #{attempt}] invalid_layout={reason}")
-                continue
+        analysis = self._analyze_profile(world)
+        if not analysis.matches_profile(self.profile):
+            return (
+                False,
+                f"profile={analysis.profile}, required={self.profile}",
+            )
 
-            try:
-                world = self._build_world_from_layout(layout)
-            except Exception as e:
-                if self.debug_rejections:
-                    print(f"[reject #{attempt}] lle_build_error={type(e).__name__}")
-                continue
+        return True, f"profile={analysis.profile}, cooperative_and_solvable"
 
-            try:
-                if not self._meets_difficulty_window(world):
-                    if self.debug_rejections:
-                        print(f"[reject #{attempt}] outside_difficulty_window")
-                    continue
-
-                analysis = self._analyze_profile(world)
-                if not analysis.matches_profile(self.profile):
-                    if self.debug_rejections:
-                        print(
-                            f"[reject #{attempt}] "
-                            f"profile={analysis.profile}, required={self.profile}"
-                        )
-                    continue
-
-                if self.debug_rejections:
-                    print(
-                        f"[accept #{attempt}] "
-                        f"profile={analysis.profile}, cooperative_and_solvable"
-                    )
-                return world
-
-            except Exception as e:
-                if self.debug_rejections:
-                    print(f"[reject #{attempt}] solver_error={type(e).__name__}")
-                continue
-
-        raise RuntimeError(
-            "Could not find a cooperative solvable world in "
-            f"{self.max_attempts} attempts for window "
-            f"t_min={self.t_min}, t_max={self.t_max}."
-        )
+    def _failure_description(self) -> str:
+        return "a cooperative solvable world"

@@ -156,6 +156,25 @@ class RandomSolvableGenerator(BaseGenerator):
     def validate_candidate(self, layout: CandidateLayout) -> tuple[bool, str]:
         return True, "ok"
 
+    def _accept_world(self, world: World) -> tuple[bool, str]:
+        if not self._meets_difficulty_window(world):
+            return (
+                False,
+                f"outside_difficulty_window[t_min={self.t_min}, t_max={self.t_max}]",
+            )
+        return True, "satisfiable"
+
+    def _failure_description(self) -> str:
+        return "a valid solvable world"
+
+    def _debug_reject(self, attempt: int, reason: str) -> None:
+        if getattr(self, "debug_rejections", False):
+            print(f"[reject #{attempt}] {reason}")
+
+    def _debug_accept(self, attempt: int, reason: str) -> None:
+        if getattr(self, "debug_rejections", False):
+            print(f"[accept #{attempt}] {reason}")
+
     def _is_satisfiable(self, world: World, t: int) -> bool:
         world.reset()
         adapted = LLEAdapter(world)
@@ -176,25 +195,36 @@ class RandomSolvableGenerator(BaseGenerator):
         return not self._is_satisfiable(world, self.t_min - 1)
 
     def generate(self) -> World:
-        for _ in range(self.max_attempts):
+        self.last_attempts = 0
+        for attempt in range(1, self.max_attempts + 1):
+            self.last_attempts = attempt
             layout = self._make_candidate_layout()
 
             valid, _reason = self.validate_candidate(layout)
             if not valid:
+                self._debug_reject(attempt, f"invalid_layout={_reason}")
                 continue
 
             try:
                 world = self._build_world_from_layout(layout)
-            except Exception:
+            except Exception as exc:
+                self._debug_reject(
+                    attempt, f"lle_build_error={type(exc).__name__}"
+                )
                 continue
 
             try:
-                if self._meets_difficulty_window(world):
+                accepted, reason = self._accept_world(world)
+                if accepted:
+                    self._debug_accept(attempt, reason)
                     return world
-            except Exception:
+                self._debug_reject(attempt, reason)
+            except Exception as exc:
+                self._debug_reject(attempt, f"solver_error={type(exc).__name__}")
                 continue
 
         raise RuntimeError(
-            f"Could not find a valid solvable world in {self.max_attempts} attempts "
-            f"for window t_min={self.t_min}, t_max={self.t_max}."
+            f"Could not find {self._failure_description()} in "
+            f"{self.max_attempts} attempts for window "
+            f"t_min={self.t_min}, t_max={self.t_max}."
         )

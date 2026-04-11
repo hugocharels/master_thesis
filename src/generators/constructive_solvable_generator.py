@@ -141,42 +141,11 @@ class ConstructiveSolvableGenerator(ConstrainedRandomSolvableGenerator):
             return None
         return lasers
 
-    def generate(self):
-        self.last_attempts = 0
-        for attempt in range(1, self.max_attempts + 1):
-            self.last_attempts = attempt
-            layout = self._make_candidate_layout()
+    def _accept_world(self, world):
+        accepted, reason = super()._accept_world(world)
+        if accepted:
+            return True, "constructive_satisfiable"
+        return accepted, reason
 
-            valid, reason = self.validate_candidate(layout)
-            if not valid:
-                if self.debug_rejections:
-                    print(f"[reject #{attempt}] {reason}")
-                continue
-
-            try:
-                world = self._build_world_from_layout(layout)
-            except Exception as exc:
-                if self.debug_rejections:
-                    print(f"[reject #{attempt}] lle_build_error={type(exc).__name__}")
-                continue
-
-            try:
-                if self._meets_difficulty_window(world):
-                    if self.debug_rejections:
-                        print(f"[accept #{attempt}] constructive_satisfiable")
-                    return world
-                if self.debug_rejections:
-                    print(
-                        f"[reject #{attempt}] outside_difficulty_window"
-                        f"[t_min={self.t_min}, t_max={self.t_max}]"
-                    )
-            except Exception as exc:
-                if self.debug_rejections:
-                    print(f"[reject #{attempt}] solver_error={type(exc).__name__}")
-                continue
-
-        raise RuntimeError(
-            "Could not find a valid constructive solvable world in "
-            f"{self.max_attempts} attempts for window "
-            f"t_min={self.t_min}, t_max={self.t_max}."
-        )
+    def _failure_description(self) -> str:
+        return "a valid constructive solvable world"

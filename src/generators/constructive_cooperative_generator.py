@@ -44,8 +44,6 @@ class ConstructiveCooperativeGenerator(ConstructiveSolvableGenerator):
             return None
 
         lane_rows = list(range(1, self.agents + 1))
-        helper_row = lane_rows[0]
-        beneficiary_row = lane_rows[1]
         beam_col = self._rng.randint(1, self.cols - 2)
 
         agents = [(row, 0) for row in lane_rows]
@@ -88,56 +86,19 @@ class ConstructiveCooperativeGenerator(ConstructiveSolvableGenerator):
         adapted = LLEAdapter(world)
         return CooperationProfileAnalyzer(adapted, T_MAX=self.t_max).analyze()
 
-    def generate(self):
-        self.last_attempts = 0
-        for attempt in range(1, self.max_attempts + 1):
-            self.last_attempts = attempt
-            layout = self._make_candidate_layout()
+    def _accept_world(self, world):
+        accepted, reason = super()._accept_world(world)
+        if not accepted:
+            return accepted, reason
 
-            valid, reason = self.validate_candidate(layout)
-            if not valid:
-                if self.debug_rejections:
-                    print(f"[reject #{attempt}] {reason}")
-                continue
+        analysis = self._analyze_profile(world)
+        if not analysis.matches_profile(self.profile):
+            return (
+                False,
+                f"profile={analysis.profile}, required={self.profile}",
+            )
 
-            try:
-                world = self._build_world_from_layout(layout)
-            except Exception as exc:
-                if self.debug_rejections:
-                    print(f"[reject #{attempt}] lle_build_error={type(exc).__name__}")
-                continue
+        return True, f"profile={analysis.profile}, constructive_cooperative"
 
-            try:
-                if not self._meets_difficulty_window(world):
-                    if self.debug_rejections:
-                        print(
-                            f"[reject #{attempt}] outside_difficulty_window"
-                            f"[t_min={self.t_min}, t_max={self.t_max}]"
-                        )
-                    continue
-
-                analysis = self._analyze_profile(world)
-                if not analysis.matches_profile(self.profile):
-                    if self.debug_rejections:
-                        print(
-                            f"[reject #{attempt}] "
-                            f"profile={analysis.profile}, required={self.profile}"
-                        )
-                    continue
-
-                if self.debug_rejections:
-                    print(
-                        f"[accept #{attempt}] "
-                        f"profile={analysis.profile}, constructive_cooperative"
-                    )
-                return world
-            except Exception as exc:
-                if self.debug_rejections:
-                    print(f"[reject #{attempt}] solver_error={type(exc).__name__}")
-                continue
-
-        raise RuntimeError(
-            "Could not find a valid constructive cooperative world in "
-            f"{self.max_attempts} attempts for window "
-            f"t_min={self.t_min}, t_max={self.t_max}."
-        )
+    def _failure_description(self) -> str:
+        return "a valid constructive cooperative world"

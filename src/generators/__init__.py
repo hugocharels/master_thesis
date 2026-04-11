@@ -1,4 +1,8 @@
 from generators.base_generator import BaseGenerator
+from generators.constructive_cooperative_generator import (
+    ConstructiveCooperativeGenerator,
+)
+from generators.constructive_solvable_generator import ConstructiveSolvableGenerator
 from generators.constrained_random_cooperative_generator import (
     ConstrainedRandomCooperativeGenerator,
 )

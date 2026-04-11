@@ -1,4 +1,4 @@
-== Problem Formalization
+== Problem Formalization <formalization>
 
 We now formally define the objects and properties at the centre of this thesis. This section
 operates at the level of the game semantics; the SAT encoding of these properties follows in
@@ -19,6 +19,7 @@ An LLE level is a tuple $L = (H, W, C, s, cal(W), cal(S), cal(E))$ where:
 - $D = {N, S, E, W}$ is the set of laser directions.
 - $cal(S) subset.eq C times D times P$ is the set of laser sources. A source
   $(c, d, p) in cal(S)$ emits a laser of colour $c$ in direction $d$ from position $p$.
+- In the instances studied in this thesis, each colour appears in at most one laser source.
 - $cal(E) subset.eq P$ is the set of exit positions, with $|cal(E)| = |C|$.
 
 
@@ -37,6 +38,10 @@ A joint trajectory is *valid* if it satisfies the following conditions:
   step: the agent may stay in place or move to a 4-neighbouring cell, but it may not move into a
   wall or a laser-source cell.
 + *No collision:* $p_t(c_1) eq.not p_t(c_2)$ for all $t$ and all distinct $c_1, c_2 in C$.
++ *Conservative hand-off rule:* For all $t < T$ and all distinct $c_1, c_2 in C$, agents may not
+  enter a cell occupied by another agent at the previous time step; that is,
+  $p_(t+1)(c_1) eq.not p_t(c_2)$ and $p_t(c_1) eq.not p_(t+1)(c_2)$. This matches the collision
+  model enforced by the SAT encoding used in the implementation.
 + *Laser safety:* No agent $c_1$ occupies a cell at time $t$ where a laser of colour
   $c_2 eq.not c_1$ is active.
 + *Stay on exit:* If $p_t(c) in cal(E)$ for some $t < T$, then $p_(t+1)(c) = p_t(c)$.

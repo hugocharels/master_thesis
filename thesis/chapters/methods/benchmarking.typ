@@ -1,17 +1,53 @@
 == Benchmarking Setup <benchmarking>
 
-// TODO: define once metrics are decided
-// Tentative metrics to evaluate:
-// - Solver performance: solve time vs. grid size, number of agents, T_max
-// - Generator acceptance rate: fraction of candidates accepted per generator type
-// - Cooperation rate: fraction of solvable levels that require cooperation (random baseline)
-// - Level diversity: structural diversity of accepted levels (wall layout, laser placement)
-// - Scalability: how solver time scales with level size
+The first benchmark implemented in this project isolates the SAT solver rather than the generators.
+Its goal is to compare the two movement formulations used in the encoding: the *local* formulation,
+which combines neighbourhood-based exclusivity with backward consistency, and the *global*
+formulation, which enforces uniqueness by pairwise exclusion over the whole grid.
 
-// Experimental protocol:
-// - Fix grid sizes (e.g., 5x5, 6x6, 8x8), number of agents (2, 3, 4)
-// - Run each generator N times, record acceptance rate, solve time, cooperation rate
-// - Compare constrained vs. unconstrained generators on acceptance rate
-// - Profile solver: measure CNF size (variables, clauses) vs. level parameters
+=== Metrics
 
-#lorem(3) // TODO: fill in once metrics and protocol are finalized
+For each run, the benchmarking code records:
+
+- the total number of clauses in the generated CNF;
+- the clause count contributed by each major constraint family;
+- the CNF generation time;
+- the SAT solving time;
+- the total time obtained by summing generation and solving.
+
+The implementation also stores per-constraint method profiles for the movement constraint, which
+allows us to inspect how much of the final CNF is attributable specifically to the local or global
+uniqueness mechanism.
+
+
+=== Solver and Level Sets
+
+All benchmark runs use the same SAT backend as the main solver implementation, namely `Minisat22`
+through the PySAT interface. By default, the benchmarking script can evaluate the six hand-crafted
+LLE levels listed in `levels.py`, each paired with a horizon known to be sufficient for solvability.
+It can also benchmark custom levels constructed programmatically with `WorldBuilder`.
+
+The experiment reported in Chapter 5 uses four representative levels: three synthetic instances of
+increasing size and one original LLE level. This combination exposes both scaling behaviour and the
+behaviour of the solver on a realistic cooperative puzzle.
+
+
+=== Protocol
+
+For each level and each movement formulation, the benchmark performs one profiled run to extract the
+exact clause counts and the full constraint breakdown. It then repeats the same solver invocation
+for 100 runs, each time on a fresh copy of the world, and reports the mean and standard deviation
+of generation time and solve time. Using fresh world copies avoids benchmark contamination by
+mutable environment state.
+
+No timeout or parallel speedup is introduced in this protocol. The measurements should therefore be
+read as direct comparisons between the two SAT formulations on the same machine, rather than as
+hardware-independent absolute performance claims.
+
+
+=== Outputs
+
+The benchmarking pipeline produces a console summary table, a JSON file containing the raw
+measurements, and a set of plots for clause counts, per-constraint clause breakdowns, and timing
+statistics. Chapter 5 draws on these outputs to interpret the trade-off between the two movement
+formulations.

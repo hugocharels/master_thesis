@@ -6,30 +6,41 @@ increasing complexity.
 
 == Experimental Setup
 
-=== Clause Count Analysis
+This experiment follows the protocol of <benchmarking>. All runs use the `Minisat22` backend
+through PySAT. For each level and each movement formulation, the benchmark records one exact clause
+profile and then repeats the solve 100 times to obtain mean generation and solve times with
+standard-deviation error bars.
 
-The two formulations differ in the number of clauses they generate to enforce that each agent
-occupies at most one position per time step (see <sat-reduction> for the full constraint
-definitions).
+The analytical comparison is driven by the uniqueness constraint itself. The *global* formulation
+adds a clause for every unordered pair of positions, yielding a quadratic contribution in $|P|$.
+The *local* formulation restricts exclusivity to neighbourhood-sized successor sets and supplements
+it with backward consistency, yielding a linear contribution in $|P|$ because $|"next"(x,y)| <= 5$.
+The blocked-cell clauses introduced in <sat-reduction> are shared by both formulations and
+therefore do not affect the comparison between them.
 
-*Global uniqueness* generates a clause for every pair of distinct positions in $P$, for every
-agent and time step. The clause count per agent per time step is:
-
+More precisely, if we isolate the *method-specific* contribution of the uniqueness mechanism, then
+for one agent and one time step we obtain:
 $
-  binom(|P|, 2) = ((|P|-1)|P|)/2 in O(|P|^2)
+  "global uniqueness" = binom(|P|, 2) = ((|P| - 1) |P|) / 2
 $
-
-*Local uniqueness* only generates clauses over pairs of positions reachable from a common
-predecessor in $"next"(x, y)$, plus backward consistency. Since $|"next"(x,y)| <= 5$, the
-clause count per agent per time step is:
-
 $
-  (binom(5, 2) + 1)|P| = 11|P| in O(|P|)
+  "local uniqueness + backward consistency"
+  = sum_(u in V) binom(|"next"(u)|, 2) + |V|
 $
-
-The theoretical crossover — where global becomes more expensive than local — occurs at
-$|P| = 23$: for grids with fewer than 23 walkable cells global generates fewer clauses; above
-this threshold local is more compact.
+where $V$ denotes the set of walkable cells. Since $|"next"(u)| <= 5$ for every $u in V$, this
+local term satisfies
+$
+  sum_(u in V) binom(|"next"(u)|, 2) + |V|
+  <= (binom(5, 2) + 1) |V|
+  <= 11 |P|
+$
+This yields the theoretical crossover used to interpret the plots: the global contribution is
+smaller on very small instances, but once
+$
+  binom(|P|, 2) > 11 |P|
+$
+the local contribution becomes smaller. The upper-bound crossover occurs at $|P| = 23$, where the
+two expressions are equal.
 
 
 === Test Levels
@@ -41,9 +52,9 @@ Four levels of increasing size and complexity were used:
     columns: 4,
     gutter: 8pt,
     align: center,
-    [*3×3* \ 2 agents, 1 laser],
-    [*5×5* \ 3 agents, 2 lasers],
-    [*8×8* \ 4 agents, 3 lasers],
+    [*3x3* \ 2 agents, 1 laser],
+    [*5x5* \ 3 agents, 2 lasers],
+    [*8x8* \ 4 agents, 3 lasers],
     [*LLE Level 6* \ 4 agents, 3 lasers],
 
     image("../../results/MLG-Student-Day/level_3x3_agents_2_lasers_1.png", width: 100%),
@@ -71,8 +82,14 @@ LLE benchmark, included to assess solver performance on a realistic cooperative 
   ],
 )
 
-// TODO: describe what the plot shows — which formulation generates more clauses on which
-// levels, whether the crossover at |P|=23 is visible, quantitative observations
+The clause-count results closely match the theoretical expectation. On the smallest $3 times 3$ level,
+the global formulation is slightly more compact than the local one (753 clauses versus 785),
+which is consistent with the fact that the instance lies below the expected crossover regime.
+From the $5 times 5$ level onward the trend reverses: the local formulation generates 6,216 clauses
+versus 8,226 for the global one, then 77,612 versus 166,832 on the $8 times 8$ level, and finally
+253,096 versus 1,167,772 on LLE Level 6. The gap widens rapidly as the number of walkable cells
+and interacting agents increases, which is precisely the behaviour predicted by the linear versus
+quadratic growth of the two formulations.
 
 
 === Solving Time
@@ -85,14 +102,25 @@ LLE benchmark, included to assess solver performance on a realistic cooperative 
   ],
 )
 
-// TODO: describe what the plot shows — how solve time compares between formulations,
-// whether time scales with clause count, any surprising results
+The timing results show the same qualitative picture. On the smallest synthetic levels both
+methods solve essentially instantaneously, and the difference is negligible. Once the instances
+become moderately large, however, the local formulation is consistently faster both to generate and
+to solve. The contrast is especially visible on the $8 times 8$ level, where the global formulation has
+the largest solve-time penalty, and on LLE Level 6, where the cost of generating the much larger
+global CNF dominates total runtime. In other words, the clause-count reduction is not merely a
+syntactic improvement; it translates into a measurable performance gain.
 
 
 == Discussion
 
-// TODO: summarise findings, state which formulation is preferred and why,
-// connect back to the theoretical crossover prediction
+The experiment supports a clear design choice. The global formulation can be marginally attractive
+on very small grids because it introduces fewer clauses there, but this advantage disappears almost
+immediately. For the levels of practical interest in this thesis, the local formulation is both
+more compact and faster. We therefore treat the local encoding as the preferred default in the
+implementation.
 
-// TODO: extend with cooperation detection experiments, generator acceptance rates,
-// and level diversity once additional code is complete
+The broader experimental agenda remains open. In particular, cooperation-detection cost,
+generator acceptance rates, and structural diversity of accepted levels should be studied in a
+dedicated second experimental phase. The current benchmark nonetheless establishes an important
+baseline: the movement formulation chosen inside the SAT encoding has a first-order effect on both
+CNF size and runtime, and that effect is already substantial on realistic LLE instances.

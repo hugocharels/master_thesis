@@ -115,7 +115,10 @@ The full LLE implementation contains additional mechanics that are not modelled 
 such as gems that provide rewards and void tiles that eliminate agents. We intentionally omit these
 mechanics from the formal model because they are not needed for the bounded solvability questions
 studied here. In particular, void tiles can be conservatively replaced by walls when constructing
-instances for the current solver.
+instances for the current solver. Likewise, when we move to the SAT model, laser contact is encoded
+as forbidden occupancy rather than as an explicit elimination transition. This simplification is
+sound for the bounded reachability questions studied here because any trajectory that steps onto a
+deadly beam is losing and therefore irrelevant to solvability.
 
 
 === An Illustrative Example
@@ -124,14 +127,14 @@ instances for the current solver.
   image("../../assets/lvl6-annotated.png", width: 65%),
   caption: [
     An annotated LLE level. Laser beams (coloured lines) block movement for agents of a different
-    colour. The red agent blocks the red laser to allow the yellow agent to pass - a
+    colour. The yellow agent blocks the yellow laser to allow the other agents to pass - a
     cooperative act that yields no intermediate reward.
   ],
 )
 
 The figure above illustrates a typical LLE level. The yellow agent must position itself in the path
-of the yellow laser, blocking it so that all other agents can pass through cells the beam would
-otherwise reach. This blocking act is purely beneficial to others agents: the yellow agent is
+of the yellow laser, blocking it so that the other agents can pass through cells the beam would
+otherwise reach. This blocking act is purely beneficial to the other agents: the yellow agent is
 immune to its own laser and gains nothing directly from the manoeuvre. The level cannot be
 completed without this cooperative step, yet no reward is given for performing it.
 

@@ -1,7 +1,4 @@
-// imports
-#import "@preview/dashy-todo:0.1.0": todo
-
-// Set things
+// Document settings
 
 #set page(
   number-align: center,
@@ -24,7 +21,6 @@
       let content = text(strong(it.body), 30pt)
       chapter + [ \ \ ] + content + [ \ \ ]
     } else {
-      // Table of Content + Bibliography
       if it.body == [Conclusion] {
         pagebreak()
         v(100pt)
@@ -36,14 +32,13 @@
       }
     }
   } else {
-    // Subsections
     [ \ ] + it
     v(10pt)
   }
 }
 
 
-// Cover Page
+// Cover page
 
 #text(14pt)[Faculty of Sciences #h(1fr) Department of Computer Sciences]
 
@@ -60,14 +55,12 @@
   #smallcaps("Master thesis")
 ])
 
-
 #v(10pt)
 
 #align(center, text(18pt)[
-  *Procedural Generation of Solvable Levels in \ Multi-Agent
-  Reinforcement Learning Environment*
+  *Procedural Generation of Solvable Cooperative Levels for the \
+  Laser Learning Environment*
 ])
-
 
 #v(10pt)
 
@@ -91,28 +84,24 @@
 
 #pagebreak()
 
-// Table Of Content
+// Table of contents
 #outline()
 
 #counter(page).update(0)
 #set page(numbering: "1")
 
-// ── Chapter 1 ────────────────────────────────────────────────────────────────
 = Introduction
 
 #include "chapters/introduction.typ"
 
-// ── Chapter 2 ────────────────────────────────────────────────────────────────
 = Background
 
 #include "chapters/background.typ"
 
-// ── Chapter 3 ────────────────────────────────────────────────────────────────
 = Related Work
 
 #include "chapters/related_work.typ"
 
-// ── Chapter 4 ────────────────────────────────────────────────────────────────
 = Methods
 
 #include "chapters/methods/formalization.typ"
@@ -127,16 +116,13 @@
 
 #include "chapters/methods/benchmarking.typ"
 
-// ── Chapter 5 ────────────────────────────────────────────────────────────────
 = Experiments <experiments>
 
 #include "chapters/experiments.typ"
 
-// ── Chapter 6 ────────────────────────────────────────────────────────────────
 = Conclusion
 
 #include "chapters/conclusion.typ"
-
 
 #pagebreak()
 #bibliography("bibliography.bib", full: true)

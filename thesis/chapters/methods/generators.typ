@@ -5,13 +5,18 @@
 All generators follow a common architecture built around three principles:
 
 + *SAT as oracle*: the solver is not post-hoc; it is embedded in the generation loop. A candidate
-  level is only accepted if the solver confirms the desired property (solvability, cooperation).
+  level is accepted only if the solver confirms the desired property (solvability, cooperation).
 + *Separation of concerns*: level construction and property verification are decoupled. Generators
   build candidate levels using domain-specific heuristics; the solver decides acceptance.
 + *Extensibility*: every generator extends `BaseGenerator` and is registered via the
   `@register_generator` decorator, making it available to the CLI without modifying core code.
 
-#lorem(2) // TODO: add small code or pseudocode snippet showing the generator loop pattern
+In implementation terms, each generator repeatedly performs the following loop: sample or
+construct a candidate layout, reject it if it violates generator-specific structural constraints,
+build an `lle.World`, and finally run the appropriate SAT-based acceptance test. Solvable
+generators stop after the first candidate certified satisfiable within the target horizon, while
+cooperative generators add the strict-semantics counterfactual test and, optionally, a
+cooperation-profile filter.
 
 
 === Generation Targets
@@ -40,56 +45,59 @@ and unsolvable levels in category (a) are always rejected.
 
 === Random Solvable Generator
 
-The simplest generator. It samples a level uniformly at random (wall placement, laser sources,
-agent starts and exits), then queries the SAT solver. If SAT, the level is accepted; otherwise a
-new sample is drawn. The process repeats until a solvable level is found or a budget is exhausted.
+The random solvable generator is the baseline member of the family. It samples pairwise-distinct
+positions for agent starts, exits, walls, and laser sources uniformly over the grid, assigns a
+random direction to each source, and submits the resulting world to the solver. A candidate is
+accepted only if it is satisfiable within the requested horizon $T_("max")$; when a lower bound
+$T_("min")$ is provided, the generator also requires the candidate to be unsatisfiable for
+$T_("min") - 1$, thereby selecting levels that fall inside a difficulty window.
 
-// Parameters: grid size (H x W), number of agents, wall density, laser count, time horizon T_max
-// Strength: simple, unbiased distribution over solvable levels
-// Weakness: low acceptance rate for large grids or many agents; most random levels are unsolvable
-
-#lorem(2) // TODO: write full description
+This generator is deliberately simple. Its main value is methodological: it gives an unbiased
+sampling baseline against which more structured generators can be compared. Its main weakness is
+rejection rate. As the grid grows and the number of interacting entities increases, purely random
+layouts quickly become dominated by unsolvable or trivial instances.
 
 
 === Constrained Random Solvable Generator
 
-A structured variant that biases generation toward solvable configurations by construction, while
-still using the solver to verify. Constraints applied during sampling include:
+A structured variant that biases generation toward solvable configurations before any SAT call is
+made. Relative to the random solvable generator, it rejects candidates that are already
+geometrically degenerate, for example when a laser points outside the grid immediately, when a
+laser would have zero beam length, or when an exit lies on an unavoidable beam segment.
 
-- Ensuring exits are reachable from starting positions.
-- Limiting wall density to preserve navigable space.
-- Placing laser sources only where beams have non-trivial reach.
-
-This reduces the rejection rate compared to the fully random generator while preserving diversity.
-
-#lorem(2) // TODO: write full description and detail which constraints are applied
+These filters do not themselves prove solvability, but they remove a large class of obviously bad
+candidates before invoking the solver. The generator therefore remains sound with respect to the
+formal solvability guarantee, while typically spending less time on layouts that fail for purely
+local geometric reasons.
 
 
 === Random Cooperative Generator
 
-Extends the random solvable generator with a second SAT call based on the strict semantics. A level
-is accepted only if it is solvable under the standard encoding and requires cooperation under the
-criterion of <cooperation-detection>. This guarantees that every accepted level structurally
-requires inter-agent coordination.
+The random cooperative generator extends the random solvable generator with a second SAT test based
+on the strict semantics of <cooperation-detection>. A candidate is accepted only if it is
+satisfiable under the standard encoding and unsatisfiable under the strict encoding. This guarantees
+that every accepted level structurally requires inter-agent coordination.
 
-The current implementation augments this binary acceptance rule with a *cooperation profile
-analyzer*. The binary detector remains the formal guarantee used throughout the thesis: a level is
-cooperative if and only if it is satisfiable under the standard semantics and unsatisfiable under
-the strict semantics. The analyzer adds a second layer whose purpose is to distinguish *which kind*
-of cooperation the accepted level exhibits.
+The current implementation augments this binary guarantee with a *cooperation profile analyzer*.
+The binary detector remains the formal guarantee used throughout the thesis: a level is cooperative
+if and only if it is satisfiable under the standard semantics and unsatisfiable under the strict
+semantics. The analyzer adds a second layer whose purpose is to distinguish *which kind* of
+cooperation the accepted level exhibits.
 
-Given a cooperative level, we first extract a valid joint plan from the standard SAT model. We then
-run selective counterfactual checks in which one agent at a time loses the ability to block beams
-of its own colour. If the level becomes unsatisfiable under that selective restriction, the agent is
-identified as a necessary helper. By combining these counterfactual checks with the helping actions
-observed in the extracted plan, we build a directed dependency graph between agents.
+Given a cooperative level, we first extract a valid joint plan from the standard SAT model. We
+then run selective counterfactual checks in which one agent at a time loses the ability to block
+beams of its own colour. If the level becomes unsatisfiable under that selective restriction, the
+agent is identified as a necessary helper. By combining these counterfactual checks with the
+helping actions observed in the extracted plan, we build a directed dependency graph between
+agents.
 
 This dependency graph is used as a generation target. In the present implementation, the generator
 can recognise and filter levels according to the following profile families:
 
-- *independent*: no cooperation is required;
+- *cooperative*: binary cooperation is required, regardless of finer structure;
 - *asymmetric*: at least one one-way helping relation is present;
 - *mutual*: two agents depend on each other;
+- *chain*: dependencies form a directed chain without branching;
 - *distributed*: one agent depends on multiple distinct helpers;
 - *fully coupled*: all agents belong to a single strongly connected dependency component.
 
@@ -101,32 +109,51 @@ generator.
 
 === Constrained Random Cooperative Generator
 
-Combines the structural biases of the constrained solvable generator with the cooperation
-acceptance condition. Additionally applies heuristics that increase the probability of generating
-levels with cooperative structure:
+The constrained random cooperative generator combines the geometric filters of the constrained
+solvable generator with the binary cooperation test and optional profile filter of the random
+cooperative generator. In other words, it first avoids immediately degenerate geometries, then
+requires the surviving candidates to satisfy the same solver-based cooperation criterion.
 
-- Placing laser sources such that beams cross agent paths.
-- Biasing candidate layouts toward configurations where helper positions can affect teammates.
+This generator therefore targets the same formally certified output class as the random cooperative
+generator, but with a sampling distribution biased away from trivial failures. It is useful when
+the goal is not only to obtain cooperative levels, but to obtain them with fewer discarded samples.
 
-These heuristics increase the cooperation acceptance rate without sacrificing formal correctness:
-the solver remains the final arbiter.
 
-#lorem(2) // TODO: write full description and detail heuristics
+=== Constructive Solvable Generator
+
+The constructive solvable generator replaces blind sampling with a partial-by-construction layout.
+It reserves one disjoint horizontal or vertical lane per agent, places each start at one end of its
+lane and the corresponding exit at the other end, and only samples walls and lasers outside the
+reserved traversable lanes. Additional lasers are accepted only if their beam segments avoid the
+reserved cells. The solver still acts as the final verifier, but the sampling process is strongly
+biased toward jointly solvable instances.
+
+
+=== Constructive Cooperative Generator
+
+The constructive cooperative generator further specialises the constructive idea by planting a
+deliberate dependency pattern. One laser is placed so that a helper agent must block a beam of its
+own colour before a beneficiary lane becomes traversable. The resulting candidate is then verified
+with the standard and strict SAT encodings, and can optionally be filtered by cooperation profile.
+This generator is useful when one wants deliberately cooperative instances rather than merely
+sampling for cooperation and hoping to find it by rejection.
 
 
 === Summary
 
 #figure(
   table(
-    columns: 3,
+    columns: 4,
     stroke: black,
     inset: 8pt,
     align: horizon,
-    table.header([*Generator*], [*Solvable*], [*Cooperative*]),
-    [Random Solvable], [Yes (SAT check)], [No],
-    [Constrained Random Solvable], [Yes (SAT check)], [No],
-    [Random Cooperative], [Yes (SAT check)], [Yes (strict UNSAT)],
-    [Constrained Random Cooperative], [Yes (SAT check)], [Yes (strict UNSAT)],
+    table.header([*Generator*], [*Construction Bias*], [*Solvable*], [*Cooperative*]),
+    [Random Solvable], [Uniform random sampling], [Yes (SAT check)], [No],
+    [Constrained Random Solvable], [Random + geometric rejection], [Yes (SAT check)], [No],
+    [Random Cooperative], [Uniform random sampling], [Yes (SAT check)], [Yes (strict UNSAT)],
+    [Constrained Random Cooperative], [Random + geometric rejection], [Yes (SAT check)], [Yes (strict UNSAT)],
+    [Constructive Solvable], [Reserved agent lanes], [Yes (SAT check)], [No],
+    [Constructive Cooperative], [Reserved lanes + planted dependency], [Yes (SAT check)], [Yes (strict UNSAT)],
   ),
-  caption: [Overview of the four generators and their guaranteed properties.],
+  caption: [Overview of the implemented generators and their guaranteed properties.],
 )

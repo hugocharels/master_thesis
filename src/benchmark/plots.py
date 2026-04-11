@@ -10,7 +10,13 @@ from .runner import METHODS
 
 def _sort_level_keys(level_keys):
     """Sort numeric keys numerically, otherwise sort by string representation."""
-    return sorted(level_keys, key=lambda k: (not isinstance(k, (int, float)), str(k)))
+    return sorted(
+        level_keys,
+        key=lambda k: (
+            not isinstance(k, (int, float)),
+            float(k) if isinstance(k, (int, float)) else str(k),
+        ),
+    )
 
 
 def _get_levels_from_results(results):

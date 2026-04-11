@@ -39,8 +39,12 @@ class WorldSolver:
             MovementConstraints(self.ctx, movement_method=movement_method),
             LaserConstraints(self.ctx),
         ]
+        self._model_built = False
 
     def build_model(self):
+        if self._model_built:
+            return
+
         for constraint in self.constraints:
             constraint_name = constraint.__class__.__name__
 
@@ -54,17 +58,15 @@ class WorldSolver:
             else:
                 self.model.extend(constraint.generate())
 
+        self._model_built = True
+
     def solve(self):
         self.build_model()
-
-        solver = Minisat22()
-        solver.append_formula(self.model.cnf)
-
-        start_solve_time = time.perf_counter()
-        result = solver.solve()
-        solve_time = time.perf_counter() - start_solve_time
-
-        model = solver.get_model() if result else None
+        with Minisat22(bootstrap_with=self.model.cnf.clauses) as solver:
+            start_solve_time = time.perf_counter()
+            result = solver.solve()
+            solve_time = time.perf_counter() - start_solve_time
+            model = solver.get_model() if result else None
 
         if self.profiler:
             self.profiler.set_solve_results(solve_time, result)

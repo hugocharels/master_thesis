@@ -1,5 +1,6 @@
 import pytest
 from lle import World
+from pysat.solvers import Minisat22
 
 from generators.world_builder import Direction, WorldBuilder
 from solver import LLEAdapter, WorldSolver
@@ -173,3 +174,18 @@ def test_solver(width, height, agents, exits, walls, lasers, t, expected):
 def test_lle_levels(level, t, expected):
     world = World.level(level)
     assert solve(world, t) == expected
+
+
+def test_world_solver_can_be_reused_without_accumulating_constraints():
+    world = _world(2, 2, agents=[(0, 0)], exits=[(1, 1)])
+    solver = WorldSolver(LLEAdapter(world), T_MAX=2)
+
+    first_result, _ = solver.solve()
+    first_clause_count = len(solver.model.cnf.clauses)
+
+    second_result, _ = solver.solve()
+    second_clause_count = len(solver.model.cnf.clauses)
+
+    assert first_result is True
+    assert second_result is True
+    assert second_clause_count == first_clause_count

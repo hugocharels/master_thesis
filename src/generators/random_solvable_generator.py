@@ -38,14 +38,29 @@ class RandomSolvableGenerator(BaseGenerator):
         seed: int | None = None,
     ):
         self.rows, self.cols = size
+        if self.rows < 1 or self.cols < 1:
+            raise ValueError(
+                f"grid dimensions must be >= 1. Got size={size}"
+            )
         self.area = self.rows * self.cols
 
+        if agents < 1:
+            raise ValueError(f"agents must be >= 1. Got {agents}")
         self.agents = agents
         self.lasers = (agents - 1) if lasers is None else lasers
         self.num_walls = (self.area // 10) if num_walls is None else num_walls
         self.t_max = (self.area // 2) if t_max is None else t_max
         self.t_min = t_min
         self.max_attempts = max_attempts
+
+        if self.lasers < 0:
+            raise ValueError(f"lasers must be >= 0. Got {self.lasers}")
+
+        if self.num_walls < 0:
+            raise ValueError(f"num_walls must be >= 0. Got {self.num_walls}")
+
+        if self.t_max < 0:
+            raise ValueError(f"t_max must be >= 0. Got {self.t_max}")
 
         # Requested logical constraint
         if self.num_walls >= (self.area / 2):
@@ -59,6 +74,17 @@ class RandomSolvableGenerator(BaseGenerator):
         if self.t_min > self.t_max:
             raise ValueError(
                 f"t_min must be <= t_max. Got t_min={self.t_min}, t_max={self.t_max}"
+            )
+
+        if self.max_attempts < 1:
+            raise ValueError(
+                f"max_attempts must be >= 1. Got {self.max_attempts}"
+            )
+
+        total_needed = (2 * self.agents) + self.num_walls + self.lasers
+        if total_needed > self.area:
+            raise ValueError(
+                f"layout requires {total_needed} unique cells, but grid has only {self.area}"
             )
 
         self._rng = random.Random(seed)

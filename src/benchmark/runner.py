@@ -127,6 +127,9 @@ def run_benchmark(num_runs=100, levels=None):
     dict
         Nested dict: results[method][level_key] = { ... }
     """
+    if num_runs < 1:
+        raise ValueError(f"num_runs must be >= 1. Got {num_runs}")
+
     level_entries = list(_normalize_levels(levels))
     results = {}
 

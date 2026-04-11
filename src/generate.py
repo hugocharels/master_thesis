@@ -13,22 +13,23 @@ def main():
 
     for i in range(args.number):
         world = generator.generate()
+        image = world.get_image()
 
         if args.display or args.save:
             if args.display:
-                plt.imshow(world.get_image())
-                plt.axis("off")
+                fig, ax = plt.subplots()
+                ax.imshow(image)
+                ax.axis("off")
                 plt.show()
+                plt.close(fig)
 
             if args.save:
                 args.save.mkdir(parents=True, exist_ok=True)
                 filepath = args.save / f"generated_level_{i}.txt"
-                with open(filepath, "w") as f:
+                with filepath.open("w", encoding="utf-8") as f:
                     f.write(world.world_string)
 
-                plt.imshow(world.get_image())
-                plt.axis("off")
-                plt.savefig(args.save / f"generated_level_{i}.png")
+                plt.imsave(args.save / f"generated_level_{i}.png", image)
 
 
 if __name__ == "__main__":

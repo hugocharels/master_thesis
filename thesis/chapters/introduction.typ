@@ -1,69 +1,32 @@
 == Context
 
-Reinforcement Learning (RL) has established itself as a powerful paradigm for training autonomous
-agents to make sequential decisions by interacting with an environment. In single-agent settings,
-an agent repeatedly observes the state of the world, selects an action, and receives a scalar
-reward signal that it tries to maximise over time. This framework has produced remarkable results
-in domains ranging from board games to robotic control.
+Cooperative Multi-Agent Reinforcement Learning (MARL) studies settings in which several agents
+must learn behaviours that succeed only through coordination. In such settings, the environment is
+not merely a benchmark container: its structure determines which coordination patterns are possible,
+which ones are necessary, and how difficult they are to discover.
 
-Multi-Agent Reinforcement Learning (MARL) extends this paradigm to settings in which several
-agents act simultaneously within a shared environment. The agents may compete, cooperate, or
-coexist independently, and their policies influence one another's learning dynamics. Cooperative
-MARL, in particular, focuses on scenarios where a group of agents must jointly achieve a shared
-goal - a setting that arises naturally in applications such as robot swarm coordination,
-multi-robot task allocation, and cooperative strategy games.
-
-Cooperative tasks introduce challenges that go beyond single-agent RL. Agents must not only
-explore a potentially vast joint action space, but they must do so while accounting for the
-behaviour of their teammates. Reward signals are often sparse: in many cooperative settings, the
-team receives a reward only upon completing the full task, leaving agents with no intermediate
-feedback to guide exploration. This makes the discovery of coordinated strategies especially
-difficult when the required joint behaviour is long and precisely ordered.
-
-A dimension of cooperative MARL that is frequently underestimated is the role of the training
-environment itself. The structure of the levels or scenarios in which agents are trained directly
-determines what coordination behaviours they can discover and practise. A poorly designed
-environment - one that is unsolvable, trivially solvable by a single agent, or repetitive in
-structure - yields limited training signal and constrains generalisation. Conversely, a
-well-designed set of environments can expose agents to a rich variety of coordination challenges,
-accelerate learning, and produce more robust policies. Designing such environments at scale,
-however, is a labour-intensive process when done manually.
+This dependence on environment design is especially strong in sparse-reward cooperative tasks.
+When reward is issued only after a full joint objective has been achieved, a training level is
+useful only if it exposes a meaningful coordination challenge while remaining actually solvable.
+Levels that are unsolvable, trivial, or solvable without genuine inter-agent dependence provide
+poor training signal and limit what the agents can learn.
 
 
 == Motivation
 
-Procedural Content Generation (PCG) offers an alternative: the algorithmic, automatic creation of
-environments according to user-defined criteria. Originally developed for video game level design,
-PCG has since been applied to simulation-based agent training, where it enables the production of
-large, diverse sets of environments without manual intervention. In the MARL context, PCG can
-supply a steady stream of novel levels during training, reducing the risk of overfitting to a
-fixed set of hand-crafted scenarios and supporting generalisation across varied task structures.
+Procedural Content Generation (PCG) offers a way to scale environment design, but only if the
+generated instances satisfy the properties that matter for training. In the present setting, two
+properties are central.
 
-The central difficulty in applying PCG to cooperative MARL is ensuring that generated environments
-are meaningful: not only structurally well-formed, but genuinely solvable, and genuinely
-cooperative. These are non-trivial requirements.
+First, a level must be *solvable*: the agents must admit at least one valid joint execution that
+reaches the exits. Second, a level should *require cooperation*: success should depend on at least
+one agent enabling another agent's progress, rather than on several agents independently solving
+parallel subproblems.
 
-*Solvability* in a multi-agent setting is more demanding than in single-agent settings. It is not
-sufficient for each agent to have a path to its goal; the agents must be able to reach their goals
-simultaneously, following a joint sequence of actions that is consistent with all environmental
-constraints - including dynamic obstacles such as laser beams whose activity depends on the
-current positions of other agents. Testing whether such a joint solution exists is computationally
-non-trivial, and naively generating random environments yields mostly unsolvable configurations,
-especially as the grid size and number of agents grow.
-
-*Cooperation* must be structurally enforced. A level that can be solved by agents acting
-independently - without any agent ever assisting another - provides no training signal for
-cooperative behaviour. For a level to serve as a useful cooperative training instance, it must
-have the property that no agent can reach its goal unless at least one other agent performs a
-supporting action. Simply generating solvable levels does not guarantee this: the generator must
-be designed or constrained to produce configurations in which cooperation is a structural
-necessity, not an option.
-
-This thesis addresses both requirements together. We focus on the Laser Learning Environment
-(LLE) @LLE, a 2D grid-based cooperative benchmark for MARL, as our primary instantiation. LLE is
-particularly well-suited to this study: its laser-blocking mechanics create precisely the kind of
-inter-agent dependencies that make cooperation structurally necessary in certain configurations,
-and its well-defined grid representation is amenable to formal analysis.
+This thesis studies these questions in the Laser Learning Environment (LLE) @LLE, a 2D cooperative
+benchmark whose laser mechanics create explicit inter-agent dependencies. LLE is a useful case
+study because its grid structure is simple enough to formalise, yet rich enough to express
+non-trivial cooperative bottlenecks.
 
 
 == Problem Statement
@@ -78,8 +41,8 @@ We target two formal properties and one broader design objective:
   completed is useless for training.
 
 + *Cooperation requirement* - the level cannot be solved without at least one agent performing a
-  cooperative act (specifically, blocking a laser of its own colour to allow a teammate to pass).
-  This property ensures that the level is not trivially solvable by independent agent behaviour.
+  cooperative act, namely using same-colour occupancy to make a teammate's path traversable. This
+  property ensures that the level is not trivially solvable by independent agent behaviour.
 
 + *Learnability* - the generated instances should expose coordination patterns that are plausible
   training signals for MARL algorithms. Unlike solvability and cooperation, learnability is not
@@ -87,11 +50,9 @@ We target two formal properties and one broader design objective:
   terms of structural affordances that may facilitate exploration.
 
 The approach we adopt to address the first two properties is a reduction to Boolean
-Satisfiability (SAT): we encode the constraints of the LLE level as a propositional formula in
-conjunctive normal form (CNF), and delegate the solvability check to a modern SAT solver. The
-cooperation property is detected via a second SAT call on a stricter variant of the encoding.
-Both calls are embedded in a generation loop that produces levels until the desired properties
-are satisfied.
+Satisfiability (SAT): we encode the constraints of an LLE level as a propositional formula in
+conjunctive normal form (CNF), and delegate the decision procedure to a modern SAT solver. The
+generation algorithms then use these SAT checks as acceptance criteria.
 
 
 == Contributions
@@ -99,15 +60,14 @@ are satisfied.
 This thesis makes the following contributions:
 
 - *A SAT-based solver for bounded-horizon LLE solvability.* We provide a CNF encoding of the LLE
-  decision problem over a bounded time horizon $T$. Given a level and a horizon, the solver returns
-  SAT (with a satisfying assignment that encodes a valid joint trajectory) or UNSAT (certifying
-  that no solution exists within $T$ steps). The encoding is described in full in <sat-reduction>.
+  decision problem over a bounded time horizon. The solver either returns a satisfying assignment
+  encoding a valid joint trajectory or certifies that no such trajectory exists within the chosen
+  horizon (<sat-reduction>).
 
-- *A formal cooperation detector.* We define a strict variant of the LLE semantics in which agents
-  can no longer block beams of their own colour, thereby removing the laser-blocking action through
-  which agents help one another. We prove that a level requires cooperation if and only if the
-  standard encoding is satisfiable and the strict encoding is unsatisfiable. This gives a decision
-  procedure for the cooperation property based on two SAT calls (<cooperation-detection>).
+- *A formal cooperation detector.* We define a strict variant of the LLE beam semantics in which
+  agents can no longer use same-colour occupancy to truncate their own beams. We show that a level
+  requires this blocking-based cooperative action if and only if the standard encoding is
+  satisfiable and the strict encoding is unsatisfiable (<cooperation-detection>).
 
 - *A family of procedural level generators.* Building on the solver and cooperation detector, we
   implement six generators: random solvable, constrained random solvable, random cooperative,
@@ -119,34 +79,16 @@ This thesis makes the following contributions:
   agent-uniqueness constraint on four benchmark levels, measuring their effect on CNF size, model
   generation time, and solver runtime (<benchmarking>, <experiments>).
 
-The approach developed here is specific to LLE in its SAT encoding - the laser mechanics,
-colour-matching rules, and exit conditions are all embedded in the formula structure. However,
-the broader methodology - reducing solvability and cooperation to formal properties, verifying
-them via a constraint solver, and embedding the verifier in a generation loop - is general and
-can be adapted to other grid-based cooperative MARL environments, provided an appropriate
-encoding is designed for the target environment.
+The resulting framework is specific to LLE at the encoding level, but the broader methodology is
+more general: formalise the desired level properties, decide them with a solver, and place that
+verifier inside the generation loop.
 
 
 == Thesis Structure
 
 The remainder of this thesis is organised as follows.
 
-*Chapter 2 - Background* introduces the technical foundations needed to follow the thesis: the
-MARL framework and its cooperative variant, a detailed description of the Laser Learning
-Environment, an overview of Procedural Content Generation and its main paradigms, and an
-introduction to Boolean Satisfiability including its complexity-theoretic role in the context
-of LLE.
-
-*Chapter 3 - Related Work* positions the thesis with respect to prior work on procedural content
-generation, solvability-aware generation, and cooperative MARL benchmarks.
-
-*Chapter 4 - Methods* is the core of the thesis. It formalises the LLE level structure,
-solvability, and cooperation requirement; presents the full SAT encoding and its correctness
-argument; introduces the cooperation detection theorem and its proof; describes the six
-generators; and defines the benchmarking protocol.
-
-*Chapter 5 - Experiments* presents the empirical results on solver performance, CNF size, and the
-effect of the two movement formulations on benchmark instances.
-
-*Chapter 6 - Conclusion* summarises the main findings, discusses the limitations of the current
-approach, and outlines future extensions.
+Chapter 2 introduces only the background needed for the rest of the thesis. Chapter 3 positions
+the work relative to prior literature. Chapter 4 presents the formalisation, SAT reduction,
+cooperation detector, generators, and benchmarking protocol. Chapter 5 reports the experimental
+results. Chapter 6 concludes.

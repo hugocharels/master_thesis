@@ -15,7 +15,7 @@ In implementation terms, each generator repeatedly performs the following loop: 
 construct a candidate layout, reject it if it violates generator-specific structural constraints,
 build an `lle.World`, and finally run the appropriate SAT-based acceptance test. Solvable
 generators stop after the first candidate certified satisfiable within the target horizon, while
-cooperative generators add the strict-semantics counterfactual test and, optionally, a
+cooperative generators add the strict-beam counterfactual test and, optionally, a
 cooperation-profile filter.
 
 
@@ -76,7 +76,8 @@ local geometric reasons.
 The random cooperative generator extends the random solvable generator with a second SAT test based
 on the strict semantics of <cooperation-detection>. A candidate is accepted only if it is
 satisfiable under the standard encoding and unsatisfiable under the strict encoding. This guarantees
-that every accepted level structurally requires inter-agent coordination.
+that every accepted level structurally requires the beam-truncation mechanism identified as
+cooperation in Definition 4.7.
 
 The current implementation augments this binary guarantee with a *cooperation profile analyzer*.
 The binary detector remains the formal guarantee used throughout the thesis: a level is cooperative
@@ -85,11 +86,11 @@ semantics. The analyzer adds a second layer whose purpose is to distinguish *whi
 cooperation the accepted level exhibits.
 
 Given a cooperative level, we first extract a valid joint plan from the standard SAT model. We
-then run selective counterfactual checks in which one agent at a time loses the ability to block
-beams of its own colour. If the level becomes unsatisfiable under that selective restriction, the
-agent is identified as a necessary helper. By combining these counterfactual checks with the
-helping actions observed in the extracted plan, we build a directed dependency graph between
-agents.
+then run selective counterfactual checks in which one agent at a time loses the same-colour laser
+interaction used for helping behaviour. If the level becomes unsatisfiable under that selective
+restriction, the agent is identified as a necessary helper. By combining these counterfactual
+checks with the helping actions observed in the extracted plan, we build a directed dependency
+graph between agents.
 
 This dependency graph is used as a generation target. In the present implementation, the generator
 can recognise and filter levels according to the following profile families:
@@ -132,11 +133,12 @@ biased toward jointly solvable instances.
 === Constructive Cooperative Generator
 
 The constructive cooperative generator further specialises the constructive idea by planting a
-deliberate dependency pattern. One laser is placed so that a helper agent must block a beam of its
-own colour before a beneficiary lane becomes traversable. The resulting candidate is then verified
-with the standard and strict SAT encodings, and can optionally be filtered by cooperation profile.
-This generator is useful when one wants deliberately cooperative instances rather than merely
-sampling for cooperation and hoping to find it by rejection.
+deliberate dependency pattern. One laser is placed so that a helper agent must truncate a beam of
+its own colour before another lane becomes traversable. The resulting candidate is then verified
+with the standard and strict SAT encodings. In the current implementation, this generator supports
+the `cooperative` and `asymmetric` profile filters. It is useful when one wants deliberately
+cooperative instances rather than merely sampling for cooperation and hoping to find it by
+rejection.
 
 
 === Summary

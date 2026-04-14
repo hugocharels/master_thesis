@@ -37,7 +37,6 @@
   }
 }
 
-
 // Cover page
 
 #text(14pt)[Faculty of Sciences #h(1fr) Department of Computer Sciences]

@@ -16,8 +16,7 @@ For each run, the benchmarking code records:
 - the total time obtained by summing generation and solving.
 
 The implementation also stores per-constraint method profiles for the movement constraint, which
-allows us to inspect how much of the final CNF is attributable specifically to the local or global
-uniqueness mechanism.
+allows us to inspect the part of the final CNF generated inside the movement-constraint module.
 
 
 === Solver and Level Sets
@@ -47,7 +46,7 @@ hardware-independent absolute performance claims.
 
 === Outputs
 
-The benchmarking pipeline produces a console summary table, a JSON file containing the raw
-measurements, and a set of plots for clause counts, per-constraint clause breakdowns, and timing
-statistics. Chapter 5 draws on these outputs to interpret the trade-off between the two movement
-formulations.
+The benchmarking pipeline produces a console summary table, a JSON file containing aggregated
+benchmark statistics, and a set of plots for clause counts, per-constraint clause breakdowns, and
+timing statistics. Chapter 5 draws on these outputs to interpret the trade-off between the two
+movement formulations.

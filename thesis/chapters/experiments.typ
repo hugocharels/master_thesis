@@ -15,8 +15,8 @@ The analytical comparison is driven by the uniqueness constraint itself. The *gl
 adds a clause for every unordered pair of positions, yielding a quadratic contribution in $|P|$.
 The *local* formulation restricts exclusivity to neighbourhood-sized successor sets and supplements
 it with backward consistency, yielding a linear contribution in $|P|$ because $|"next"(x,y)| <= 5$.
-The blocked-cell clauses introduced in <sat-reduction> are shared by both formulations and
-therefore do not affect the comparison between them.
+The laser and collision clauses are shared by both formulations and therefore do not affect the
+comparison between them.
 
 More precisely, if we isolate the *method-specific* contribution of the uniqueness mechanism, then
 for one agent and one time step we obtain:

@@ -2,9 +2,10 @@
 
 This thesis developed a SAT-based framework for generating LLE levels with formal guarantees. We
 first reduced bounded-horizon LLE solvability to satisfiability of a CNF formula, then defined a
-strict laser semantics that turns cooperation detection into a second SAT query on the same level.
-On top of these decision procedures, we implemented a family of random, constrained, and
-constructive generators whose outputs are certified by the solver before acceptance.
+strict beam-semantics counterfactual that turns cooperation detection into a second SAT query on
+the same level. On top of these decision procedures, we implemented a family of random,
+constrained, and constructive generators whose outputs are certified by the solver before
+acceptance.
 
 The first experimental evaluation compared two movement formulations inside the SAT encoding. The
 results showed that the local formulation is the better default for the levels studied here: once

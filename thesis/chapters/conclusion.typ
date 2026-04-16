@@ -1,39 +1,57 @@
 == Summary
 
-This thesis developed a SAT-based framework for generating LLE levels with formal guarantees. We
-first reduced bounded-horizon LLE solvability to satisfiability of a CNF formula, then defined a
-strict beam-semantics counterfactual that turns cooperation detection into a second SAT query on
-the same level. On top of these decision procedures, we implemented a family of random,
-constrained, and constructive generators whose outputs are certified by the solver before
-acceptance.
+This thesis developed a SAT-based framework for reasoning about solvability and cooperation in a
+modeled subset of the Laser Learning Environment. We first formalised bounded-horizon solvability as
+a decision problem, then reduced it to satisfiability of a CNF formula. On top of that reduction,
+we introduced a strict beam-semantics counterfactual that turns the blocking-based cooperation
+mechanism of LLE into a second decision problem on the same level.
 
-The first experimental evaluation compared two movement formulations inside the SAT encoding. The
-results showed that the local formulation is the better default for the levels studied here: once
-the instances move beyond the smallest toy case, it produces substantially smaller CNF formulas and
-lower runtimes than the global all-pairs formulation.
+These decision procedures were then embedded inside a family of procedural generators. The resulting
+framework does not guarantee that generated levels are pedagogically optimal for MARL, but it does
+guarantee that accepted levels satisfy the formal properties checked by the solver. This is the
+central contribution of the thesis: procedural generation coupled to explicit certification rather
+than procedural generation guided only by heuristic plausibility.
+
+The empirical results reported in this thesis are narrower than the full framework. What has been
+evaluated experimentally is the effect of two alternative movement encodings inside the SAT model.
+That experiment shows that the local uniqueness formulation is the preferable default on the tested
+levels because it yields substantially smaller CNF formulas and lower runtimes once the instances
+move beyond the smallest toy case.
 
 
 == Limitations
 
-The current framework remains deliberately scoped. The encoding is tailored to the subset of LLE
-mechanics needed for solvability and cooperation analysis, so features such as gems and void tiles
-are abstracted away. The guarantees are also horizon-bounded: the solver decides whether a level is
-solvable within a fixed $T_("max")$, not whether it is solvable under an unbounded notion of play.
-Finally, the empirical results reported here cover only the movement-formulation comparison; they
-do not yet constitute a full evaluation of generator acceptance rates, diversity, or downstream
-learnability.
+The current work has four important limitations.
+
+- The formal model covers only the subset of LLE needed for solvability and cooperation analysis.
+  Mechanics such as gems and void tiles are outside the scope of the reduction.
+- The guarantees are horizon-bounded. The solver decides whether a level is solvable within a fixed
+  $T_("max")$, not whether it is solvable under an unbounded notion of play.
+- The cooperation notion studied here is intentionally specific: it captures same-colour
+  beam-truncation as the relevant cooperative act. It does not claim to exhaust every possible
+  interpretation of cooperation in multi-agent environments.
+- The experimental evaluation does not yet validate the full generator family. Acceptance rates,
+  diversity, cooperation-profile frequencies, and downstream MARL usefulness remain to be studied.
+
+These limitations do not invalidate the present results, but they do define their exact scope. The
+thesis establishes a formal generation-and-certification framework for a specific LLE model; it does
+not yet provide a complete empirical study of the generated level distribution.
 
 
 == Future Work
 
-Several natural extensions follow from these limitations.
+Several extensions follow directly from these limitations.
 
-- Extend the experimental section with generator-focused studies: acceptance rates, cooperation
-  profile frequencies, and diversity measures across parameter regimes.
-- Generalise the encoding to richer LLE mechanics or to other cooperative grid environments, while
-  preserving the same solver-in-the-loop methodology.
-- Investigate whether learnability can be linked to structural properties of the generated levels,
-  for example by combining the current formal guarantees with curriculum design or MARL training
-  experiments.
-- Refine the cooperation-profile analysis so that it becomes not only a filtering mechanism for
-  generators, but also an evaluation tool for the qualitative structure of cooperative tasks.
+- Extend the empirical section with generator-focused studies: acceptance rates, parameter
+  sensitivity, diversity measures, and cooperation-profile distributions.
+- Evaluate the cost of cooperation detection itself, not only the cost of the base solvability
+  reduction.
+- Enrich the model to cover a larger subset of LLE mechanics, while keeping the logical guarantees
+  explicit.
+- Investigate whether the current formal guarantees correlate with downstream learning behaviour in
+  MARL, for example through curriculum design or controlled training experiments on generated level
+  families.
+
+The main open question is therefore not whether solver-based certification is possible in LLE; this
+thesis answers that positively. The open question is how far that certification framework can be
+pushed before richer mechanics and richer evaluation criteria require a new formal layer.

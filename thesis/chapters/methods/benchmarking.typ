@@ -1,4 +1,4 @@
-== Benchmarking Setup <benchmarking>
+== Evaluation Protocol <benchmarking>
 
 The first benchmark implemented in this project isolates the SAT solver rather than the generators.
 Its goal is to compare the two movement formulations used in the encoding: the *local* formulation,

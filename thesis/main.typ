@@ -93,15 +93,13 @@
 
 #include "chapters/introduction.typ"
 
-= Background
-
-#include "chapters/background.typ"
-
-= Related Work
+= State of the Art
 
 #include "chapters/related_work.typ"
 
-= Methods
+= Method
+
+#include "chapters/method_overview.typ"
 
 #include "chapters/methods/formalization.typ"
 
@@ -109,13 +107,15 @@
 
 #include "chapters/sat_reduction.typ"
 
+#include "chapters/methods/benchmarking.typ"
+
+= Contribution
+
 #include "chapters/methods/cooperation.typ"
 
 #include "chapters/methods/generators.typ"
 
-#include "chapters/methods/benchmarking.typ"
-
-= Experiments <experiments>
+= Results <experiments>
 
 #include "chapters/experiments.typ"
 

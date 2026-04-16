@@ -1,4 +1,4 @@
-The current experimental evaluation is deliberately narrow. Its purpose is not yet to validate the
+The current experimental evaluation is intentionally focused. Its purpose is not yet to validate the
 full generator family, but to measure the effect of one modeling choice inside the SAT solver: the
 formulation of the agent-uniqueness constraint.
 
@@ -10,8 +10,8 @@ The experiment asks whether the *global* and *local* movement formulations intro
 
 This is an important baseline question because the uniqueness constraint appears at every time step
 for every agent. A poor formulation therefore affects the full reduction, not only a negligible
-subpart of it. The protocol itself is defined in <benchmarking>; this chapter reports only the
-level set, the observed results, and their interpretation.
+subpart of it. The protocol itself is defined in <benchmarking>; the present chapter reports only
+the level set, the observed results, and their interpretation.
 
 
 == Benchmark Instances
@@ -82,8 +82,8 @@ solve. The contrast is especially visible on the $8 times 8$ level and on LLE Le
 much larger global CNF induces a clear runtime penalty.
 
 The practical conclusion is therefore the same as the analytical one: the local formulation is not
-merely a cleaner theoretical encoding, but the better default implementation choice for the solver
-developed in this thesis.
+merely a cleaner theoretical encoding, but the preferable default implementation choice for the
+solver developed in this thesis.
 
 
 == Interpretation and Scope

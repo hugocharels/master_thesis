@@ -111,6 +111,8 @@
 
 = Contribution
 
+#include "chapters/contribution_overview.typ"
+
 #include "chapters/methods/cooperation.typ"
 
 #include "chapters/methods/generators.typ"

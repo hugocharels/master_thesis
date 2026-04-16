@@ -12,13 +12,13 @@ exit tiles are occupied simultaneously.
 
 This restricted model is deliberate. The aim of the thesis is not to reproduce the whole benchmark
 engine, but to isolate the part of the dynamics that creates the blocking-based inter-agent
-dependencies highlighted in the LLE paper @LLE. In particular, the solver developed here focuses on
-whether a joint trajectory exists and whether that trajectory must rely on same-colour
-beam-truncation.
+dependencies highlighted in the LLE paper @LLE. More specifically, the solver developed here asks
+whether a valid joint trajectory exists within a bounded horizon and whether that trajectory must
+rely on same-colour beam-truncation.
 
 The full LLE environment contains additional mechanics, notably gems and void tiles. They are not
 included in the present formal model because they are not needed to decide the bounded-horizon
 properties studied in this thesis. When constructing levels for the current solver, void tiles can
 be conservatively treated as walls, while gem collection is omitted entirely. These omissions narrow
 the scope of the formal claims and should therefore be read as modeling assumptions, not as claims
-about the full benchmark.
+about the full benchmark dynamics.

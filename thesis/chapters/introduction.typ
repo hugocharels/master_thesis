@@ -6,10 +6,10 @@ is not a neutral container: it determines which coordination patterns are possib
 necessary, and how difficult they are to discover.
 
 This dependence on environment structure is especially strong in sparse-reward cooperative tasks.
-When reward is issued only after a full joint objective has been achieved, a training level is
-useful only if it exposes a meaningful coordination challenge while remaining actually solvable.
-Unsolvable levels provide no valid signal, and levels that admit independent solutions do not test
-the cooperative mechanism they are supposed to study.
+When reward is issued only after the team objective has been achieved, a training level is useful
+only if it exposes a meaningful coordination challenge while remaining actually solvable.
+Unsolvable levels provide no valid signal, and levels that admit independent solutions fail to test
+the cooperative mechanism they are meant to study.
 
 
 == Motivation
@@ -18,7 +18,7 @@ The Laser Learning Environment (LLE) @LLE is a particularly relevant case study 
 mechanics create explicit inter-agent dependencies. One agent may need to occupy the path of its own
 laser so that another agent can pass. This makes LLE a natural benchmark for studying
 coordination-critical tasks, but it also makes level design difficult: a useful level should not
-merely look cooperative, it should provably contain the intended dependency.
+merely appear cooperative, it should provably contain the intended dependency.
 
 Procedural Content Generation (PCG) offers a way to scale level creation, but only if the generated
 instances satisfy the properties that matter for training. In the present setting, two properties
@@ -46,7 +46,7 @@ The thesis focuses on a restricted but explicit subset of the LLE mechanics. The
 includes walls, start positions, exits, laser sources, beam propagation, and same-colour blocking.
 Additional benchmark mechanics such as gems and void tiles are outside the scope of the formal
 guarantees developed here. Likewise, the thesis does not claim to solve the downstream MARL problem
-of training agents on the generated levels; its contribution is on the generation and certification
+of training agents on the generated levels. Its contribution is on the generation and certification
 side.
 
 

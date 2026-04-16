@@ -52,6 +52,7 @@ Several extensions follow directly from these limitations.
   MARL, for example through curriculum design or controlled training experiments on generated level
   families.
 
-The main open question is therefore not whether solver-based certification is possible in LLE; this
-thesis answers that positively. The open question is how far that certification framework can be
-pushed before richer mechanics and richer evaluation criteria require a new formal layer.
+The main open question is therefore not whether solver-based certification is possible in LLE; the
+present thesis answers that positively. The open question is how far that certification framework
+can be extended before richer mechanics and richer evaluation criteria require an additional formal
+layer.

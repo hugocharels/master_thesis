@@ -1,6 +1,6 @@
 == Cooperative MARL and Coordination-Critical Benchmarks
 
-This thesis is motivated by a benchmark-design question inside cooperative Multi-Agent
+This thesis is motivated by a benchmark-design question within cooperative Multi-Agent
 Reinforcement Learning (MARL): how can one generate training instances whose coordination structure
 is both non-trivial and formally controlled?
 
@@ -23,7 +23,7 @@ action that enables another agent to progress.
 This benchmark framing is directly relevant to the present work. The thesis does not attempt to
 improve MARL training algorithms on LLE. Instead, it addresses an upstream question left open by
 the benchmark paper: how can we generate LLE levels that are guaranteed to be solvable and that
-guarantee the presence of the beam-blocking dependency on which the benchmark relies?
+contain the beam-blocking dependency on which the benchmark relies?
 
 The LLE paper therefore plays two roles in this thesis. First, it justifies why LLE is an
 interesting target domain. Second, it provides the conceptual vocabulary used here to discuss
@@ -106,4 +106,4 @@ The literature leaves a clear opening for the present work.
 This thesis sits at the intersection of those lines of work. It transfers the compilation-based SAT
 mindset from MAPF into the LLE setting, formalises bounded-horizon solvability for an LLE-specific
 model, and introduces a strict-semantics counterfactual that turns a benchmark-level intuition
-about cooperation into a decidable property used inside procedural generation.
+about cooperation into a decidable property inside procedural generation.

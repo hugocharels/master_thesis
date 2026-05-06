@@ -45,9 +45,9 @@ GENERATOR_SPECS = {
 }
 
 
-def _make_generator(cls, rows, cols, agents, lasers):
+def _make_generator(cls, rows, cols, agents, lasers, is_large=False):
     """Create generator with max_attempts=1 so each generate() call = one attempt."""
-    t_max = min(max(rows * cols // 2, 8), 20)
+    t_max = min(max(rows * cols // 2, 8), 14 if is_large else 20)
     common = dict(
         size=(rows, cols),
         agents=agents,
@@ -72,7 +72,7 @@ def run():
             target = LEVELS_TO_GENERATE_LARGE if is_large else LEVELS_TO_GENERATE
             print(f"\n[{gen_name}] {size_label} — target: {target} levels", flush=True)
 
-            gen = _make_generator(gen_cls, rows, cols, agents, lasers)
+            gen = _make_generator(gen_cls, rows, cols, agents, lasers, is_large)
             t_max = min(max(rows * cols // 2, 8), 14 if is_large else 20)
 
             profile_counts: dict[str, int] = defaultdict(int)

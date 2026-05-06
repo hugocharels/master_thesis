@@ -4,7 +4,7 @@
 
 We now define the semantic objects and decision problems used throughout the methods chapter. This
 section operates at the level of the game semantics; the SAT encoding of these objects follows in
-<sat-reduction>.
+@sat-reduction.
 
 The LLE environment supports between 1 and 4 agents. Accordingly, throughout this thesis we assume
 that $1 <= n_a <= 4$.

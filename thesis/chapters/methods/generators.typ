@@ -21,7 +21,7 @@ cooperation-profile filter.
 
 === Generation Targets
 
-Viewed through the solvability and cooperation definitions of <formalization>, the generator family
+Viewed through the solvability and cooperation definitions of @formalization, the generator family
 targets the three level categories shown in Figure @fig-generator-categories. Solvable generators
 accept levels in categories (b) and (c), cooperative generators accept only levels in category (c),
 and unsolvable levels in category (a) are always rejected.
@@ -74,7 +74,7 @@ local geometric reasons.
 === Random Cooperative Generator
 
 The random cooperative generator extends the random solvable generator with a second SAT test based
-on the strict semantics of <cooperation-detection>. A candidate is accepted only if it is
+on the strict semantics of @cooperation-detection. A candidate is accepted only if it is
 satisfiable under the standard encoding and unsatisfiable under the strict encoding. This guarantees
 that every accepted level structurally requires the beam-truncation mechanism identified as
 cooperation in Definition 4.7.

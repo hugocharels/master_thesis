@@ -57,22 +57,22 @@ This thesis makes the following contributions:
 - *A SAT-based solver for bounded-horizon LLE solvability.* We provide a CNF encoding of the LLE
   decision problem over a bounded time horizon. The solver either returns a satisfying assignment
   encoding a valid joint trajectory or certifies that no such trajectory exists within the chosen
-  horizon (<sat-reduction>).
+  horizon (@sat-reduction).
 
 - *A formal cooperation detector.* We define a strict variant of the LLE beam semantics in which
   agents can no longer use same-colour occupancy to truncate their own beams. We show that a level
   requires this blocking-based cooperative action if and only if the standard encoding is
-  satisfiable and the strict encoding is unsatisfiable (<cooperation-detection>).
+  satisfiable and the strict encoding is unsatisfiable (@cooperation-detection).
 
 - *A solver-in-the-loop generation framework.* Building on the solver and cooperation detector, we
   implement six generators: random solvable, constrained random solvable, random cooperative,
   constrained random cooperative, constructive solvable, and constructive cooperative. Each accepted
   level is certified by the solver to satisfy the advertised properties of its output
-  (<generators>).
+  (@generators).
 
 - *An empirical comparison of two SAT formulations.* We compare two alternative encodings of the
   agent-uniqueness constraint on four benchmark levels, measuring their effect on CNF size, model
-  generation time, and solver runtime (<benchmarking>, <experiments>).
+  generation time, and solver runtime (@benchmarking, @experiments).
 
 The broader methodological idea is to couple procedural generation with formal verification. In the
 present thesis, that idea is instantiated for LLE and for the specific cooperation mechanism induced

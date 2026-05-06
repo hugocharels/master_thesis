@@ -2,7 +2,7 @@
 
 === Definition of Sets
 
-We reuse the level objects introduced in <formalization>: the grid dimensions $H$ and $W$, the
+We reuse the level objects introduced in @formalization: the grid dimensions $H$ and $W$, the
 position set $P$, the colour set $C$, the direction set $D$, the wall set $cal(W)$, the source
 set $cal(S)$, the exit set $cal(E)$, and the start map $s$.
 
@@ -334,7 +334,7 @@ We can now state the consequence for the decision problem introduced in Definiti
 The bounded-horizon LLE solvability problem lies in *NP*. A candidate trajectory can be verified in
 polynomial time by simulating the joint execution and checking that all agents occupy the exit
 tiles at the end without violating the movement, collision, and laser constraints defined in
-<formalization>.
+@formalization.
 
 Combined with the polynomial-time construction above and Proposition 4.8, this shows that
 bounded-horizon LLE solvability is polynomial-time many-one reducible to SAT:

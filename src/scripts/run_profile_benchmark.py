@@ -29,7 +29,7 @@ from solver.cooperation_profile_analyzer import CooperationProfileAnalyzer
 OUTPUT_DIR = Path(__file__).parent.parent.parent / "results" / "profile_benchmark"
 
 LEVELS_TO_GENERATE = 100
-LEVELS_TO_GENERATE_LARGE = 20  # reduced target for large grids
+LEVELS_TO_GENERATE_LARGE = 10  # reduced target for large grids
 
 CONFIGS = [
     # (rows, cols, agents, lasers, label, is_large)
@@ -73,7 +73,7 @@ def run():
             print(f"\n[{gen_name}] {size_label} — target: {target} levels", flush=True)
 
             gen = _make_generator(gen_cls, rows, cols, agents, lasers)
-            t_max = min(max(rows * cols // 2, 8), 20)
+            t_max = min(max(rows * cols // 2, 8), 14 if is_large else 20)
 
             profile_counts: dict[str, int] = defaultdict(int)
             accepted = 0

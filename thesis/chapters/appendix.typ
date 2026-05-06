@@ -56,7 +56,7 @@ exact parameters.
     [$T_"max"$], [8], [12], [20],
     [Trials (rejection benchmark)], [50], [50], [20],
     [Max attempts per trial (rejection benchmark)], [500], [500], [500],
-    [Levels generated (profile benchmark)], [—], [100], [20],
+    [Levels generated (profile benchmark)], [—], [100], [10],
   ),
   caption: [Generator parameters used in the rejection rate and profile distribution benchmarks.],
 )

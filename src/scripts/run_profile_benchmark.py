@@ -29,11 +29,12 @@ from solver.cooperation_profile_analyzer import CooperationProfileAnalyzer
 OUTPUT_DIR = Path(__file__).parent.parent.parent / "results" / "profile_benchmark"
 
 LEVELS_TO_GENERATE = 100
+LEVELS_TO_GENERATE_LARGE = 20  # reduced target for large grids
 
 CONFIGS = [
-    # (rows, cols, agents, lasers, label)
-    (5, 5, 2, 1, "5x5"),
-    (8, 8, 3, 2, "8x8"),
+    # (rows, cols, agents, lasers, label, is_large)
+    (5, 5, 2, 1, "5x5", False),
+    (8, 8, 3, 2, "8x8", True),
 ]
 
 ALL_PROFILES = ["asymmetric", "mutual", "chain", "distributed", "fully_coupled", "cooperative"]
@@ -67,8 +68,9 @@ def run():
 
     for gen_name, gen_cls in GENERATOR_SPECS.items():
         results[gen_name] = {}
-        for rows, cols, agents, lasers, size_label in CONFIGS:
-            print(f"\n[{gen_name}] {size_label} — target: {LEVELS_TO_GENERATE} levels", flush=True)
+        for rows, cols, agents, lasers, size_label, is_large in CONFIGS:
+            target = LEVELS_TO_GENERATE_LARGE if is_large else LEVELS_TO_GENERATE
+            print(f"\n[{gen_name}] {size_label} — target: {target} levels", flush=True)
 
             gen = _make_generator(gen_cls, rows, cols, agents, lasers)
             t_max = min(max(rows * cols // 2, 8), 20)
@@ -76,13 +78,13 @@ def run():
             profile_counts: dict[str, int] = defaultdict(int)
             accepted = 0
             rejected = 0
-            max_total_attempts = LEVELS_TO_GENERATE * 200
+            max_total_attempts = target * 200
             t_start = time.perf_counter()
 
             t_gen_total = 0.0
             t_analyze_total = 0.0
 
-            while accepted < LEVELS_TO_GENERATE and (accepted + rejected) < max_total_attempts:
+            while accepted < target and (accepted + rejected) < max_total_attempts:
                 total_so_far = accepted + rejected
 
                 # --- generation attempt ---
@@ -114,7 +116,7 @@ def run():
                 elapsed = time.perf_counter() - t_start
                 n_attempts = accepted + rejected
                 print(
-                    f"  [{accepted:>3}/{LEVELS_TO_GENERATE}] profile={result.profile:<14} "
+                    f"  [{accepted:>3}/{target}] profile={result.profile:<14} "
                     f"attempts={n_attempts:>5} ({rejected} rejected)  "
                     f"{elapsed:.1f}s | gen={1000*t_gen_total/max(1,n_attempts):.0f}ms "
                     f"| analyze={1000*t_analyze_total/max(1,accepted):.0f}ms",

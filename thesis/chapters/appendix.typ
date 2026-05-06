@@ -54,9 +54,9 @@ exact parameters.
     [Agents], [2], [3], [4],
     [Lasers], [1], [2], [3],
     [$T_"max"$], [8], [12], [20],
-    [Trials (rejection benchmark)], [50], [50], [50],
+    [Trials (rejection benchmark)], [50], [50], [20],
     [Max attempts per trial (rejection benchmark)], [500], [500], [500],
-    [Levels generated (profile benchmark)], [100], [100], [100],
+    [Levels generated (profile benchmark)], [—], [100], [20],
   ),
   caption: [Generator parameters used in the rejection rate and profile distribution benchmarks.],
 )

@@ -34,13 +34,14 @@ from generators.constructive_solvable_generator import ConstructiveSolvableGener
 # ---------------------------------------------------------------------------
 
 MAX_TRIALS = 50               # number of accepted levels to find per (generator, size)
+MAX_TRIALS_LARGE = 20         # reduced target for large grids
 MAX_ATTEMPTS_PER_TRIAL = 500  # give up on a single trial after this many attempts
 
 CONFIGS = [
-    # (rows, cols, agents, lasers)
-    (3, 3, 2, 1),
-    (5, 5, 3, 2),
-    (8, 8, 4, 3),
+    # (rows, cols, agents, lasers, is_large)
+    (3, 3, 2, 1, False),
+    (5, 5, 3, 2, False),
+    (8, 8, 4, 3, True),
 ]
 
 GENERATOR_SPECS = {
@@ -87,9 +88,10 @@ def run():
 
     for gen_name, gen_cls in GENERATOR_SPECS.items():
         results[gen_name] = {}
-        for rows, cols, agents, lasers in CONFIGS:
+        for rows, cols, agents, lasers, is_large in CONFIGS:
             size_key = f"{rows}x{cols}"
-            print(f"  [{gen_name}] {size_key} ({agents} agents, {lasers} lasers) ...", flush=True)
+            trials = MAX_TRIALS_LARGE if is_large else MAX_TRIALS
+            print(f"  [{gen_name}] {size_key} ({agents} agents, {lasers} lasers, {trials} trials) ...", flush=True)
 
             gen = _make_generator(gen_cls, rows, cols, agents, lasers)
             if gen is None:
@@ -102,7 +104,7 @@ def run():
             failed_trials = 0
 
             t_run_start = time.perf_counter()
-            for trial in range(MAX_TRIALS):
+            for trial in range(trials):
                 attempts = 0
                 t_start = time.perf_counter()
                 found = False
@@ -115,7 +117,7 @@ def run():
                         break
                     except RuntimeError:
                         if attempts % 50 == 0:
-                            print(f"    trial {trial+1}/{MAX_TRIALS}: {attempts} attempts...", flush=True)
+                            print(f"    trial {trial+1}/{trials}: {attempts} attempts...", flush=True)
 
                 t_elapsed = time.perf_counter() - t_start
                 elapsed_total = time.perf_counter() - t_run_start
@@ -125,7 +127,7 @@ def run():
                     times_per_level.append(t_elapsed)
                     mean_so_far = float(np.mean(attempts_per_level))
                     print(
-                        f"    [{trial+1:>2}/{MAX_TRIALS}] OK  attempts={attempts:>4}  "
+                        f"    [{trial+1:>2}/{trials}] OK  attempts={attempts:>4}  "
                         f"time={t_elapsed:.2f}s  mean_attempts={mean_so_far:.1f}  "
                         f"total_elapsed={elapsed_total:.1f}s",
                         flush=True,
@@ -133,7 +135,7 @@ def run():
                 else:
                     failed_trials += 1
                     print(
-                        f"    [{trial+1:>2}/{MAX_TRIALS}] FAIL (>{MAX_ATTEMPTS_PER_TRIAL} attempts)  "
+                        f"    [{trial+1:>2}/{trials}] FAIL (>{MAX_ATTEMPTS_PER_TRIAL} attempts)  "
                         f"total_elapsed={elapsed_total:.1f}s",
                         flush=True,
                     )

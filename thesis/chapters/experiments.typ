@@ -235,9 +235,37 @@ Together, the two experiments support the claim that the solver-in-the-loop arch
 not only formally certified levels, but a characterisable and controllable distribution of certified
 levels.
 
-A third planned experiment — training VDN agents on a curriculum of generated levels and
-evaluating on the six default LLE levels — was not completed within the scope of this thesis due to
-dependency constraints in the training library. This remains a direct extension of the current
-framework, since the generator infrastructure and cooperation profile targets are in place.
-The experimental scripts and level generation pipeline are ready; only the training loop and
-downstream evaluation are missing.
+
+== Transfer to Human-Designed Levels <transfer-experiment>
+
+=== Experimental Question
+
+The preceding experiments establish that the generator framework produces formally certified
+levels with controlled cooperation structure. They do not, however, address the downstream
+question of whether those levels are useful for training. This section addresses RQ4: can agents
+trained exclusively on procedurally generated levels transfer their behaviour to human-designed
+levels?
+
+The test set used for evaluation is the set of hand-crafted levels distributed with the benchmark,
+which includes levels of varying complexity and cooperation structure. Transfer is measured by
+evaluating trained agents on those levels without any fine-tuning after training.
+
+=== Protocol
+
+Agents are trained using a cooperative MARL algorithm on a curriculum of levels produced by the
+generator framework. Training levels are sampled from the cooperative generators to ensure that
+every training instance requires the blocking-based cooperative interaction. After training, agents
+are evaluated on the benchmark's human-designed levels. Performance is reported as the fraction of
+episodes in which all agents reach their exit tiles within the time horizon.
+
+=== Results
+
+_This section will be completed once the training experiments are run._
+
+=== Interpretation
+
+A positive transfer result would confirm that the formal cooperation guarantee translates into
+useful training signal: levels that are provably cooperative expose agents to the coordination
+structure they need to solve the benchmark levels. A negative result would indicate that the
+distribution mismatch between generated and human-designed levels is a limiting factor, motivating
+further work on domain-adaptive generation.

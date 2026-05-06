@@ -105,23 +105,27 @@
 
 #include "chapters/methods/formalization.typ"
 
-== Solver by Reduction to SAT <sat-reduction>
+= Experiments
 
-#include "chapters/sat_reduction.typ"
-
-#include "chapters/methods/benchmarking.typ"
-
-= Contribution
+== Part 1 — Contribution
 
 #include "chapters/contribution_overview.typ"
 
-#include "chapters/methods/cooperation.typ"
+#[
+  #set heading(offset: 1)
+  == Solver by Reduction to SAT <sat-reduction>
+  #include "chapters/sat_reduction.typ"
+  #include "chapters/methods/benchmarking.typ"
+  #include "chapters/methods/cooperation.typ"
+  #include "chapters/methods/generators.typ"
+]
 
-#include "chapters/methods/generators.typ"
+== Part 2 — Results <experiments>
 
-= Results <experiments>
-
-#include "chapters/experiments.typ"
+#[
+  #set heading(offset: 1)
+  #include "chapters/experiments.typ"
+]
 
 = Conclusion
 

@@ -13,7 +13,7 @@
   if it.depth == 1 {
     let chapter_num = counter(heading.where(level: 1)).at(it.location()).at(0)
 
-    if { 0 < chapter_num and chapter_num < 6 } {
+    if { 0 < chapter_num and chapter_num < 5 } {
       pagebreak()
       v(100pt)
 
@@ -130,8 +130,13 @@
 #include "chapters/conclusion.typ"
 
 #[
-  #set heading(numbering: "A.1")
-  #counter(heading).update(0)
+  #set heading(numbering: (..nums) => {
+    let n = nums.pos()
+    let letters = ("A", "B", "C", "D", "E", "F", "G", "H")
+    let letter = letters.at(n.at(0) - 6, default: "?")
+    if n.len() == 1 { letter }
+    else { letter + "." + n.slice(1).map(str).join(".") }
+  })
   #include "chapters/appendix.typ"
 ]
 

@@ -101,6 +101,8 @@
 
 #include "chapters/method_overview.typ"
 
+#include "chapters/methods/background.typ"
+
 #include "chapters/methods/formalization.typ"
 
 == Solver by Reduction to SAT <sat-reduction>

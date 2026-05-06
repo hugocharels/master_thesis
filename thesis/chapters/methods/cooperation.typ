@@ -4,7 +4,7 @@
 
 === Strict SAT Encoding
 
-Recall from Definition 4.6 that strict beam semantics changes only one aspect of the dynamics:
+Recall from Definition 3.6 that strict beam semantics changes only one aspect of the dynamics:
 same-colour occupancy no longer truncates the corresponding beam. Same-colour immunity is
 unchanged.
 
@@ -47,12 +47,12 @@ step.
 ])
 
 #proofbox([
-  $(arrow.r)$ Assume that $L$ requires cooperation with horizon $T_("max")$. By Definition 4.7,
+  $(arrow.r)$ Assume that $L$ requires cooperation with horizon $T_("max")$. By Definition 3.7,
   $L$ is solvable under the standard semantics, so $Phi(L, T_("max"))$ is satisfiable. Suppose for
   contradiction that $Phi_("strict")(L, T_("max"))$ is also satisfiable. Then there exists a strict
   trajectory whose final positions occupy all exit tiles. Since strict beam semantics differs from
   the standard one only by removing same-colour beam truncation, such a trajectory is also a valid
-  standard trajectory that succeeds without using that mechanism. This contradicts Definition 4.7.
+  standard trajectory that succeeds without using that mechanism. This contradicts Definition 3.7.
   Therefore $Phi_("strict")(L, T_("max"))$ is unsatisfiable.
 
   $(arrow.l)$ Assume that $Phi(L, T_("max"))$ is satisfiable and

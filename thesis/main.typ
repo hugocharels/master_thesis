@@ -129,5 +129,7 @@
 
 #include "chapters/conclusion.typ"
 
+#include "chapters/appendix.typ"
+
 #pagebreak()
 #bibliography("bibliography.bib", full: true)

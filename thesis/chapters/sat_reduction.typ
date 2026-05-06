@@ -10,23 +10,10 @@ The SAT reduction introduces a finite horizon $T_("max") in NN$, which is the ma
 joint moves allowed in the bounded decision problem, together with the discrete time-step set
 $T = {0, 1, ..., T_("max")}$.
 
-We also define
-$
-  P_("src") = {p in P | exists c in C, d in D : (c, d, p) in cal(S)}
-$
-for the set of source positions.
-
-We further write
-$
-  C_("src") = {c in C | exists d in D, p in P : (c, d, p) in cal(S)}
-$
-for the set of colours that actually have a source.
-
-To match the benchmark and generated instances studied in this thesis, we assume that each colour
-appears in at most one laser source. Under this assumption, when a source of colour $c$ exists, its
-position and direction are uniquely determined by $c$.
-
-We also write $"start"(c) in P$ for the initial position of agent $c in C$.
+The sets $P_("src")$ and $C_("src")$ are as defined in @formalization. We recall that each colour
+appears in at most one laser source; under this assumption, when a source of colour $c$ exists, its
+position and direction are uniquely determined by $c$. We write $s(c)$ for the initial position of
+agent $c in C$, as defined in Definition 3.1.
 
 
 === Definition of Variables
@@ -48,12 +35,12 @@ to one logical component of the bounded-horizon decision problem.
 + *Initialization*
 
   - *Agents:* \
-    Each agent $c in C$ is placed at its designated starting position $"start"(c)$ at $t = 0$;
+    Each agent $c in C$ is placed at its designated starting position $s(c)$ at $t = 0$;
     all other positions are unoccupied by that agent:
     $
       and.big_(c in C) and.big_((x, y) in P)
       cases(
-        a_(c,x,y,0) & "if" (x,y) = "start"(c),
+        a_(c,x,y,0) & "if" (x,y) = s(c),
         not a_(c,x,y,0) & "otherwise"
       )
     $

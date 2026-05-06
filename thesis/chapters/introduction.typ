@@ -88,8 +88,8 @@ This thesis makes the following contributions:
 The remainder of this thesis is organised as follows.
 
 Chapter 2 positions the work relative to cooperative MARL benchmarks, procedural content
-generation, and compilation-based planning literature. Chapter 3 introduces the environment model,
-formalises bounded-horizon solvability, and presents the propositional reduction and evaluation
-protocol. Chapter 4 presents the original contribution of the thesis: the cooperation detector,
-the cooperation profile taxonomy, and the generator family built around them. Chapter 5 reports
-the experimental results. Chapter 6 concludes with limitations and future work.
+generation, and compilation-based planning literature. Chapter 3 introduces the environment model
+and formalises bounded-horizon solvability and the cooperation requirement. Chapter 4 presents the
+experimental work in two parts: Part 1 develops the original contribution — the SAT encoding, the
+cooperation detector, the cooperation profile taxonomy, and the generator family; Part 2 reports
+the results of the evaluation experiments. Chapter 5 concludes with a summary and future work.

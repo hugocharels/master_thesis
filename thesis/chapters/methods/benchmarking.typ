@@ -22,13 +22,13 @@ allows us to inspect the part of the final CNF generated inside the movement-con
 === Solver and Level Sets
 
 All benchmark runs use the same SAT backend as the main solver implementation, namely `Minisat22`
-through the PySAT interface. By default, the benchmarking script can evaluate the six hand-crafted
-LLE levels listed in `levels.py`, each paired with a horizon known to be sufficient for solvability.
-It can also benchmark custom levels constructed programmatically with `WorldBuilder`.
+through the PySAT interface. The benchmarking script can evaluate the six hand-crafted benchmark
+levels distributed with the environment, each paired with a horizon known to be sufficient for
+solvability. It can also benchmark custom levels constructed programmatically.
 
-The experiment reported in Chapter 5 uses four representative levels: three synthetic instances of
-increasing size and one original LLE level. This combination exposes both scaling behaviour and the
-behaviour of the solver on a realistic cooperative puzzle.
+The experiment reported in @experiments uses four representative levels: three synthetic instances
+of increasing size and one original benchmark level. This combination exposes both scaling
+behaviour and the behaviour of the solver on a realistic cooperative puzzle.
 
 
 === Protocol
@@ -48,5 +48,5 @@ hardware-independent absolute performance claims.
 
 The benchmarking pipeline produces a console summary table, a JSON file containing aggregated
 benchmark statistics, and a set of plots for clause counts, per-constraint clause breakdowns, and
-timing statistics. Chapter 5 draws on these outputs to interpret the trade-off between the two
-movement formulations.
+timing statistics. The results section (@experiments) draws on these outputs to interpret the
+trade-off between the two movement formulations.

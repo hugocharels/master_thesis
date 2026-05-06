@@ -53,7 +53,7 @@ included to assess solver behaviour on a realistic cooperative instance.
   ],
 )
 
-The clause-count results closely follow the theoretical expectation developed in Chapter 3. On the
+The clause-count results closely follow the theoretical expectation developed in @sat-reduction. On the
 smallest $3 times 3$ level, the global formulation is slightly more compact than the local one
 (753 clauses versus 785), which is consistent with the fact that the instance lies below the
 expected crossover regime. From the $5 times 5$ level onward, the trend reverses: the local
@@ -221,7 +221,7 @@ cooperation profile check and accepts only levels that match a requested profile
 
 == Discussion
 
-The two experiments above characterise complementary aspects of the generation framework.
+The three experiments above characterise complementary aspects of the generation framework.
 
 The rejection-rate experiment measures *efficiency*: how many solver calls are needed per accepted
 level, and which generator and grid-size combinations are most practical. This is relevant for
@@ -232,7 +232,7 @@ different cooperation structures or concentrate on a narrow profile class. This 
 curriculum design, where a varied distribution of cooperation structures is preferable to a
 homogeneous one.
 
-Together, the two experiments support the claim that the solver-in-the-loop architecture produces
+Together, the three experiments support the claim that the solver-in-the-loop architecture produces
 not only formally certified levels, but a characterisable and controllable distribution of certified
 levels.
 

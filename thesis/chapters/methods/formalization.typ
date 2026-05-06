@@ -14,7 +14,7 @@ follows in @sat-reduction.
 The LLE environment supports between 1 and 4 agents. Accordingly, throughout this thesis we assume
 that $1 <= n_a <= 4$.
 
-#formalbox([Definition 4.1 (LLE Level)], [
+#formalbox([Definition 3.1 (LLE Level)], [
   An LLE level is a tuple $L = (H, W, C, s, cal(W), cal(S), cal(E))$ where:
 
   - $H, W in NN^+$ are the height and width of the grid.
@@ -40,7 +40,7 @@ $
 $
 for the set of colours that actually have a source.
 
-#formalbox([Definition 4.2 (Active Beams)], [
+#formalbox([Definition 3.2 (Active Beams)], [
   Fix a time step $t$ and a joint position map $p_t : C -> P$.
 
   For a source $(c, d, p_s) in cal(S)$, consider the grid ray starting at $p_s$ and extending in
@@ -55,7 +55,7 @@ for the set of colours that actually have a source.
   is active there.
 ])
 
-#formalbox([Definition 4.3 (Valid Joint Trajectory)], [
+#formalbox([Definition 3.3 (Valid Joint Trajectory)], [
   A *horizon* $T_("max") in NN$ is the maximum number of joint moves allowed in a candidate
   solution.
 
@@ -75,12 +75,12 @@ for the set of colours that actually have a source.
     $p_(t+1)(c_1) eq.not p_t(c_2)$ and $p_t(c_1) eq.not p_(t+1)(c_2)$.
   - *Laser safety:* No agent $c_1$ occupies a cell at time $t$ where a laser of colour
     $c_2 in C_("src")$, with $c_2 eq.not c_1$, is active under the standard beam semantics of
-    Definition 4.2.
+    Definition 3.2.
   - *Stay on exit:* If $p_t(c) in cal(E)$ for some $t < T_("max")$, then
     $p_(t+1)(c) = p_t(c)$.
 ])
 
-#formalbox([Definition 4.4 (Solvability)], [
+#formalbox([Definition 3.4 (Solvability)], [
   A level $L$ is *solvable* with horizon $T_("max")$ if there exists a valid joint trajectory
   $sigma$ of length $T_("max")$ such that the set of occupied positions at time $T_("max")$ is
   exactly the set of exits:
@@ -105,7 +105,7 @@ is solvable under an unbounded notion of play. In practice, $T_("max")$ is set t
 to be sufficient for the instances of interest; the choice of horizon is a parameter of the
 generation process, not a formal limitation of the approach.
 
-#formalbox([Definition 4.5 (Bounded-Horizon LLE Solvability Problem)], [
+#formalbox([Definition 3.5 (Bounded-Horizon LLE Solvability Problem)], [
   The *bounded-horizon LLE solvability problem* is the following decision problem.
 
   - *Input:* an LLE level $L$ and a horizon $T_("max") in NN$.
@@ -113,9 +113,9 @@ generation process, not a formal limitation of the approach.
     positions are exactly the exits?
 ])
 
-#formalbox([Definition 4.6 (Strict Beam Semantics)], [
-  A *strict trajectory* of length $T_("max")$ is defined exactly as in Definition 4.3, except that
-  beam activity is computed using the strict beam semantics of Definition 4.2: same-colour
+#formalbox([Definition 3.6 (Strict Beam Semantics)], [
+  A *strict trajectory* of length $T_("max")$ is defined exactly as in Definition 3.3, except that
+  beam activity is computed using the strict beam semantics of Definition 3.2: same-colour
   occupancy no longer truncates the corresponding beam.
 ])
 
@@ -123,7 +123,7 @@ In the model studied here, the relevant cooperative action is precisely this sam
 beam-truncation mechanism: an agent occupies a position that would otherwise allow its own beam to
 continue, thereby opening a path for another agent.
 
-#formalbox([Definition 4.7 (Cooperation Requirement with Horizon $T_("max")$)], [
+#formalbox([Definition 3.7 (Cooperation Requirement with Horizon $T_("max")$)], [
   A level $L$ is said to *require cooperation* with horizon $T_("max")$ if:
 
   - $L$ is solvable under the standard semantics.

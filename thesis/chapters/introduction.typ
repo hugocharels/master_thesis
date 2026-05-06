@@ -14,78 +14,82 @@ the cooperative mechanism they are meant to study.
 
 == Motivation
 
-The Laser Learning Environment (LLE) @LLE is a particularly relevant case study because its laser
-mechanics create explicit inter-agent dependencies. One agent may need to occupy the path of its own
-laser so that another agent can pass. This makes LLE a natural benchmark for studying
-coordination-critical tasks, but it also makes level design difficult: a useful level should not
-merely appear cooperative, it should provably contain the intended dependency.
+In cooperative environments whose mechanics create explicit inter-agent dependencies, level design
+is particularly challenging. A useful training level should not merely appear cooperative — it
+should provably contain the intended coordination structure.
 
-Procedural Content Generation (PCG) offers a way to scale level creation, but only if the generated
-instances satisfy the properties that matter for training. In the present setting, two properties
-are central. First, a level must be *solvable*. Second, success should *require cooperation* in the
-specific sense induced by the LLE laser mechanics. Without those guarantees, generation risks
-producing levels that are invalid, trivial, or misaligned with the benchmark objective.
+Procedural Content Generation (PCG) offers a way to scale level creation beyond what manual design
+allows, but only if the generated instances satisfy the properties that matter for training. Two
+properties are central. First, a level must be *solvable*. Second, success should *require
+cooperation* in the specific sense induced by the environment's mechanics. Without those
+guarantees, generation risks producing levels that are invalid, trivial, or misaligned with the
+training objective.
 
 
 == Research Questions and Scope
 
-This thesis addresses the following question: how can we automatically generate LLE levels that are
-provably solvable and that provably require the blocking-based cooperative interaction studied in
-the benchmark?
+This thesis addresses the following question: how can we automatically generate levels for a
+cooperative MARL environment that are provably solvable and provably require the target cooperative
+interaction?
 
-More precisely, the work is organised around three research questions:
+More precisely, the work is organised around five research questions:
 
-- *RQ1:* How can bounded-horizon solvability of an LLE level be formalised as a decision problem and
-  reduced to Boolean Satisfiability (SAT)?
-- *RQ2:* How can the cooperation mechanism of interest in LLE be turned into a formally decidable
-  property rather than an informal design intuition?
-- *RQ3:* How can these decision procedures be embedded inside procedural generators so that accepted
-  levels come with formal guarantees?
+- *RQ1:* How can we formally verify that a level is solvable by the agents?
+- *RQ2:* How can we formally verify that solving a level genuinely requires cooperation between
+  agents, rather than allowing independent solutions?
+- *RQ3:* How can formal verification be embedded inside a procedural generator so that every
+  accepted level comes with certified properties?
+- *RQ4:* Can agents trained exclusively on procedurally generated levels transfer their behaviour
+  to human-designed levels?
+- *RQ5:* Can we control the cooperation structure of generated levels by targeting specific
+  profiles such as asymmetric, mutual, or chain dependencies?
 
-The thesis focuses on a restricted but explicit subset of the LLE mechanics. The formal model
-includes walls, start positions, exits, laser sources, beam propagation, and same-colour blocking.
-Additional benchmark mechanics such as gems and void tiles are outside the scope of the formal
-guarantees developed here. Likewise, the thesis does not claim to solve the downstream MARL problem
-of training agents on the generated levels. Its contribution is on the generation and certification
-side.
+The thesis instantiates this framework on one concrete cooperative environment, focusing on a
+restricted but explicit subset of its mechanics. The formal model covers agent movement,
+inter-agent blocking interactions, and a bounded-horizon solvability criterion. Additional
+environment mechanics are outside the scope of the formal guarantees developed here. The broader
+methodology — coupling procedural generation with a formal verification oracle — is
+environment-agnostic: it applies to any setting where the target properties are expressible as
+decision problems.
 
 
 == Contributions
 
 This thesis makes the following contributions:
 
-- *A SAT-based solver for bounded-horizon LLE solvability.* We provide a CNF encoding of the LLE
-  decision problem over a bounded time horizon. The solver either returns a satisfying assignment
-  encoding a valid joint trajectory or certifies that no such trajectory exists within the chosen
-  horizon (@sat-reduction).
+- *A decision procedure for bounded-horizon solvability.* We provide a propositional encoding of
+  the solvability decision problem over a bounded time horizon. The procedure either returns a
+  certificate — a valid joint trajectory — or proves that no such trajectory exists within the
+  chosen horizon (@sat-reduction).
 
-- *A formal cooperation detector.* We define a strict variant of the LLE beam semantics in which
-  agents can no longer use same-colour occupancy to truncate their own beams. We show that a level
-  requires this blocking-based cooperative action if and only if the standard encoding is
-  satisfiable and the strict encoding is unsatisfiable (@cooperation-detection).
+- *A formal cooperation detector.* We define a strict variant of the environment semantics in
+  which agents cannot exploit same-agent blocking to bypass constraints imposed by others. A level
+  requires cooperative interaction if and only if it is solvable under standard semantics and
+  unsolvable under the strict variant (@cooperation-detection).
 
 - *A solver-in-the-loop generation framework.* Building on the solver and cooperation detector, we
-  implement six generators: random solvable, constrained random solvable, random cooperative,
-  constrained random cooperative, constructive solvable, and constructive cooperative. Each accepted
-  level is certified by the solver to satisfy the advertised properties of its output
-  (@generators).
+  implement six generators across two property families — solvable and cooperative. Each accepted
+  level is certified by the solver to satisfy the advertised property (@generators).
 
-- *An empirical comparison of two SAT formulations.* We compare two alternative encodings of the
-  agent-uniqueness constraint on four benchmark levels, measuring their effect on CNF size, model
-  generation time, and solver runtime (@benchmarking, @experiments).
+- *A cooperation profile taxonomy and profile-targeted generation.* We define a set of cooperation
+  profiles — asymmetric, mutual, chain, distributed, fully coupled — that characterise the
+  dependency structure of cooperative levels. Generators can target a specific profile, producing
+  levels whose cooperation type is controlled, not merely certified (@cooperation-detection,
+  @generators).
 
-The broader methodological idea is to couple procedural generation with formal verification. In the
-present thesis, that idea is instantiated for LLE and for the specific cooperation mechanism induced
-by coloured laser blocking.
+- *An empirical evaluation.* We compare two alternative propositional encodings of the
+  agent-uniqueness constraint, measuring their effect on formula size and solver runtime. We also
+  measure generator acceptance rates and cooperation profile distributions across grid sizes
+  (@benchmarking, @experiments).
 
 
 == Thesis Structure
 
 The remainder of this thesis is organised as follows.
 
-Chapter 2 positions the work relative to the LLE benchmark, procedural generation, and
-compilation-based multi-agent planning literature. Chapter 3 introduces the modeled subset of LLE,
-formalises bounded-horizon solvability, and presents the SAT reduction and evaluation protocol.
-Chapter 4 presents the original contribution of the thesis: the cooperation detector and the
-generator family built around it. Chapter 5 reports the current experimental results on alternative
-SAT encodings. Chapter 6 concludes with limitations and future work.
+Chapter 2 positions the work relative to cooperative MARL benchmarks, procedural content
+generation, and compilation-based planning literature. Chapter 3 introduces the environment model,
+formalises bounded-horizon solvability, and presents the propositional reduction and evaluation
+protocol. Chapter 4 presents the original contribution of the thesis: the cooperation detector,
+the cooperation profile taxonomy, and the generator family built around them. Chapter 5 reports
+the experimental results. Chapter 6 concludes with limitations and future work.

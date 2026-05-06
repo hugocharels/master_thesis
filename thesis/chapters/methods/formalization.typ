@@ -2,9 +2,14 @@
 
 == Problem Formalization <formalization>
 
-We now define the semantic objects and decision problems used throughout the methods chapter. This
-section operates at the level of the game semantics; the SAT encoding of these objects follows in
-@sat-reduction.
+We now define the semantic objects and decision problems used throughout the thesis. Two properties
+are central. *Solvability* asks whether there exists a valid joint trajectory that brings all
+agents to their exits within a bounded horizon. *Cooperation requirement* asks whether every such
+trajectory must rely on the same-colour beam-truncation mechanism. Both are formally decidable,
+and both are certified by the solver for every accepted level.
+
+This section operates at the level of the game semantics; the SAT encoding of these objects
+follows in @sat-reduction.
 
 The LLE environment supports between 1 and 4 agents. Accordingly, throughout this thesis we assume
 that $1 <= n_a <= 4$.

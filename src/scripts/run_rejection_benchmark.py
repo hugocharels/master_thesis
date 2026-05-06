@@ -101,6 +101,7 @@ def run():
             times_per_level: list[float] = []
             failed_trials = 0
 
+            t_run_start = time.perf_counter()
             for trial in range(MAX_TRIALS):
                 attempts = 0
                 t_start = time.perf_counter()
@@ -113,23 +114,33 @@ def run():
                         found = True
                         break
                     except RuntimeError:
-                        pass
+                        if attempts % 100 == 0:
+                            print(f"    trial {trial+1}/{MAX_TRIALS}: {attempts} attempts so far...", flush=True)
 
                 t_elapsed = time.perf_counter() - t_start
 
                 if found:
                     attempts_per_level.append(attempts)
                     times_per_level.append(t_elapsed)
+                    if (trial + 1) % 10 == 0:
+                        elapsed = time.perf_counter() - t_run_start
+                        mean_so_far = float(np.mean(attempts_per_level))
+                        print(
+                            f"    {trial+1}/{MAX_TRIALS} trials done ({elapsed:.1f}s), "
+                            f"mean attempts so far: {mean_so_far:.1f}",
+                            flush=True,
+                        )
                 else:
                     failed_trials += 1
+                    print(f"    trial {trial+1}/{MAX_TRIALS}: FAILED (>{MAX_ATTEMPTS_PER_TRIAL} attempts)", flush=True)
 
             successful = len(attempts_per_level)
             mean_attempts = float(np.mean(attempts_per_level)) if attempts_per_level else None
             rejection_rate = ((mean_attempts - 1) / mean_attempts) if mean_attempts else None
 
             print(
-                f"    {successful}/{MAX_TRIALS} trials succeeded, "
-                f"mean attempts={mean_attempts:.1f}" if mean_attempts else f"    {successful}/{MAX_TRIALS} trials succeeded"
+                f"    done: {successful}/{MAX_TRIALS} trials, "
+                f"mean attempts={mean_attempts:.1f}" if mean_attempts else f"    done: {successful}/{MAX_TRIALS} trials"
             )
 
             results[gen_name][size_key] = {

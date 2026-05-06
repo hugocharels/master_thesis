@@ -6,11 +6,11 @@ formulation of the agent-uniqueness constraint.
 == Experimental Question
 
 The experiment asks whether the *global* and *local* movement formulations introduced in
-<sat-reduction> differ materially in CNF size and runtime on levels of increasing complexity.
+@sat-reduction differ materially in CNF size and runtime on levels of increasing complexity.
 
 This is an important baseline question because the uniqueness constraint appears at every time step
 for every agent. A poor formulation therefore affects the full reduction, not only a negligible
-subpart of it. The protocol itself is defined in <benchmarking>; the present chapter reports only
+subpart of it. The protocol itself is defined in @benchmarking; the present chapter reports only
 the level set, the observed results, and their interpretation.
 
 
@@ -96,6 +96,147 @@ substantial on realistic LLE instances.
 
 What is *not* yet established empirically is the broader quality of the generator framework. The
 present experiment does not measure generator acceptance rates, diversity of accepted levels,
-distribution of cooperation profiles, or any downstream training effect on MARL agents. Those
-questions remain open and should be treated as future evaluation work rather than as completed
-results.
+distribution of cooperation profiles, or any downstream training effect on MARL agents. The
+following sections address the first two of these open questions.
+
+
+== Generator Rejection Rates <generator-rejection-rates>
+
+=== Experimental Question
+
+Acceptance rates determine the practical cost of the rejection-sampling strategy used by the
+generators. A generator with a 1 % acceptance rate requires approximately one hundred solver calls
+per usable level, which directly affects generation throughput. This experiment measures the
+fraction of candidate layouts rejected by each generator and characterises the dominant rejection
+reasons.
+
+=== Protocol
+
+For each generator type and grid size combination, 200 generation attempts are executed. An attempt
+consists of sampling a candidate layout, validating geometric constraints (where applicable),
+constructing an `lle.World` object, and running the solver. The attempt is classified as accepted
+if the solver certifies the required property (solvability or cooperation), and as rejected
+otherwise. For each rejected attempt, the reason is recorded: geometric invalidity, LLE
+construction failure, solver returning unsatisfiable, or the cooperation profile not matching the
+requested target.
+
+Six generators are evaluated: `random_solvable`, `constrained_random_solvable`,
+`random_cooperative`, `constrained_random_cooperative`, `constructive_solvable`, and
+`constructive_cooperative`. Three grid sizes are used: $3 times 3$ with 2 agents and 1 laser,
+$5 times 5$ with 3 agents and 2 lasers, and $8 times 8$ with 4 agents and 3 lasers.
+
+=== Results
+
+#figure(
+  image("../../results/rejection_benchmark/rejection_rate_by_generator.png", width: 90%),
+  caption: [
+    Rejection rate (%) per generator and grid size, across 200 attempts per combination.
+    Solvable generators are rejected primarily for unsatisfiability; cooperative generators
+    add an additional cooperation filter, increasing rejection rates substantially.
+  ],
+)
+
+#figure(
+  image("../../results/rejection_benchmark/time_per_accepted_level.png", width: 90%),
+  caption: [
+    Mean time (seconds) to obtain one accepted level, per generator and grid size.
+    Time includes all rejected attempts that precede each accepted level.
+  ],
+)
+
+#figure(
+  image("../../results/rejection_benchmark/rejection_reasons.png", width: 95%),
+  caption: [
+    Breakdown of rejection reasons as a fraction of total rejections, per generator and grid size.
+    The dominant reason for solvable generators is unsatisfiability (the SAT solver returns UNSAT);
+    for cooperative generators, the additional cooperation and profile checks contribute further
+    rejections.
+  ],
+)
+
+=== Interpretation
+
+The rejection-rate results quantify the overhead introduced by the SAT acceptance oracle. Solvable
+generators are rejected primarily because random layouts do not admit a valid joint trajectory within
+the requested horizon. Cooperative generators add the strict-semantics counterfactual check, which
+increases rejection rates further: the set of layouts that are both solvable and cooperation-requiring
+is a strict subset of the solvable set.
+
+The constrained generators improve acceptance rates by removing geometrically degenerate candidates
+before any SAT call is made. Their geometric pre-filter does not affect the formal guarantee: every
+accepted level still passes the same solver check. It only avoids spending solver time on candidates
+that fail for locally visible reasons.
+
+The constructive generators have high acceptance rates at small sizes because the lane-reservation
+strategy biases layouts toward solvable configurations by design. At larger sizes, the balance
+between reserved lanes and available free cells shifts, which may increase rejection rates for
+incidental reasons such as laser placement failures.
+
+
+== Cooperation Profile Distribution <profile-distribution>
+
+=== Experimental Question
+
+Binary cooperation detection certifies that every accepted cooperative level requires at least one
+same-colour beam-truncation step, but it does not distinguish which structural pattern of
+inter-agent dependency the level exhibits. This experiment measures the distribution of cooperation
+profiles among accepted levels, using the cooperation profile analyzer introduced in
+@cooperation-detection.
+
+=== Protocol
+
+For each of two cooperative generators (`random_cooperative` and `constructive_cooperative`) and
+two grid sizes ($5 times 5$ with 2 agents and 1 laser, $8 times 8$ with 3 agents and 2 lasers),
+100 cooperative levels are accepted and then classified by the cooperation profile analyzer. The
+classifier assigns each level to one of the following profile families: `asymmetric`, `mutual`,
+`chain`, `distributed`, or `fully_coupled`. The analyzer also returns `cooperative` as a fallback
+when cooperation is required but no specific dependency structure is detected.
+
+=== Results
+
+#figure(
+  image("../../results/profile_benchmark/profile_distribution.png", width: 90%),
+  caption: [
+    Distribution of cooperation profiles among accepted cooperative levels, grouped by generator and
+    grid size. Each bar shows the fraction of accepted levels assigned to a given profile family.
+  ],
+)
+
+=== Interpretation
+
+The profile distribution reflects the structural biases of each generator. Random generators
+sample layouts without any structural preference for cooperation type, so their output distribution
+is determined entirely by how often different dependency patterns arise in the accepted subset of
+random layouts. Constructive generators, by contrast, plant a deliberate beam-blocking dependency
+in each candidate, which biases the output toward simpler, structurally cleaner profiles.
+
+This comparison serves two purposes. First, it shows that the profile analyzer produces
+non-trivial and generator-dependent distributions — the classifier is not returning a constant
+answer. Second, it reveals which profiles are rare or absent under rejection sampling, motivating
+the profile-targeted generation mode in which the generator runs the cooperation profile check and
+accepts only levels that match a requested profile.
+
+
+== Discussion
+
+The two experiments above characterise complementary aspects of the generation framework.
+
+The rejection-rate experiment measures *efficiency*: how many solver calls are needed per accepted
+level, and which generator and grid-size combinations are most practical. This is relevant for
+large-scale generation tasks where throughput matters.
+
+The profile-distribution experiment measures *output diversity*: whether the accepted levels cover
+different cooperation structures or concentrate on a narrow profile class. This is relevant for
+curriculum design, where a varied distribution of cooperation structures is preferable to a
+homogeneous one.
+
+Together, the two experiments support the claim that the solver-in-the-loop architecture produces
+not only formally certified levels, but a characterisable and controllable distribution of certified
+levels.
+
+A third planned experiment — training VDN agents on a curriculum of generated levels and
+evaluating on the six default LLE levels — was not completed within the scope of this thesis due to
+dependency constraints in the training library. This remains a direct extension of the current
+framework, since the generator infrastructure and cooperation profile targets are in place.
+The experimental scripts and level generation pipeline are ready; only the training loop and
+downstream evaluation are missing.

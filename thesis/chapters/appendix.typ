@@ -1,4 +1,4 @@
-= Appendix <appendix>
+#heading(numbering: none)[Appendix]
 
 == Training Level Set <appendix-training-levels>
 

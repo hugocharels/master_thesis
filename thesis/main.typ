@@ -21,7 +21,7 @@
       let content = text(strong(it.body), 30pt)
       chapter + [ \ \ ] + content + [ \ \ ]
     } else {
-      if it.body == [Conclusion] {
+      if it.body == [Conclusion] or it.body == [Appendix] {
         pagebreak()
         v(100pt)
 
@@ -129,7 +129,11 @@
 
 #include "chapters/conclusion.typ"
 
-#include "chapters/appendix.typ"
+#[
+  #set heading(numbering: "A.1")
+  #counter(heading).update(0)
+  #include "chapters/appendix.typ"
+]
 
 #pagebreak()
 #bibliography("bibliography.bib", full: true)

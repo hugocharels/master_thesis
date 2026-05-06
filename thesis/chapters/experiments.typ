@@ -156,21 +156,21 @@ $5 times 5$ with 3 agents and 2 lasers, and $8 times 8$ with 4 agents and 3 lase
 
 === Interpretation
 
-The rejection-rate results quantify the overhead introduced by the SAT acceptance oracle. Solvable
-generators are rejected primarily because random layouts do not admit a valid joint trajectory within
-the requested horizon. Cooperative generators add the strict-semantics counterfactual check, which
-increases rejection rates further: the set of layouts that are both solvable and cooperation-requiring
-is a strict subset of the solvable set.
+The experiment is designed to quantify the overhead introduced by the SAT acceptance oracle.
+Solvable generators are expected to be rejected primarily because random layouts do not admit a valid
+joint trajectory within the requested horizon. Cooperative generators add the strict-semantics
+counterfactual check, which should increase rejection rates further: the set of layouts that are
+both solvable and cooperation-requiring is a strict subset of the solvable set.
 
-The constrained generators improve acceptance rates by removing geometrically degenerate candidates
-before any SAT call is made. Their geometric pre-filter does not affect the formal guarantee: every
-accepted level still passes the same solver check. It only avoids spending solver time on candidates
-that fail for locally visible reasons.
+The constrained generators are expected to improve acceptance rates by removing geometrically
+degenerate candidates before any SAT call is made. Their geometric pre-filter does not affect the
+formal guarantee: every accepted level still passes the same solver check. It only avoids spending
+solver time on candidates that fail for locally visible reasons.
 
-The constructive generators have high acceptance rates at small sizes because the lane-reservation
-strategy biases layouts toward solvable configurations by design. At larger sizes, the balance
-between reserved lanes and available free cells shifts, which may increase rejection rates for
-incidental reasons such as laser placement failures.
+The constructive generators are expected to show higher acceptance rates at small sizes because the
+lane-reservation strategy biases layouts toward solvable configurations by design. At larger sizes,
+the balance between reserved lanes and available free cells shifts, which may increase rejection
+rates for incidental reasons such as laser placement failures.
 
 
 == Cooperation Profile Distribution <profile-distribution>
@@ -204,17 +204,18 @@ when cooperation is required but no specific dependency structure is detected.
 
 === Interpretation
 
-The profile distribution reflects the structural biases of each generator. Random generators
-sample layouts without any structural preference for cooperation type, so their output distribution
-is determined entirely by how often different dependency patterns arise in the accepted subset of
-random layouts. Constructive generators, by contrast, plant a deliberate beam-blocking dependency
-in each candidate, which biases the output toward simpler, structurally cleaner profiles.
+The profile distribution is expected to reflect the structural biases of each generator. Random
+generators sample layouts without any structural preference for cooperation type, so their output
+distribution should be determined by how often different dependency patterns arise in the accepted
+subset of random layouts. Constructive generators, by contrast, plant a deliberate beam-blocking
+dependency in each candidate, which should bias the output toward simpler, structurally cleaner
+profiles.
 
-This comparison serves two purposes. First, it shows that the profile analyzer produces
-non-trivial and generator-dependent distributions — the classifier is not returning a constant
-answer. Second, it reveals which profiles are rare or absent under rejection sampling, motivating
-the profile-targeted generation mode in which the generator runs the cooperation profile check and
-accepts only levels that match a requested profile.
+This comparison is designed to serve two purposes. First, it tests whether the profile analyzer
+produces non-trivial and generator-dependent distributions — checking that the classifier does not
+return a constant answer. Second, it reveals which profiles are rare or absent under rejection
+sampling, motivating the profile-targeted generation mode in which the generator runs the
+cooperation profile check and accepts only levels that match a requested profile.
 
 
 == Discussion

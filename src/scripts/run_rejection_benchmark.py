@@ -126,7 +126,7 @@ class InstrumentedGenerator:
             elif raw.startswith("solver_error:"):
                 bucket = "solver_error"
             elif "outside_difficulty" in raw:
-                bucket = "not_solvable"
+                bucket = "difficulty_window"
             elif "profile" in raw:
                 bucket = "wrong_profile"
             else:

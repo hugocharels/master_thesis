@@ -73,9 +73,12 @@ def run():
 
             profile_counts: dict[str, int] = defaultdict(int)
             accepted = 0
+            total_attempts = 0
+            max_attempts = LEVELS_TO_GENERATE * 200
             t_start = time.perf_counter()
 
-            while accepted < LEVELS_TO_GENERATE:
+            while accepted < LEVELS_TO_GENERATE and total_attempts < max_attempts:
+                total_attempts += 1
                 try:
                     world = gen.generate()
                 except RuntimeError:

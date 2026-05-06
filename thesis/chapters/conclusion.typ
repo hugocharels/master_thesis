@@ -30,29 +30,43 @@ The current work has four important limitations.
 - The cooperation notion studied here is intentionally specific: it captures same-colour
   beam-truncation as the relevant cooperative act. It does not claim to exhaust every possible
   interpretation of cooperation in multi-agent environments.
-- The experimental evaluation does not yet validate the full generator family. Acceptance rates,
-  diversity, cooperation-profile frequencies, and downstream MARL usefulness remain to be studied.
+- The downstream effect of generated levels on MARL training has not been evaluated. The generator
+  framework produces certified levels, but whether those levels lead to faster or more stable
+  learning than uncertified baselines remains an open empirical question.
 
 These limitations do not invalidate the present results, but they do define their exact scope. The
-thesis establishes a formal generation-and-certification framework for a specific LLE model; it does
-not yet provide a complete empirical study of the generated level distribution.
+thesis establishes a formal generation-and-certification framework for a specific LLE model and
+provides an initial empirical characterisation of the generator family. It does not yet close the
+loop with downstream learning experiments.
 
 
 == Future Work
 
 Several extensions follow directly from these limitations.
 
-- Extend the empirical section with generator-focused studies: acceptance rates, parameter
-  sensitivity, diversity measures, and cooperation-profile distributions.
-- Evaluate the cost of cooperation detection itself, not only the cost of the base solvability
-  reduction.
-- Enrich the model to cover a larger subset of LLE mechanics, while keeping the logical guarantees
-  explicit.
-- Investigate whether the current formal guarantees correlate with downstream learning behaviour in
-  MARL, for example through curriculum design or controlled training experiments on generated level
-  families.
+- *Downstream MARL evaluation.* The most direct open question is whether certified cooperative
+  levels improve training of MARL agents compared to uncertified baselines. A natural experiment
+  would train a value-decomposition agent @Sunehag2018 such as VDN or QMIX @Rashid2018 on a
+  curriculum of generated levels and evaluate on the default LLE benchmark levels. The generation
+  infrastructure and cooperation profile targets are already in place; only the training loop
+  remains.
+- *Parameter sensitivity and diversity.* The current acceptance-rate experiments use fixed agent
+  and laser counts per grid size. A fuller characterisation would vary these parameters to locate
+  the practical frontier at which rejection rates become prohibitive, and would measure diversity
+  of accepted levels within a fixed parameter setting.
+- *Richer cooperation metrics.* The cooperation profile taxonomy used here covers five dependency
+  structures. Extensions could include synchronous cooperation (agents that must coordinate in the
+  same timestep) and chain length as a difficulty axis. These richer targets are already defined in
+  the cooperation profile notes; their generation and evaluation remain future work.
+- *Model extension.* Incorporating gem tiles and void tiles into the formal model would expand the
+  scope of the formal guarantees. Gems introduce an additional reachability condition; void tiles
+  require a revised movement semantics. Both extensions preserve the SAT-based architecture.
+- *Formal NP-hardness.* The present thesis shows that bounded-horizon LLE solvability is in NP and
+  is reducible to SAT. Whether it is NP-hard — that is, whether there exists a polynomial-time
+  reduction from a known NP-hard problem to LLE solvability — remains open and would be a
+  worthwhile theoretical complement.
 
 The main open question is therefore not whether solver-based certification is possible in LLE; the
 present thesis answers that positively. The open question is how far that certification framework
-can be extended before richer mechanics and richer evaluation criteria require an additional formal
-layer.
+can be extended — in terms of richer mechanics, richer cooperation structures, and downstream
+learning effects — before additional formal layers are required.

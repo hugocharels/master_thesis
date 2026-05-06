@@ -93,11 +93,11 @@ def run():
                 except RuntimeError:
                     t_gen_total += time.perf_counter() - t_gen
                     rejected += 1
-                    if rejected % 100 == 0:
+                    if rejected % 50 == 0:
                         elapsed = time.perf_counter() - t_start
                         print(
-                            f"  ... {rejected} rejected so far, {accepted} accepted "
-                            f"({elapsed:.1f}s, gen_avg={1000*t_gen_total/max(1,total_so_far+1):.1f}ms/attempt)",
+                            f"  attempt {accepted+rejected}: {rejected} rejected, {accepted} accepted "
+                            f"({elapsed:.1f}s | gen_avg={1000*t_gen_total/max(1,accepted+rejected):.1f}ms)",
                             flush=True,
                         )
                     continue
@@ -111,17 +111,15 @@ def run():
 
                 profile_counts[result.profile] += 1
                 accepted += 1
-
-                if accepted % 10 == 0:
-                    elapsed = time.perf_counter() - t_start
-                    n_attempts = accepted + rejected
-                    print(
-                        f"  accepted {accepted}/{LEVELS_TO_GENERATE} "
-                        f"({rejected} rejected, {elapsed:.1f}s) "
-                        f"| gen_avg={1000*t_gen_total/max(1,n_attempts):.1f}ms "
-                        f"| analyze_avg={1000*t_analyze_total/max(1,accepted):.1f}ms",
-                        flush=True,
-                    )
+                elapsed = time.perf_counter() - t_start
+                n_attempts = accepted + rejected
+                print(
+                    f"  [{accepted:>3}/{LEVELS_TO_GENERATE}] profile={result.profile:<14} "
+                    f"attempts={n_attempts:>5} ({rejected} rejected)  "
+                    f"{elapsed:.1f}s | gen={1000*t_gen_total/max(1,n_attempts):.0f}ms "
+                    f"| analyze={1000*t_analyze_total/max(1,accepted):.0f}ms",
+                    flush=True,
+                )
 
             total_attempts = accepted + rejected
             elapsed_total = time.perf_counter() - t_start

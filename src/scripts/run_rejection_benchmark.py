@@ -114,25 +114,29 @@ def run():
                         found = True
                         break
                     except RuntimeError:
-                        if attempts % 100 == 0:
-                            print(f"    trial {trial+1}/{MAX_TRIALS}: {attempts} attempts so far...", flush=True)
+                        if attempts % 50 == 0:
+                            print(f"    trial {trial+1}/{MAX_TRIALS}: {attempts} attempts...", flush=True)
 
                 t_elapsed = time.perf_counter() - t_start
+                elapsed_total = time.perf_counter() - t_run_start
 
                 if found:
                     attempts_per_level.append(attempts)
                     times_per_level.append(t_elapsed)
-                    if (trial + 1) % 10 == 0:
-                        elapsed = time.perf_counter() - t_run_start
-                        mean_so_far = float(np.mean(attempts_per_level))
-                        print(
-                            f"    {trial+1}/{MAX_TRIALS} trials done ({elapsed:.1f}s), "
-                            f"mean attempts so far: {mean_so_far:.1f}",
-                            flush=True,
-                        )
+                    mean_so_far = float(np.mean(attempts_per_level))
+                    print(
+                        f"    [{trial+1:>2}/{MAX_TRIALS}] OK  attempts={attempts:>4}  "
+                        f"time={t_elapsed:.2f}s  mean_attempts={mean_so_far:.1f}  "
+                        f"total_elapsed={elapsed_total:.1f}s",
+                        flush=True,
+                    )
                 else:
                     failed_trials += 1
-                    print(f"    trial {trial+1}/{MAX_TRIALS}: FAILED (>{MAX_ATTEMPTS_PER_TRIAL} attempts)", flush=True)
+                    print(
+                        f"    [{trial+1:>2}/{MAX_TRIALS}] FAIL (>{MAX_ATTEMPTS_PER_TRIAL} attempts)  "
+                        f"total_elapsed={elapsed_total:.1f}s",
+                        flush=True,
+                    )
 
             successful = len(attempts_per_level)
             mean_attempts = float(np.mean(attempts_per_level)) if attempts_per_level else None

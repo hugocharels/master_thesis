@@ -133,7 +133,7 @@
   #set heading(numbering: (..nums) => {
     let n = nums.pos()
     let letters = ("A", "B", "C", "D", "E", "F", "G", "H")
-    let letter = letters.at(n.at(0) - 6, default: "?")
+    let letter = letters.at(n.at(0) - 5, default: "?")
     if n.len() == 1 { letter }
     else { letter + "." + n.slice(1).map(str).join(".") }
   })

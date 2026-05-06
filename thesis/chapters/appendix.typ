@@ -53,7 +53,7 @@ exact parameters.
     table.header([*Parameter*], [*3×3*], [*5×5*], [*8×8*]),
     [Agents], [2], [3], [4],
     [Lasers], [1], [2], [3],
-    [$T_"max"$], [8], [12], [32],
+    [$T_"max"$], [8], [12], [20],
     [Trials (rejection benchmark)], [50], [50], [50],
     [Max attempts per trial (rejection benchmark)], [500], [500], [500],
     [Levels generated (profile benchmark)], [100], [100], [100],

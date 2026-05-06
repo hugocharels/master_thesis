@@ -20,8 +20,8 @@ import numpy as np
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
+from generators.constrained_random_cooperative_generator import ConstrainedRandomCooperativeGenerator
 from generators.constructive_cooperative_generator import ConstructiveCooperativeGenerator
-from generators.random_cooperative_generator import RandomCooperativeGenerator
 from solver import LLEAdapter
 from solver.cooperation_profile_analyzer import CooperationProfileAnalyzer
 
@@ -38,7 +38,7 @@ CONFIGS = [
 ALL_PROFILES = ["asymmetric", "mutual", "chain", "distributed", "fully_coupled", "cooperative"]
 
 GENERATOR_SPECS = {
-    "random_cooperative": RandomCooperativeGenerator,
+    "constrained_random_cooperative": ConstrainedRandomCooperativeGenerator,
     "constructive_cooperative": ConstructiveCooperativeGenerator,
 }
 

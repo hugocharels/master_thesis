@@ -185,7 +185,7 @@ profiles among accepted levels, using the cooperation profile analyzer introduce
 
 === Protocol
 
-For each of two cooperative generators (`random_cooperative` and `constructive_cooperative`) and
+For each of two cooperative generators (`constrained_random_cooperative` and `constructive_cooperative`) and
 two grid sizes ($5 times 5$ with 2 agents and 1 laser, $8 times 8$ with 3 agents and 2 lasers),
 100 cooperative levels are accepted and then classified by the cooperation profile analyzer. The
 classifier assigns each level to one of the following profile families: `asymmetric`, `mutual`,

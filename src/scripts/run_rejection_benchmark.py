@@ -27,14 +27,13 @@ from generators.constrained_random_cooperative_generator import ConstrainedRando
 from generators.constrained_random_solvable_generator import ConstrainedRandomSolvableGenerator
 from generators.constructive_cooperative_generator import ConstructiveCooperativeGenerator
 from generators.constructive_solvable_generator import ConstructiveSolvableGenerator
-from generators.random_cooperative_generator import RandomCooperativeGenerator
-from generators.random_solvable_generator import RandomSolvableGenerator
 
 # ---------------------------------------------------------------------------
 # Experiment configuration
 # ---------------------------------------------------------------------------
 
-ATTEMPTS = 200
+ATTEMPTS = 200       # total attempts per (generator, size)
+MAX_ACCEPTED = 50    # stop early once this many levels are accepted
 
 CONFIGS = [
     # (rows, cols, agents, lasers)
@@ -44,9 +43,7 @@ CONFIGS = [
 ]
 
 GENERATOR_SPECS = {
-    "random_solvable": RandomSolvableGenerator,
     "constrained_random_solvable": ConstrainedRandomSolvableGenerator,
-    "random_cooperative": RandomCooperativeGenerator,
     "constrained_random_cooperative": ConstrainedRandomCooperativeGenerator,
     "constructive_solvable": ConstructiveSolvableGenerator,
     "constructive_cooperative": ConstructiveCooperativeGenerator,
@@ -66,10 +63,13 @@ class InstrumentedGenerator:
         self._gen = generator
         self.attempts: list[dict] = []
 
-    def run_attempts(self, num_attempts: int):
+    def run_attempts(self, num_attempts: int, max_accepted: int | None = None):
         gen = self._gen
+        accepted_count = 0
 
         for attempt_idx in range(num_attempts):
+            if max_accepted is not None and accepted_count >= max_accepted:
+                break
             t_start = time.perf_counter()
             outcome = {"accepted": False, "reason": "", "elapsed": 0.0}
 
@@ -106,6 +106,7 @@ class InstrumentedGenerator:
             if accepted:
                 outcome["accepted"] = True
                 outcome["reason"] = reason
+                accepted_count += 1
             else:
                 outcome["reason"] = reason
 
@@ -187,7 +188,7 @@ def run():
             gen.debug_rejections = False if hasattr(gen, "debug_rejections") else None
 
             instrumented = InstrumentedGenerator(gen)
-            instrumented.run_attempts(ATTEMPTS)
+            instrumented.run_attempts(ATTEMPTS, max_accepted=MAX_ACCEPTED)
             summary = instrumented.summarize()
 
             print(

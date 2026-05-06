@@ -12,12 +12,12 @@ guarantee that accepted levels satisfy the formal properties checked by the solv
 central contribution of the thesis: procedural generation coupled to explicit certification rather
 than procedural generation guided only by heuristic plausibility.
 
-The empirical evaluation covers three aspects of the framework. The SAT encoding comparison shows
-that the local uniqueness formulation is the preferable default: it yields substantially smaller
-CNF formulas and lower runtimes as instances grow. The rejection-rate and profile-distribution
-experiments characterise the practical cost of the acceptance oracle and the output diversity of
-the generator family. Finally, the transfer experiment evaluates whether agents trained on
-certified cooperative levels can generalise to human-designed benchmark levels.
+The empirical evaluation covers several aspects of the framework. The SAT encoding comparison
+shows that the local uniqueness formulation is the preferable default: it yields substantially
+smaller CNF formulas and lower runtimes as instances grow. The rejection-rate and
+profile-distribution experiments characterise the practical cost of the acceptance oracle and the
+output diversity of the generator family. A transfer experiment is planned to evaluate whether
+agents trained on certified cooperative levels can generalise to human-designed benchmark levels.
 
 
 

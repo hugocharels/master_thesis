@@ -120,10 +120,11 @@ otherwise. For each rejected attempt, the reason is recorded: geometric invalidi
 construction failure, solver returning unsatisfiable, or the cooperation profile not matching the
 requested target.
 
-Six generators are evaluated: `random_solvable`, `constrained_random_solvable`,
-`random_cooperative`, `constrained_random_cooperative`, `constructive_solvable`, and
-`constructive_cooperative`. Three grid sizes are used: $3 times 3$ with 2 agents and 1 laser,
-$5 times 5$ with 3 agents and 2 lasers, and $8 times 8$ with 4 agents and 3 lasers.
+Four generators are evaluated: `constrained_random_solvable`, `constrained_random_cooperative`,
+`constructive_solvable`, and `constructive_cooperative`. The plain random generators are excluded
+as they serve primarily as structural baselines; the constrained and constructive variants are the
+generators of practical interest. Three grid sizes are used: $3 times 3$ with 2 agents and 1
+laser, $5 times 5$ with 3 agents and 2 lasers, and $8 times 8$ with 4 agents and 3 lasers.
 
 === Results
 

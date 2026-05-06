@@ -33,9 +33,11 @@ from generators.constructive_solvable_generator import ConstructiveSolvableGener
 # Experiment configuration
 # ---------------------------------------------------------------------------
 
-MAX_TRIALS = 50               # number of accepted levels to find per (generator, size)
-MAX_TRIALS_LARGE = 20         # reduced target for large grids
-MAX_ATTEMPTS_PER_TRIAL = 500  # give up on a single trial after this many attempts
+MAX_TRIALS = 50                     # number of accepted levels to find per (generator, size)
+MAX_TRIALS_LARGE = 20               # reduced target for large grids
+MAX_ATTEMPTS_PER_TRIAL = 500        # give up on a single trial after this many attempts
+MAX_ATTEMPTS_PER_TRIAL_LARGE = 100  # faster give-up for large grids
+TRIAL_TIMEOUT_LARGE = 30.0          # seconds: abort a large-grid trial if it exceeds this
 
 CONFIGS = [
     # (rows, cols, agents, lasers, is_large)
@@ -103,13 +105,20 @@ def run():
             times_per_level: list[float] = []
             failed_trials = 0
 
+            max_att = MAX_ATTEMPTS_PER_TRIAL_LARGE if is_large else MAX_ATTEMPTS_PER_TRIAL
+            timeout = TRIAL_TIMEOUT_LARGE if is_large else None
+
             t_run_start = time.perf_counter()
             for trial in range(trials):
                 attempts = 0
                 t_start = time.perf_counter()
                 found = False
+                timed_out = False
 
-                while attempts < MAX_ATTEMPTS_PER_TRIAL:
+                while attempts < max_att:
+                    if timeout and (time.perf_counter() - t_start) > timeout:
+                        timed_out = True
+                        break
                     attempts += 1
                     try:
                         gen.generate()
@@ -117,7 +126,8 @@ def run():
                         break
                     except RuntimeError:
                         if attempts % 50 == 0:
-                            print(f"    trial {trial+1}/{trials}: {attempts} attempts...", flush=True)
+                            elapsed_so_far = time.perf_counter() - t_start
+                            print(f"    trial {trial+1}/{trials}: {attempts} attempts ({elapsed_so_far:.1f}s)...", flush=True)
 
                 t_elapsed = time.perf_counter() - t_start
                 elapsed_total = time.perf_counter() - t_run_start
@@ -134,8 +144,9 @@ def run():
                     )
                 else:
                     failed_trials += 1
+                    reason = f"timeout>{timeout:.0f}s" if timed_out else f">{max_att} attempts"
                     print(
-                        f"    [{trial+1:>2}/{trials}] FAIL (>{MAX_ATTEMPTS_PER_TRIAL} attempts)  "
+                        f"    [{trial+1:>2}/{trials}] FAIL ({reason})  "
                         f"total_elapsed={elapsed_total:.1f}s",
                         flush=True,
                     )

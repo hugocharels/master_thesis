@@ -1,17 +1,15 @@
 """
 Rejection rate benchmark.
 
-For each generator type and grid size, runs up to ATTEMPTS generation attempts
-(each with max_attempts=1) and records:
-  - number of accepted levels
-  - number of rejected levels
-  - rejection rate
-  - mean time per accepted level
-  - mean time per rejected attempt
+For each generator type and grid size, runs MAX_TRIALS "find one level" trials.
+Each trial calls gen.generate() (max_attempts=1) in a loop until one level is
+accepted or MAX_ATTEMPTS_PER_TRIAL is exceeded.
 
-Each call to gen.generate() with max_attempts=1 is one attempt: it either
-returns an accepted world or raises RuntimeError. This directly measures the
-natural rejection rate of the generator without hiding retries inside it.
+This directly measures:
+  - mean number of attempts needed to find one accepted level
+  - mean time to find one accepted level
+
+The rejection rate is derived as (mean_attempts - 1) / mean_attempts.
 
 Results saved to results/rejection_benchmark/.
 """
@@ -35,8 +33,8 @@ from generators.constructive_solvable_generator import ConstructiveSolvableGener
 # Experiment configuration
 # ---------------------------------------------------------------------------
 
-ATTEMPTS = 200       # total attempts per (generator, size)
-MAX_ACCEPTED = 50    # stop early once this many levels are accepted
+MAX_TRIALS = 50               # number of accepted levels to find per (generator, size)
+MAX_ATTEMPTS_PER_TRIAL = 500  # give up on a single trial after this many attempts
 
 CONFIGS = [
     # (rows, cols, agents, lasers)
@@ -99,38 +97,48 @@ def run():
                 results[gen_name][size_key] = {"skipped": True}
                 continue
 
-            times_accepted: list[float] = []
-            times_rejected: list[float] = []
-            accepted = 0
+            attempts_per_level: list[int] = []
+            times_per_level: list[float] = []
+            failed_trials = 0
 
-            for _ in range(ATTEMPTS):
-                if accepted >= MAX_ACCEPTED:
-                    break
+            for trial in range(MAX_TRIALS):
+                attempts = 0
                 t_start = time.perf_counter()
-                try:
-                    gen.generate()
-                    elapsed = time.perf_counter() - t_start
-                    times_accepted.append(elapsed)
-                    accepted += 1
-                except RuntimeError:
-                    elapsed = time.perf_counter() - t_start
-                    times_rejected.append(elapsed)
+                found = False
 
-            total = len(times_accepted) + len(times_rejected)
-            rejection_rate = len(times_rejected) / max(1, total)
+                while attempts < MAX_ATTEMPTS_PER_TRIAL:
+                    attempts += 1
+                    try:
+                        gen.generate()
+                        found = True
+                        break
+                    except RuntimeError:
+                        pass
+
+                t_elapsed = time.perf_counter() - t_start
+
+                if found:
+                    attempts_per_level.append(attempts)
+                    times_per_level.append(t_elapsed)
+                else:
+                    failed_trials += 1
+
+            successful = len(attempts_per_level)
+            mean_attempts = float(np.mean(attempts_per_level)) if attempts_per_level else None
+            rejection_rate = ((mean_attempts - 1) / mean_attempts) if mean_attempts else None
 
             print(
-                f"    accepted={accepted}/{total} "
-                f"({100 * (1 - rejection_rate):.1f}% accept rate)"
+                f"    {successful}/{MAX_TRIALS} trials succeeded, "
+                f"mean attempts={mean_attempts:.1f}" if mean_attempts else f"    {successful}/{MAX_TRIALS} trials succeeded"
             )
 
             results[gen_name][size_key] = {
-                "total_attempts": total,
-                "accepted": len(times_accepted),
-                "rejected": len(times_rejected),
+                "successful_trials": successful,
+                "failed_trials": failed_trials,
+                "mean_attempts_per_level": mean_attempts,
+                "std_attempts_per_level": float(np.std(attempts_per_level)) if attempts_per_level else None,
+                "mean_time_per_level": float(np.mean(times_per_level)) if times_per_level else None,
                 "rejection_rate": rejection_rate,
-                "mean_time_accepted": float(np.mean(times_accepted)) if times_accepted else None,
-                "mean_time_rejected": float(np.mean(times_rejected)) if times_rejected else None,
             }
 
     json_path = OUTPUT_DIR / "benchmark_results.json"
@@ -151,18 +159,19 @@ def _make_plots(results: dict):
     x = np.arange(len(sizes))
     width = 0.18
 
-    # --- Plot 1: Rejection rate by generator ---
+    # --- Plot 1: Rejection rate by generator (derived from mean attempts) ---
     fig, ax = plt.subplots(figsize=(12, 6))
     for i, gen in enumerate(generators):
-        rejection_rates = []
+        rates = []
         for size in sizes:
             data = results[gen].get(size, {})
             if data.get("skipped") or not data:
-                rejection_rates.append(0.0)
+                rates.append(0.0)
             else:
-                rejection_rates.append(data.get("rejection_rate", 0.0) * 100)
+                r = data.get("rejection_rate")
+                rates.append((r * 100) if r is not None else 0.0)
         offset = (i - len(generators) / 2) * width + width / 2
-        ax.bar(x + offset, rejection_rates, width, label=gen)
+        ax.bar(x + offset, rates, width, label=gen)
 
     ax.set_xlabel("Grid size")
     ax.set_ylabel("Rejection rate (%)")
@@ -176,7 +185,7 @@ def _make_plots(results: dict):
     plt.close(fig)
     print("Saved rejection_rate_by_generator.png")
 
-    # --- Plot 2: Mean time per accepted level ---
+    # --- Plot 2: Mean time to find one accepted level ---
     fig, ax = plt.subplots(figsize=(12, 6))
     for i, gen in enumerate(generators):
         times = []
@@ -185,13 +194,13 @@ def _make_plots(results: dict):
             if data.get("skipped") or not data:
                 times.append(0.0)
             else:
-                t = data.get("mean_time_accepted")
+                t = data.get("mean_time_per_level")
                 times.append(t if t is not None else 0.0)
         offset = (i - len(generators) / 2) * width + width / 2
         ax.bar(x + offset, times, width, label=gen)
 
     ax.set_xlabel("Grid size")
-    ax.set_ylabel("Mean time per accepted level (s)")
+    ax.set_ylabel("Mean time to find one accepted level (s)")
     ax.set_title("Mean Time per Accepted Level by Generator and Grid Size")
     ax.set_xticks(x)
     ax.set_xticklabels(sizes)
@@ -200,6 +209,31 @@ def _make_plots(results: dict):
     fig.savefig(OUTPUT_DIR / "time_per_accepted_level.png", dpi=150)
     plt.close(fig)
     print("Saved time_per_accepted_level.png")
+
+    # --- Plot 3: Mean attempts to find one accepted level ---
+    fig, ax = plt.subplots(figsize=(12, 6))
+    for i, gen in enumerate(generators):
+        attempts = []
+        for size in sizes:
+            data = results[gen].get(size, {})
+            if data.get("skipped") or not data:
+                attempts.append(0.0)
+            else:
+                a = data.get("mean_attempts_per_level")
+                attempts.append(a if a is not None else 0.0)
+        offset = (i - len(generators) / 2) * width + width / 2
+        ax.bar(x + offset, attempts, width, label=gen)
+
+    ax.set_xlabel("Grid size")
+    ax.set_ylabel("Mean attempts to find one accepted level")
+    ax.set_title("Mean Attempts per Accepted Level by Generator and Grid Size")
+    ax.set_xticks(x)
+    ax.set_xticklabels(sizes)
+    ax.legend(loc="upper left", fontsize=8)
+    fig.tight_layout()
+    fig.savefig(OUTPUT_DIR / "mean_attempts_per_level.png", dpi=150)
+    plt.close(fig)
+    print("Saved mean_attempts_per_level.png")
 
 
 if __name__ == "__main__":

@@ -106,19 +106,21 @@ following sections address the first two of these open questions.
 
 Acceptance rates determine the practical cost of the rejection-sampling strategy used by the
 generators. A generator with a 1 % acceptance rate requires approximately one hundred solver calls
-per usable level, which directly affects generation throughput. This experiment measures the
-fraction of candidate layouts rejected by each generator and characterises the dominant rejection
-reasons.
+per usable level, which directly affects generation throughput. This experiment measures, for each
+generator and grid size, how many attempts are needed to find one accepted level and how much time
+those attempts consume.
 
 === Protocol
 
-For each generator type and grid size combination, 200 generation attempts are executed. An attempt
-consists of sampling a candidate layout, validating geometric constraints (where applicable),
-constructing an `lle.World` object, and running the solver. The attempt is classified as accepted
-if the solver certifies the required property (solvability or cooperation), and as rejected
-otherwise. For each rejected attempt, the reason is recorded: geometric invalidity, LLE
-construction failure, solver returning unsatisfiable, or the cooperation profile not matching the
-requested target.
+For each generator type and grid size combination, 50 trials are executed. Each trial consists of
+calling the generator with a budget of one attempt at a time until one level is accepted or a
+limit of 500 attempts is exhausted. Each single attempt samples a candidate layout, validates
+geometric constraints (where applicable), constructs an `lle.World` object, and runs the SAT
+solver. The attempt is accepted if the solver certifies the required property (solvability or
+cooperation), and rejected otherwise.
+
+Recording the number of attempts per accepted level is the most direct measurement of the
+generator's rejection cost: the mean number of attempts is the reciprocal of the acceptance rate.
 
 Four generators are evaluated: `constrained_random_solvable`, `constrained_random_cooperative`,
 `constructive_solvable`, and `constructive_cooperative`. The plain random generators are excluded
@@ -131,27 +133,24 @@ laser, $5 times 5$ with 3 agents and 2 lasers, and $8 times 8$ with 4 agents and
 #figure(
   image("../../results/rejection_benchmark/rejection_rate_by_generator.png", width: 90%),
   caption: [
-    Rejection rate (%) per generator and grid size, across 200 attempts per combination.
-    Solvable generators are rejected primarily for unsatisfiability; cooperative generators
-    add an additional cooperation filter, increasing rejection rates substantially.
+    Rejection rate (%) per generator and grid size, derived from the mean number of attempts
+    per accepted level across 50 trials.
+  ],
+)
+
+#figure(
+  image("../../results/rejection_benchmark/mean_attempts_per_level.png", width: 90%),
+  caption: [
+    Mean number of attempts needed to find one accepted level, per generator and grid size.
+    Each attempt is one independent generation call; the mean is averaged over 50 successful trials.
   ],
 )
 
 #figure(
   image("../../results/rejection_benchmark/time_per_accepted_level.png", width: 90%),
   caption: [
-    Mean time (seconds) to obtain one accepted level, per generator and grid size.
+    Mean wall-clock time (seconds) to obtain one accepted level, per generator and grid size.
     Time includes all rejected attempts that precede each accepted level.
-  ],
-)
-
-#figure(
-  image("../../results/rejection_benchmark/rejection_reasons.png", width: 95%),
-  caption: [
-    Breakdown of rejection reasons as a fraction of total rejections, per generator and grid size.
-    The dominant reason for solvable generators is unsatisfiability (the SAT solver returns UNSAT);
-    for cooperative generators, the additional cooperation and profile checks contribute further
-    rejections.
   ],
 )
 

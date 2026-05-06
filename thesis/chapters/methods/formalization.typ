@@ -94,6 +94,12 @@ position twice, the intervening segment forms a loop and can be removed without 
 reachability of later states. Therefore, if a level is solvable at all, it is solvable within a
 finite horizon bounded by the number of collision-free joint configurations.
 
+*Scope note.* All formal guarantees in this thesis are stated relative to a fixed finite horizon
+$T_("max")$. The solver decides whether a level is solvable within that horizon, not whether it
+is solvable under an unbounded notion of play. In practice, $T_("max")$ is set to a value known
+to be sufficient for the instances of interest; the choice of horizon is a parameter of the
+generation process, not a formal limitation of the approach.
+
 #formalbox([Definition 4.5 (Bounded-Horizon LLE Solvability Problem)], [
   The *bounded-horizon LLE solvability problem* is the following decision problem.
 

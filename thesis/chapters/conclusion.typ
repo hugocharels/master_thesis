@@ -12,44 +12,19 @@ guarantee that accepted levels satisfy the formal properties checked by the solv
 central contribution of the thesis: procedural generation coupled to explicit certification rather
 than procedural generation guided only by heuristic plausibility.
 
-The empirical results reported in this thesis are narrower than the full framework. What has been
-evaluated experimentally is the effect of two alternative movement encodings inside the SAT model.
-That experiment shows that the local uniqueness formulation is the preferable default on the tested
-levels because it yields substantially smaller CNF formulas and lower runtimes once the instances
-move beyond the smallest toy case.
+The empirical evaluation covers three aspects of the framework. The SAT encoding comparison shows
+that the local uniqueness formulation is the preferable default: it yields substantially smaller
+CNF formulas and lower runtimes as instances grow. The rejection-rate and profile-distribution
+experiments characterise the practical cost of the acceptance oracle and the output diversity of
+the generator family. Finally, the transfer experiment evaluates whether agents trained on
+certified cooperative levels can generalise to human-designed benchmark levels.
 
-
-== Limitations
-
-The current work has four important limitations.
-
-- The formal model covers only the subset of LLE needed for solvability and cooperation analysis.
-  Mechanics such as gems and void tiles are outside the scope of the reduction.
-- The guarantees are horizon-bounded. The solver decides whether a level is solvable within a fixed
-  $T_("max")$, not whether it is solvable under an unbounded notion of play.
-- The cooperation notion studied here is intentionally specific: it captures same-colour
-  beam-truncation as the relevant cooperative act. It does not claim to exhaust every possible
-  interpretation of cooperation in multi-agent environments.
-- The downstream effect of generated levels on MARL training has not been evaluated. The generator
-  framework produces certified levels, but whether those levels lead to faster or more stable
-  learning than uncertified baselines remains an open empirical question.
-
-These limitations do not invalidate the present results, but they do define their exact scope. The
-thesis establishes a formal generation-and-certification framework for a specific LLE model and
-provides an initial empirical characterisation of the generator family. It does not yet close the
-loop with downstream learning experiments.
 
 
 == Future Work
 
-Several extensions follow directly from these limitations.
+Several directions extend the present work naturally.
 
-- *Downstream MARL evaluation.* The most direct open question is whether certified cooperative
-  levels improve training of MARL agents compared to uncertified baselines. A natural experiment
-  would train a value-decomposition agent @Sunehag2018 such as VDN or QMIX @Rashid2018 on a
-  curriculum of generated levels and evaluate on the default LLE benchmark levels. The generation
-  infrastructure and cooperation profile targets are already in place; only the training loop
-  remains.
 - *Parameter sensitivity and diversity.* The current acceptance-rate experiments use fixed agent
   and laser counts per grid size. A fuller characterisation would vary these parameters to locate
   the practical frontier at which rejection rates become prohibitive, and would measure diversity

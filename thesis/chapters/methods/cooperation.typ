@@ -79,3 +79,10 @@ The cooperation detector runs two SAT calls on the same level:
 Both calls share the same bounded horizon and differ only in the beam-propagation clauses. For
 benchmark levels, the horizon can be chosen from known solution lengths; for generated levels, it
 is the user-supplied generation parameter $T_("max")$.
+
+*Scope note.* The cooperation notion defined here is intentionally specific: it captures
+same-colour beam-truncation as the relevant cooperative act. A level that requires two agents to
+coordinate their movements for unrelated geometric reasons — without any laser blocking being
+involved — would not be identified as cooperative by this detector. This definition is not claimed
+to exhaust every possible interpretation of cooperation in multi-agent environments; it is the
+specific mechanism studied in this benchmark, and the formal guarantee is scoped accordingly.

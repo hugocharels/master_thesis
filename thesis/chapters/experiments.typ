@@ -235,6 +235,11 @@ Together, the two experiments support the claim that the solver-in-the-loop arch
 not only formally certified levels, but a characterisable and controllable distribution of certified
 levels.
 
+What these experiments do not establish is whether certified levels are useful for training. The
+generator framework guarantees formal properties of accepted levels, but whether those properties
+translate into better or faster learning for MARL agents compared to uncertified baselines remains
+an open empirical question, addressed in @transfer-experiment.
+
 
 == Transfer to Human-Designed Levels <transfer-experiment>
 

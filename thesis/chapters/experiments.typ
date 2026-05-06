@@ -112,15 +112,22 @@ those attempts consume.
 
 === Protocol
 
-For each generator type and grid size combination, 50 trials are executed. Each trial consists of
-calling the generator with a budget of one attempt at a time until one level is accepted or a
-limit of 500 attempts is exhausted. Each single attempt samples a candidate layout, validates
-geometric constraints (where applicable), constructs an `lle.World` object, and runs the SAT
-solver. The attempt is accepted if the solver certifies the required property (solvability or
-cooperation), and rejected otherwise.
+For each generator type and grid size combination, a fixed number of independent trials is
+executed: 50 trials for $3 times 3$ and $5 times 5$ grids, and 20 trials for the $8 times 8$
+grid (see @appendix-generator-params for full parameters). Each trial searches for one accepted
+level by calling the generator repeatedly with a budget of one attempt per call. A call either
+returns an accepted level or raises a rejection. The trial ends when one level is accepted or a
+per-trial budget is exhausted (500 attempts for small grids; 100 attempts or 30 seconds for
+$8 times 8$). Failed trials — those that exhaust the budget — are recorded separately and excluded
+from the mean; they represent the hard tail of the attempt distribution.
+
+Each single attempt samples a candidate layout, validates geometric constraints (where applicable),
+constructs an `lle.World` object, and runs the SAT solver. The attempt is accepted if the solver
+certifies the required property (solvability or cooperation), and rejected otherwise.
 
 Recording the number of attempts per accepted level is the most direct measurement of the
-generator's rejection cost: the mean number of attempts is the reciprocal of the acceptance rate.
+generator's rejection cost: the mean number of attempts approximates the reciprocal of the
+acceptance rate.
 
 Four generators are evaluated: `constrained_random_solvable`, `constrained_random_cooperative`,
 `constructive_solvable`, and `constructive_cooperative`. The plain random generators are excluded
@@ -156,21 +163,31 @@ laser, $5 times 5$ with 3 agents and 2 lasers, and $8 times 8$ with 4 agents and
 
 === Interpretation
 
-The experiment is designed to quantify the overhead introduced by the SAT acceptance oracle.
-Solvable generators are expected to be rejected primarily because random layouts do not admit a valid
-joint trajectory within the requested horizon. Cooperative generators add the strict-semantics
-counterfactual check, which should increase rejection rates further: the set of layouts that are
-both solvable and cooperation-requiring is a strict subset of the solvable set.
+The results reveal a clear split between solvable and cooperative generators.
 
-The constrained generators are expected to improve acceptance rates by removing geometrically
-degenerate candidates before any SAT call is made. Their geometric pre-filter does not affect the
-formal guarantee: every accepted level still passes the same solver check. It only avoids spending
-solver time on candidates that fail for locally visible reasons.
+The `constrained_random_solvable` generator has rejection rates of 67 %, 87 %, and 86 % on the
+$3 times 3$, $5 times 5$, and $8 times 8$ grids respectively, requiring a mean of 3.1, 7.7, and
+7.4 attempts per accepted level. Rejection here is driven by the fact that random layouts rarely
+admit a valid joint trajectory within the requested horizon.
 
-The constructive generators are expected to show higher acceptance rates at small sizes because the
-lane-reservation strategy biases layouts toward solvable configurations by design. At larger sizes,
-the balance between reserved lanes and available free cells shifts, which may increase rejection
-rates for incidental reasons such as laser placement failures.
+The `constructive_solvable` generator achieves near-zero rejection across all sizes: 0 % on
+$3 times 3$, 14 % on $5 times 5$, and 5 % on $8 times 8$, with mean attempts of 1.0, 1.2, and
+1.1. The lane-reservation strategy reliably biases layouts toward solvable configurations, making
+the acceptance check almost a formality.
+
+Both cooperative generators behave very differently. The `constrained_random_cooperative` and
+`constructive_cooperative` generators show rejection rates of approximately 97–99 % across all
+grid sizes, requiring between 38 and 95 mean attempts per accepted level. This high cost reflects
+the strict subset structure: cooperation-requiring layouts are a strict subset of solvable layouts,
+and any random or constructive candidate is unlikely to require beam-blocking by default. The
+constructive strategy does not reduce cooperative rejection substantially, because the template
+plants only one deliberate dependency and falls back to random placement for additional lasers.
+
+On the $8 times 8$ grid, `constrained_random_cooperative` had 4 failed trials out of 20 and
+`constructive_cooperative` had 1 failed trial out of 20, where the per-trial budget was exhausted
+without finding an accepted level. These failures represent the hard tail of the distribution and
+confirm that $8 times 8$ cooperative generation is the most expensive configuration in this
+benchmark.
 
 
 == Cooperation Profile Distribution <profile-distribution>

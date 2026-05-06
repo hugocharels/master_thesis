@@ -69,7 +69,7 @@ def _make_generator(cls, rows, cols, agents, lasers):
         lasers=lasers,
         t_max=t_max,
         max_attempts=1,
-        seed=42,
+        seed=None,
     )
     try:
         return cls(**common)
@@ -153,12 +153,15 @@ def run():
 
             successful = len(attempts_per_level)
             mean_attempts = float(np.mean(attempts_per_level)) if attempts_per_level else None
-            rejection_rate = ((mean_attempts - 1) / mean_attempts) if mean_attempts else None
+            rejection_rate = ((mean_attempts - 1) / mean_attempts) if mean_attempts is not None else None
 
-            print(
-                f"    done: {successful}/{MAX_TRIALS} trials, "
-                f"mean attempts={mean_attempts:.1f}" if mean_attempts else f"    done: {successful}/{MAX_TRIALS} trials"
-            )
+            if mean_attempts is not None:
+                print(
+                    f"    done: {successful}/{trials} trials ({failed_trials} failed), "
+                    f"mean attempts={mean_attempts:.1f}, rejection rate={100*rejection_rate:.1f}%"
+                )
+            else:
+                print(f"    done: {successful}/{trials} trials ({failed_trials} failed) — no data")
 
             results[gen_name][size_key] = {
                 "successful_trials": successful,
@@ -167,6 +170,7 @@ def run():
                 "std_attempts_per_level": float(np.std(attempts_per_level)) if attempts_per_level else None,
                 "mean_time_per_level": float(np.mean(times_per_level)) if times_per_level else None,
                 "rejection_rate": rejection_rate,
+                "note": f"{failed_trials} trials exhausted budget and are excluded from mean_attempts" if failed_trials else None,
             }
 
     json_path = OUTPUT_DIR / "benchmark_results.json"
@@ -174,7 +178,10 @@ def run():
         json.dump(results, f, indent=2)
     print(f"\nResults saved to {json_path}")
 
-    _make_plots(results)
+    try:
+        _make_plots(results)
+    except Exception as e:
+        print(f"Warning: plot generation failed: {e}")
 
 
 # ---------------------------------------------------------------------------

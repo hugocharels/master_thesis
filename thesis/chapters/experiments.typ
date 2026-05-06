@@ -204,18 +204,24 @@ when cooperation is required but no specific dependency structure is detected.
 
 === Interpretation
 
-The profile distribution is expected to reflect the structural biases of each generator. Random
-generators sample layouts without any structural preference for cooperation type, so their output
-distribution should be determined by how often different dependency patterns arise in the accepted
-subset of random layouts. Constructive generators, by contrast, plant a deliberate beam-blocking
-dependency in each candidate, which should bias the output toward simpler, structurally cleaner
-profiles.
+Both generators produce a strongly asymmetric distribution. On the $5 times 5$ grid, every
+accepted level from both generators is classified as `asymmetric`: one agent depends on another,
+but not vice versa. On the $8 times 8$ grid, 80 % of accepted levels are `asymmetric` and 20 % are
+`mutual` (two agents each blocking the other's laser), with no other profile types observed. This
+concentration on `asymmetric` profiles is consistent with the structural bias introduced by
+same-colour beam-blocking: the simplest cooperation pattern to arise by chance or by construction
+is a one-way dependency, and mutual dependencies require a more specific layout configuration.
 
-This comparison is designed to serve two purposes. First, it tests whether the profile analyzer
-produces non-trivial and generator-dependent distributions — checking that the classifier does not
-return a constant answer. Second, it reveals which profiles are rare or absent under rejection
-sampling, motivating the profile-targeted generation mode in which the generator runs the
-cooperation profile check and accepts only levels that match a requested profile.
+The constructive generator achieves 0 % rejection on the $5 times 5$ grid (every generated
+candidate is accepted), confirming that the lane-reservation strategy reliably produces cooperative
+levels. On the $8 times 8$ grid its rejection rate rises to 96 %, comparable to the constrained
+random generator's 97 %, because with 2 lasers and 3 agents the constructive template falls back to
+random placement for the additional laser (only one deliberate dependency is planted per candidate).
+
+The profile distribution reveals a limitation of the current generation approach: rare profiles
+such as `chain`, `distributed`, and `fully_coupled` do not appear in these samples. Generating
+levels with a specific profile requires the profile-targeted generation mode, in which the
+generator accepts only levels that match the requested profile family.
 
 
 == Discussion

@@ -1,0 +1,62 @@
+{
+  "constrained_random_cooperative": {
+    "5x5": {
+      "accepted": 100,
+      "rejected": 4405,
+      "total_attempts": 4505,
+      "rejection_rate": 0.9778024417314095,
+      "elapsed_seconds": 78.58162949999678,
+      "profile_counts": {
+        "asymmetric": 100
+      },
+      "profile_fractions": {
+        "asymmetric": 1.0
+      }
+    },
+    "8x8": {
+      "accepted": 10,
+      "rejected": 347,
+      "total_attempts": 357,
+      "rejection_rate": 0.9719887955182073,
+      "elapsed_seconds": 38.72490220000327,
+      "profile_counts": {
+        "asymmetric": 8,
+        "mutual": 2
+      },
+      "profile_fractions": {
+        "asymmetric": 0.8,
+        "mutual": 0.2
+      }
+    }
+  },
+  "constructive_cooperative": {
+    "5x5": {
+      "accepted": 100,
+      "rejected": 0,
+      "total_attempts": 100,
+      "rejection_rate": 0.0,
+      "elapsed_seconds": 4.013530000011087,
+      "profile_counts": {
+        "asymmetric": 100
+      },
+      "profile_fractions": {
+        "asymmetric": 1.0
+      }
+    },
+    "8x8": {
+      "accepted": 10,
+      "rejected": 242,
+      "total_attempts": 252,
+      "rejection_rate": 0.9603174603174603,
+      "elapsed_seconds": 25.62427220000245,
+      "profile_counts": {
+        "asymmetric": 8,
+        "mutual": 2
+      },
+      "profile_fractions": {
+        "asymmetric": 0.8,
+        "mutual": 0.2
+      }
+    }
+  }
+}

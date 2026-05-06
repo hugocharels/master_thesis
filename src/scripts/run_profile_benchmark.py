@@ -1,10 +1,11 @@
 """
 Cooperation profile distribution benchmark.
 
-For random_cooperative and constructive_cooperative generators:
-  - Generates 100 accepted cooperative levels at 5x5 and 8x8
-  - Runs CooperationProfileAnalyzer on each
-  - Records profile classification distribution
+For each cooperative generator and grid size, generates LEVELS_TO_GENERATE accepted
+cooperative levels and records their cooperation profile distribution. Each call to
+gen.generate() uses max_attempts=1, so each call is one attempt: success or
+RuntimeError. Rejected attempts are counted to report the rejection rate alongside
+the profile distribution.
 
 Results saved to results/profile_benchmark/.
 """
@@ -44,19 +45,20 @@ GENERATOR_SPECS = {
 
 
 def _make_generator(cls, rows, cols, agents, lasers):
+    """Create generator with max_attempts=1 so each generate() call = one attempt."""
     t_max = max(rows * cols // 2, 8)
     common = dict(
         size=(rows, cols),
         agents=agents,
         lasers=lasers,
         t_max=t_max,
-        max_attempts=10_000,
+        max_attempts=1,
         seed=None,
     )
     try:
         return cls(**common)
     except (ValueError, TypeError):
-        return cls(size=(rows, cols), agents=agents, lasers=lasers, t_max=t_max, max_attempts=10_000)
+        return cls(size=(rows, cols), agents=agents, lasers=lasers, t_max=t_max, max_attempts=1)
 
 
 def run():
@@ -73,17 +75,16 @@ def run():
 
             profile_counts: dict[str, int] = defaultdict(int)
             accepted = 0
-            total_attempts = 0
-            max_attempts = LEVELS_TO_GENERATE * 200
+            rejected = 0
+            max_total_attempts = LEVELS_TO_GENERATE * 200
             t_start = time.perf_counter()
 
-            while accepted < LEVELS_TO_GENERATE and total_attempts < max_attempts:
-                total_attempts += 1
+            while accepted < LEVELS_TO_GENERATE and (accepted + rejected) < max_total_attempts:
                 try:
                     world = gen.generate()
                 except RuntimeError:
-                    print(f"    -> generator exhausted at {accepted} levels")
-                    break
+                    rejected += 1
+                    continue
 
                 world.reset()
                 adapted = LLEAdapter(world)
@@ -95,12 +96,17 @@ def run():
                     elapsed = time.perf_counter() - t_start
                     print(f"    {accepted}/{LEVELS_TO_GENERATE} ({elapsed:.1f}s)", flush=True)
 
+            total_attempts = accepted + rejected
             elapsed_total = time.perf_counter() - t_start
-            print(f"    done: {accepted} levels in {elapsed_total:.1f}s")
+            rejection_rate = rejected / max(1, total_attempts)
+            print(f"    done: {accepted} levels, {rejected} rejected ({100*rejection_rate:.1f}% rejection rate) in {elapsed_total:.1f}s")
             print(f"    profiles: {dict(profile_counts)}")
 
             results[gen_name][size_label] = {
                 "accepted": accepted,
+                "rejected": rejected,
+                "total_attempts": total_attempts,
+                "rejection_rate": rejection_rate,
                 "elapsed_seconds": elapsed_total,
                 "profile_counts": dict(profile_counts),
                 "profile_fractions": {

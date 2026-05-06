@@ -68,7 +68,7 @@ def run():
     for gen_name, gen_cls in GENERATOR_SPECS.items():
         results[gen_name] = {}
         for rows, cols, agents, lasers, size_label in CONFIGS:
-            print(f"  [{gen_name}] {size_label} — generating {LEVELS_TO_GENERATE} levels...", flush=True)
+            print(f"\n[{gen_name}] {size_label} — target: {LEVELS_TO_GENERATE} levels", flush=True)
 
             gen = _make_generator(gen_cls, rows, cols, agents, lasers)
             t_max = max(rows * cols // 2, 8)
@@ -79,28 +79,64 @@ def run():
             max_total_attempts = LEVELS_TO_GENERATE * 200
             t_start = time.perf_counter()
 
+            t_gen_total = 0.0
+            t_analyze_total = 0.0
+
             while accepted < LEVELS_TO_GENERATE and (accepted + rejected) < max_total_attempts:
+                total_so_far = accepted + rejected
+
+                # --- generation attempt ---
+                t_gen = time.perf_counter()
                 try:
                     world = gen.generate()
+                    t_gen_total += time.perf_counter() - t_gen
                 except RuntimeError:
+                    t_gen_total += time.perf_counter() - t_gen
                     rejected += 1
+                    if rejected % 100 == 0:
+                        elapsed = time.perf_counter() - t_start
+                        print(
+                            f"  ... {rejected} rejected so far, {accepted} accepted "
+                            f"({elapsed:.1f}s, gen_avg={1000*t_gen_total/max(1,total_so_far+1):.1f}ms/attempt)",
+                            flush=True,
+                        )
                     continue
 
+                # --- profile analysis ---
+                t_analyze = time.perf_counter()
                 world.reset()
                 adapted = LLEAdapter(world)
                 result = CooperationProfileAnalyzer(adapted, T_MAX=t_max).analyze()
+                t_analyze_total += time.perf_counter() - t_analyze
+
                 profile_counts[result.profile] += 1
                 accepted += 1
 
                 if accepted % 10 == 0:
                     elapsed = time.perf_counter() - t_start
-                    print(f"    {accepted}/{LEVELS_TO_GENERATE} ({elapsed:.1f}s)", flush=True)
+                    n_attempts = accepted + rejected
+                    print(
+                        f"  accepted {accepted}/{LEVELS_TO_GENERATE} "
+                        f"({rejected} rejected, {elapsed:.1f}s) "
+                        f"| gen_avg={1000*t_gen_total/max(1,n_attempts):.1f}ms "
+                        f"| analyze_avg={1000*t_analyze_total/max(1,accepted):.1f}ms",
+                        flush=True,
+                    )
 
             total_attempts = accepted + rejected
             elapsed_total = time.perf_counter() - t_start
             rejection_rate = rejected / max(1, total_attempts)
-            print(f"    done: {accepted} levels, {rejected} rejected ({100*rejection_rate:.1f}% rejection rate) in {elapsed_total:.1f}s")
-            print(f"    profiles: {dict(profile_counts)}")
+            print(
+                f"  done: {accepted} levels, {rejected} rejected "
+                f"({100*rejection_rate:.1f}% rejection) in {elapsed_total:.1f}s",
+                flush=True,
+            )
+            print(f"  profiles: {dict(profile_counts)}", flush=True)
+            print(
+                f"  timing: gen_avg={1000*t_gen_total/max(1,total_attempts):.1f}ms/attempt, "
+                f"analyze_avg={1000*t_analyze_total/max(1,accepted):.1f}ms/level",
+                flush=True,
+            )
 
             results[gen_name][size_label] = {
                 "accepted": accepted,

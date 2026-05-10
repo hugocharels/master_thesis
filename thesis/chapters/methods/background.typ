@@ -64,4 +64,5 @@ solution exists without the cooperative interaction.
 In this thesis, propositional variables are introduced to represent agent positions, laser beam
 states, and laser activity at each time step. The constraints of the bounded-horizon solvability
 problem are then encoded as CNF clauses, and a SAT solver is used as a decision oracle. The
-solver used throughout is Minisat22, accessed through the PySAT interface @Ignatiev2018.
+solver used throughout is Minisat22, a descendant of the MiniSat solver of Eén and Sörensson
+@EenSorensson2003, accessed through the PySAT interface @Ignatiev2018.

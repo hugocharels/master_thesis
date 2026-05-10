@@ -42,7 +42,7 @@ Several directions extend the present work naturally.
   worthwhile theoretical complement.
 - *Curriculum learning over certified levels.* Because the acceptance oracle controls difficulty
   through generation parameters (grid size, agent and laser counts, horizon, target cooperation
-  profile), the generator family naturally supports a *curriculum* @Bengio2009: agents could be
+  profile), the generator family naturally supports a *curriculum* @Bengio2009 @Narvekar2020Curriculum: agents could be
   trained first on small, easy certified levels with simple cooperation patterns, then exposed to
   progressively larger grids and richer profiles. This matches the curriculum-learning hypothesis
   that a graded sequence of training tasks helps agents acquire structured behaviours that direct

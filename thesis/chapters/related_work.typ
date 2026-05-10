@@ -16,9 +16,12 @@ The general framework for sequential multi-agent decision-making originates in s
 @Littman1994. The single-agent reinforcement-learning machinery on which cooperative MARL builds is
 covered comprehensively in @SuttonBarto2018. In cooperative MARL specifically, value-decomposition
 methods such as VDN @Sunehag2018 and QMIX @Rashid2018 factor a shared team value into per-agent
-components to enable decentralised execution. These methods perform well when individual
-contributions are roughly additive, but they struggle precisely on the coordination-critical,
-low-reward bottlenecks that LLE is designed to expose @LLE.
+components to enable decentralised execution; closely related approaches include the centralized-critic
+actor-critic of MADDPG @Lowe2017MADDPG, the counterfactual-baseline policy gradient COMA
+@Foerster2018COMA, and MAVEN @Mahajan2019MAVEN, which extends QMIX with latent-variable exploration
+to overcome its monotonicity limitations on coordination tasks. These methods perform well when
+individual contributions are roughly additive, but they struggle precisely on the
+coordination-critical, low-reward bottlenecks that LLE is designed to expose @LLE.
 
 
 == The Laser Learning Environment
@@ -46,15 +49,31 @@ Procedural Content Generation (PCG) is useful in reinforcement-learning settings
 replace a small fixed benchmark set with a larger and more diverse stream of instances
 @Shaker2016. Within PCG, search-based methods — surveyed by @Togelius2011 — phrase content
 creation as an optimisation problem over a content space, which is conceptually close to the
-solver-driven acceptance loop adopted in this thesis. However, generic PCG is not sufficient for
-the present problem. The difficulty is not merely to produce varied levels, but to produce levels
-that satisfy logically defined properties.
+solver-driven acceptance loop adopted in this thesis. The closest precedent for the present
+declarative-constraint approach is the Answer Set Programming generator of Smith and Mateas
+@SmithMateas2011, which uses an ASP solver as the acceptance oracle for game content. A
+complementary line of work surveyed under the PCGML banner @Summerville2018PCGML uses
+machine-learned generators trained on existing levels, but typically provides no formal guarantee
+on the produced output. The difficulty for the present problem is not merely to produce varied
+levels, but to produce levels that satisfy logically defined properties.
 
 This distinction matters. A constructive or search-based generator may bias generation toward
 interesting layouts, but without a verifier it cannot certify that a sampled level is solvable or
 that success genuinely depends on cooperation. For that reason, the present thesis adopts a
 constraint-aware view of PCG: generation is coupled to a formal decision procedure, and the solver
 acts as an acceptance oracle rather than as a post-hoc descriptive tool.
+
+
+== SAT-based Planning
+
+A second compilation lineage directly relevant to this thesis is *SAT-based planning*. Kautz and
+Selman @KautzSelman1992 introduced SATPLAN, encoding bounded-horizon STRIPS planning instances as
+propositional formulas; subsequent work refined both the encodings and the search strategies
+@KautzSelman1996. The treatment by Rintanen, Heljanko and Niemelä @Rintanen2006 covers parallel-plan
+encodings and modern algorithmic refinements that drove SAT-based planners to competitive
+performance with dedicated planners. The bounded-horizon LLE encoding developed in this thesis sits
+in the same conceptual family: a state-transition decision problem reduced to SAT, with the encoding
+choices materially affecting solver performance.
 
 
 == Compilation-Based Multi-Agent Path Finding
@@ -67,7 +86,10 @@ multiple agents and the optimality criterion imposed on the solution.
 Surynek's survey @Surynek2022CompilationMAPF shows that MAPF has become a major testbed for
 compilation-based solving. Instead of searching directly in the original state space, one reduces a
 MAPF instance to a target formalism such as CSP, SAT, or MILP, then relies on the target solver to
-handle the combinatorial burden. The survey is especially relevant here for two reasons.
+handle the combinatorial burden. MAPF research is not exclusively compilation-based; the dominant
+search-based alternative, Conflict-Based Search @Sharon2015CBS, achieves optimal solutions through a
+two-level constraint-satisfaction tree without reducing to a target formalism. The compilation
+survey is especially relevant here for two reasons.
 
 First, it demonstrates that SAT-based reductions are a mature and credible way to solve structured
 multi-agent planning problems. Second, it makes clear that compilation is not a black-box slogan:

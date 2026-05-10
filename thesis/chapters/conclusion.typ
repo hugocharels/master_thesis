@@ -40,6 +40,15 @@ Several directions extend the present work naturally.
   is reducible to SAT. Whether it is NP-hard — that is, whether there exists a polynomial-time
   reduction from a known NP-hard problem to LLE solvability — remains open and would be a
   worthwhile theoretical complement.
+- *Curriculum learning over certified levels.* Because the acceptance oracle controls difficulty
+  through generation parameters (grid size, agent and laser counts, horizon, target cooperation
+  profile), the generator family naturally supports a *curriculum* @Bengio2009: agents could be
+  trained first on small, easy certified levels with simple cooperation patterns, then exposed to
+  progressively larger grids and richer profiles. This matches the curriculum-learning hypothesis
+  that a graded sequence of training tasks helps agents acquire structured behaviours that direct
+  training on the hardest instances alone would fail to reach. The fact that every level in such a
+  curriculum is solver-certified guarantees the cooperation signal is present at every stage of
+  training.
 
 The main open question is therefore not whether solver-based certification is possible in LLE; the
 present thesis answers that positively. The open question is how far that certification framework

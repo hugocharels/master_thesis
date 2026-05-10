@@ -11,6 +11,15 @@ it provides no useful training signal at all. For the present thesis, the centra
 therefore not MARL in general, but the design of instances in which inter-agent dependence is both
 structurally present and formally decidable.
 
+The general framework for sequential multi-agent decision-making originates in stochastic games
+@Shapley1953, generalised to the Markov game model that has become the standard formalism for MARL
+@Littman1994. The single-agent reinforcement-learning machinery on which cooperative MARL builds is
+covered comprehensively in @SuttonBarto2018. In cooperative MARL specifically, value-decomposition
+methods such as VDN @Sunehag2018 and QMIX @Rashid2018 factor a shared team value into per-agent
+components to enable decentralised execution. These methods perform well when individual
+contributions are roughly additive, but they struggle precisely on the coordination-critical,
+low-reward bottlenecks that LLE is designed to expose @LLE.
+
 
 == The Laser Learning Environment
 
@@ -35,8 +44,11 @@ created by coloured lasers and same-colour blocking.
 
 Procedural Content Generation (PCG) is useful in reinforcement-learning settings because it can
 replace a small fixed benchmark set with a larger and more diverse stream of instances
-@Shaker2016. However, generic PCG is not sufficient for the present problem. The difficulty is not
-merely to produce varied levels, but to produce levels that satisfy logically defined properties.
+@Shaker2016. Within PCG, search-based methods — surveyed by @Togelius2011 — phrase content
+creation as an optimisation problem over a content space, which is conceptually close to the
+solver-driven acceptance loop adopted in this thesis. However, generic PCG is not sufficient for
+the present problem. The difficulty is not merely to produce varied levels, but to produce levels
+that satisfy logically defined properties.
 
 This distinction matters. A constructive or search-based generator may bias generation toward
 interesting layouts, but without a verifier it cannot certify that a sampled level is solvable or

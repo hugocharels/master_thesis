@@ -146,6 +146,45 @@ def test_crossed_beams_three_agents_is_mutual():
     assert (0, 1) in result.mutual_pairs or (1, 0) in result.mutual_pairs
 
 
+def test_three_agents_two_separated_lasers_is_distributed():
+    """
+    Two lasers in different rows facing opposite directions: L0 at (2, 0) going east
+    blocks row 2, and L1 at (4, 7) going west blocks row 4. All three exits are at
+    the top row, so the beneficiary B0 (color 2) starting at (6, 2) must cross both
+    row 4 and row 2 to reach an exit. Both helpers are necessary: H0 (color 0) must
+    truncate L0 to clear row 2, and H1 (color 1) must truncate L1 to clear row 4.
+    Critically there is no mutual back-edge — H1's row-2 crossing is enabled by H0
+    (chain edge H0->H1) but H0's detour stays out of L1's row, so no H1->H0 edge
+    forms. The result is dependency edges {H0->H1, H0->B0, H1->B0}, with B0 indegree
+    2, classifying as 'distributed'.
+    """
+    result = analyze(
+        build_world(
+            8,
+            7,
+            agents=[(0, 0), (0, 7), (6, 2)],
+            exits=[(0, 1), (0, 3), (0, 6)],
+            lasers=[
+                (0, (2, 0), Direction.EAST),
+                (1, (4, 7), Direction.WEST),
+            ],
+        ),
+        14,
+    )
+
+    assert result.solvable is True
+    assert result.cooperation_required is True
+    assert result.profile == "distributed"
+    assert result.matches_profile("distributed")
+    assert result.matches_profile("cooperative")
+    assert not result.matches_profile("mutual")
+    assert not result.matches_profile("fully_coupled")
+    assert result.necessary_helpers == frozenset({0, 1})
+    assert result.dependency_edges == frozenset({(0, 1), (0, 2), (1, 2)})
+    assert result.mutual_pairs == frozenset()
+    assert result.largest_scc_size == 1
+
+
 def test_unsolvable_world_returns_unsolvable_profile():
     result = analyze(
         build_world(

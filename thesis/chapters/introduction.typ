@@ -42,7 +42,7 @@ More precisely, the work is organised around five research questions:
 - *RQ4:* Can agents trained exclusively on procedurally generated levels transfer their behaviour
   to human-designed levels?
 - *RQ5:* Can we control the cooperation structure of generated levels by targeting specific
-  profiles such as asymmetric, mutual, or chain dependencies?
+  profiles such as asymmetric, mutual, chain, distributed, or fully coupled dependencies?
 
 The thesis instantiates this framework on one concrete cooperative environment, focusing on a
 restricted but explicit subset of its mechanics. The formal model covers agent movement,

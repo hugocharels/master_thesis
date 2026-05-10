@@ -12,7 +12,8 @@ This section operates at the level of the game semantics; the SAT encoding of th
 follows in @sat-reduction.
 
 The LLE environment supports between 1 and 4 agents. Accordingly, throughout this thesis we assume
-that $1 <= n_a <= 4$.
+that $1 <= n_a <= 4$. This bound is an artifact of the LLE engine, not a limitation of the SAT
+encoding developed in @sat-reduction; the encoding itself remains correct for any finite $n_a$.
 
 #formalbox([Definition 3.1 (LLE Level)], [
   An LLE level is a tuple $L = (H, W, C, s, cal(W), cal(S), cal(E))$ where:
@@ -50,7 +51,8 @@ for the set of colours that actually have a source.
   direction $d$.
 
   - Under the *standard beam semantics*, the beam of source $(c, d, p_s)$ is active on every cell
-    of that ray up to, but not including, the first wall or the first cell occupied by agent $c$.
+    of that ray up to, but not including, the first wall or the cell occupied by the unique agent
+    of colour $c$ (if any such cell lies on the ray).
   - Under the *strict beam semantics*, the beam of source $(c, d, p_s)$ is active on every cell of
     that ray up to, but not including, the first wall.
 

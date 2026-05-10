@@ -134,11 +134,14 @@ to one logical component of the bounded-horizon decision problem.
     $
 
   - *Victory condition:* \
-    Each exit must be occupied by at least one agent at time $T_("max")$. Since $|cal(E)| = n_a$
-    and agents cannot share positions, this enforces a bijection between agents and exits:
+    Each exit must be occupied by at least one agent at time $T_("max")$:
     $
       and.big_((x,y) in cal(E)) or.big_(c in C) a_(c,x,y,T_("max"))
     $
+    Combined with the no-collision clauses below and the equality $|cal(E)| = n_a$, this clause
+    family yields a bijection between agents and exits at time $T_("max")$: the disjunctions force
+    a surjection from $C$ onto $cal(E)$, and a surjection between two finite sets of equal size is
+    automatically a bijection.
 
   - *Stay on exit:* \
     Once an agent reaches an exit, it remains there for all subsequent time steps:
@@ -237,7 +240,12 @@ $
 $
 for the walkable cells.
 
-We count clauses rather than literals. The main families admit the following bounds.
+We count *clauses* rather than *literals*. A CNF formula is a conjunction of clauses, each clause
+being a disjunction of literals. The total literal count is at most a constant factor larger than
+the clause count in our encoding, since every clause family generated below contains at most
+$max(|"next"(u)| + 1, n_a, 4) <= 6$ literals per clause. Counting clauses is therefore sufficient
+to establish a polynomial bound on the formula size, and the same bound transfers to literals up
+to a constant factor. The main families admit the following clause bounds.
 
 - *Initialization.*
   The agent-initialisation clauses contribute exactly $n p$ unit clauses, and the laser-source

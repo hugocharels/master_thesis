@@ -77,7 +77,7 @@ The random cooperative generator extends the random solvable generator with a se
 on the strict semantics of @cooperation-detection. A candidate is accepted only if it is
 satisfiable under the standard encoding and unsatisfiable under the strict encoding. This guarantees
 that every accepted level structurally requires the beam-truncation mechanism identified as
-cooperation in Definition 4.7.
+cooperation in Definition 3.7.
 
 The current implementation augments this binary guarantee with a *cooperation profile analyzer*.
 The binary detector remains the formal guarantee used throughout the thesis: a level is cooperative

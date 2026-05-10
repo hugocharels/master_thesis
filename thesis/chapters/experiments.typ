@@ -79,7 +79,15 @@ The timing results show the same qualitative pattern. On the smallest synthetic 
 methods solve essentially instantaneously and the difference is negligible. Once the levels become
 moderately large, however, the local formulation is consistently faster both to generate and to
 solve. The contrast is especially visible on the $8 times 8$ level and on LLE Level 6, where the
-much larger global CNF induces a clear runtime penalty.
+much larger global CNF induces a clear runtime penalty. Both axes are plotted in logarithmic scale
+because clause counts and runtimes span more than three orders of magnitude across the four levels.
+
+One subtlety deserves comment. On LLE Level 6 the global formulation produces about 7 times more
+clauses than on the synthetic $8 times 8$ instance, yet its mean solve time is *lower*. This is not
+a contradiction: SAT solver runtime is driven by the search structure, not strictly by formula size.
+Hand-crafted levels such as Level 6 admit propagation-friendly satisfying assignments that modern
+CDCL solvers find quickly, while randomly structured large instances can expose pathological
+search behaviour even at smaller clause counts.
 
 The practical conclusion is therefore the same as the analytical one: the local formulation is not
 merely a cleaner theoretical encoding, but the preferable default implementation choice for the
@@ -187,7 +195,17 @@ On the $8 times 8$ grid, `constrained_random_cooperative` had 4 failed trials ou
 `constructive_cooperative` had 1 failed trial out of 20, where the per-trial budget was exhausted
 without finding an accepted level. These failures represent the hard tail of the distribution and
 confirm that $8 times 8$ cooperative generation is the most expensive configuration in this
-benchmark.
+benchmark. Failed trials are excluded from the mean-attempts statistic, which therefore
+under-estimates the true cost on $8 times 8$.
+
+A counter-intuitive trend is visible across grid sizes for the cooperative generators: mean
+attempts per accepted level *decreases* from $5 times 5$ to $8 times 8$ even though absolute
+runtime per attempt grows. Two factors explain the apparent contradiction. First, larger grids
+admit a larger absolute number of cooperative layouts even at a similar acceptance fraction,
+which can shorten the expected wait between successes once the geometric rejection filters do
+their job. Second, the failed-trial truncation noted above pulls the reported mean for the
+larger grid downward. Either way, the wall-clock time per accepted level (next plot) is the more
+honest cost metric: it grows monotonically with grid size for every cooperative generator.
 
 
 == Cooperation Profile Distribution <profile-distribution>
@@ -223,11 +241,16 @@ when cooperation is required but no specific dependency structure is detected.
 
 Both generators produce a strongly asymmetric distribution. On the $5 times 5$ grid, every
 accepted level from both generators is classified as `asymmetric`: one agent depends on another,
-but not vice versa. On the $8 times 8$ grid, 80 % of accepted levels are `asymmetric` and 20 % are
-`mutual` (two agents each blocking the other's laser), with no other profile types observed. This
-concentration on `asymmetric` profiles is consistent with the structural bias introduced by
-same-colour beam-blocking: the simplest cooperation pattern to arise by chance or by construction
-is a one-way dependency, and mutual dependencies require a more specific layout configuration.
+but not vice versa. The $5 times 5$ configuration uses only 2 agents, so the profiles `chain`,
+`distributed`, and `fully_coupled` are *structurally impossible* by construction (they require at
+least 3 agents for chain/distributed and a non-trivial cycle for fully_coupled). The 5 × 5 result
+is therefore a partition between `asymmetric` and `mutual`, and the absence of `mutual` levels
+indicates that random or constructive geometries on this grid rarely yield two reciprocally
+helping agents within the chosen horizon. On the $8 times 8$ grid, 80 % of accepted levels are
+`asymmetric` and 20 % are `mutual`, with no other profile types observed. This concentration on
+`asymmetric` profiles is consistent with the structural bias introduced by same-colour
+beam-blocking: the simplest cooperation pattern to arise by chance or by construction is a one-way
+dependency, and richer profiles require more specific layout configurations.
 
 The constructive generator achieves 0 % rejection on the $5 times 5$ grid (every generated
 candidate is accepted), confirming that the lane-reservation strategy reliably produces cooperative

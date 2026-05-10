@@ -71,12 +71,14 @@ def plot_clauses_per_level(results, output_dir):
             )
 
     ax.set_xlabel("Level")
-    ax.set_ylabel("Number of Clauses")
+    ax.set_ylabel("Number of Clauses (log scale)")
+    ax.set_yscale("log")
+    ax.set_ylim(bottom=10)
     ax.set_title("Total Number of Clauses per Level")
     ax.set_xticks(x)
     ax.set_xticklabels([_level_label(lvl) for lvl in levels], rotation=20, ha="right")
     ax.legend()
-    ax.grid(axis="y", alpha=0.3)
+    ax.grid(axis="y", alpha=0.3, which="both")
     fig.tight_layout()
     fig.savefig(os.path.join(output_dir, "clauses_per_level.png"), dpi=150)
     plt.close(fig)
@@ -175,12 +177,14 @@ def plot_times_per_level(results, output_dir):
         offset = (i - 0.5) * width + width / 2
         ax1.bar(x + offset, means, width, yerr=stds, label=method_label, capsize=3)
     ax1.set_xlabel("Level")
-    ax1.set_ylabel("Time (seconds)")
+    ax1.set_ylabel("Time, seconds (log scale)")
+    ax1.set_yscale("log")
+    ax1.set_ylim(bottom=1e-4)
     ax1.set_title("Mean Generation Time per Level")
     ax1.set_xticks(x)
     ax1.set_xticklabels([_level_label(lvl) for lvl in levels], rotation=20, ha="right")
     ax1.legend()
-    ax1.grid(axis="y", alpha=0.3)
+    ax1.grid(axis="y", alpha=0.3, which="both")
 
     for i, (method_key, method_label) in enumerate(METHODS.items()):
         means = [results[method_key][lvl]["mean_solve_time"] for lvl in levels]
@@ -188,12 +192,14 @@ def plot_times_per_level(results, output_dir):
         offset = (i - 0.5) * width + width / 2
         ax2.bar(x + offset, means, width, yerr=stds, label=method_label, capsize=3)
     ax2.set_xlabel("Level")
-    ax2.set_ylabel("Time (seconds)")
+    ax2.set_ylabel("Time, seconds (log scale)")
+    ax2.set_yscale("log")
+    ax2.set_ylim(bottom=1e-5)
     ax2.set_title("Mean Solve Time per Level")
     ax2.set_xticks(x)
     ax2.set_xticklabels([_level_label(lvl) for lvl in levels], rotation=20, ha="right")
     ax2.legend()
-    ax2.grid(axis="y", alpha=0.3)
+    ax2.grid(axis="y", alpha=0.3, which="both")
 
     fig.tight_layout()
     fig.savefig(os.path.join(output_dir, "times_per_level.png"), dpi=150)

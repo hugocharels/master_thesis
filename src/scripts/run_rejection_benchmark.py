@@ -33,11 +33,11 @@ from generators.constructive_solvable_generator import ConstructiveSolvableGener
 # Experiment configuration
 # ---------------------------------------------------------------------------
 
-MAX_TRIALS = 50                     # number of accepted levels to find per (generator, size)
-MAX_TRIALS_LARGE = 20               # reduced target for large grids
+MAX_TRIALS = 200                    # number of accepted levels to find per (generator, size)
+MAX_TRIALS_LARGE = 50               # reduced target for large grids
 MAX_ATTEMPTS_PER_TRIAL = 500        # give up on a single trial after this many attempts
-MAX_ATTEMPTS_PER_TRIAL_LARGE = 100  # faster give-up for large grids
-TRIAL_TIMEOUT_LARGE = 30.0          # seconds: abort a large-grid trial if it exceeds this
+MAX_ATTEMPTS_PER_TRIAL_LARGE = 200  # faster give-up for large grids
+TRIAL_TIMEOUT_LARGE = 60.0          # seconds: abort a large-grid trial if it exceeds this
 
 CONFIGS = [
     # (rows, cols, agents, lasers, is_large)
@@ -188,83 +188,126 @@ def run():
 # Plots
 # ---------------------------------------------------------------------------
 
+SOLVABLE_GENS = ["constrained_random_solvable", "constructive_solvable"]
+COOPERATIVE_GENS = ["constrained_random_cooperative", "constructive_cooperative"]
+
+
+def _failure_note(data: dict) -> str:
+    failed = data.get("failed_trials") or 0
+    successful = data.get("successful_trials") or 0
+    total = failed + successful
+    if failed and total:
+        return f"{failed}/{total} failed"
+    return ""
+
+
+def _bar_with_failure_annotations(ax, x, values, errs, gens, sizes, results, width):
+    for i, gen in enumerate(gens):
+        offset = (i - len(gens) / 2) * width + width / 2
+        bars = ax.bar(x + offset, values[i], width, yerr=errs[i], capsize=3, label=gen)
+        for bar, size in zip(bars, sizes):
+            note = _failure_note(results[gen].get(size, {}))
+            if note:
+                ax.text(
+                    bar.get_x() + bar.get_width() / 2,
+                    bar.get_height(),
+                    note,
+                    ha="center",
+                    va="bottom",
+                    fontsize=7,
+                    color="firebrick",
+                )
+
+
 def _make_plots(results: dict):
-    generators = list(results.keys())
     sizes = ["3x3", "5x5", "8x8"]
     x = np.arange(len(sizes))
-    width = 0.18
+    width = 0.35
 
-    # --- Plot 1: Rejection rate by generator (derived from mean attempts) ---
-    fig, ax = plt.subplots(figsize=(12, 6))
-    for i, gen in enumerate(generators):
-        rates = []
-        for size in sizes:
-            data = results[gen].get(size, {})
-            if data.get("skipped") or not data:
-                rates.append(0.0)
-            else:
-                r = data.get("rejection_rate")
-                rates.append((r * 100) if r is not None else 0.0)
-        offset = (i - len(generators) / 2) * width + width / 2
-        ax.bar(x + offset, rates, width, label=gen)
-
-    ax.set_xlabel("Grid size")
-    ax.set_ylabel("Rejection rate (%)")
-    ax.set_title("Rejection Rate by Generator and Grid Size")
-    ax.set_xticks(x)
-    ax.set_xticklabels(sizes)
-    ax.legend(loc="upper left", fontsize=8)
-    ax.set_ylim(0, 105)
+    # --- Plot 1: Rejection rate, split into solvable / cooperative subplots ---
+    fig, (ax_solv, ax_coop) = plt.subplots(1, 2, figsize=(14, 6))
+    for ax, gens, ylim, title in (
+        (ax_solv, SOLVABLE_GENS, (0, 105), "Solvable generators"),
+        (ax_coop, COOPERATIVE_GENS, (90, 100.5), "Cooperative generators"),
+    ):
+        for i, gen in enumerate(gens):
+            rates = [
+                ((results[gen].get(s, {}).get("rejection_rate") or 0) * 100)
+                for s in sizes
+            ]
+            offset = (i - len(gens) / 2) * width + width / 2
+            bars = ax.bar(x + offset, rates, width, label=gen)
+            for bar, val in zip(bars, rates):
+                ax.text(
+                    bar.get_x() + bar.get_width() / 2,
+                    bar.get_height(),
+                    f"{val:.1f}%",
+                    ha="center",
+                    va="bottom",
+                    fontsize=8,
+                )
+        ax.set_xlabel("Grid size")
+        ax.set_ylabel("Rejection rate (%)")
+        ax.set_title(title)
+        ax.set_xticks(x)
+        ax.set_xticklabels(sizes)
+        ax.set_ylim(*ylim)
+        ax.legend(loc="upper left", fontsize=8)
+        ax.grid(axis="y", alpha=0.3)
+    fig.suptitle("Rejection Rate by Generator and Grid Size")
     fig.tight_layout()
     fig.savefig(OUTPUT_DIR / "rejection_rate_by_generator.png", dpi=150)
     plt.close(fig)
     print("Saved rejection_rate_by_generator.png")
 
-    # --- Plot 2: Mean time to find one accepted level ---
+    # --- Plot 2: Mean time to find one accepted level (log scale) ---
     fig, ax = plt.subplots(figsize=(12, 6))
+    generators = list(results.keys())
+    width2 = 0.18
     for i, gen in enumerate(generators):
-        times = []
-        for size in sizes:
-            data = results[gen].get(size, {})
-            if data.get("skipped") or not data:
-                times.append(0.0)
-            else:
-                t = data.get("mean_time_per_level")
-                times.append(t if t is not None else 0.0)
-        offset = (i - len(generators) / 2) * width + width / 2
-        ax.bar(x + offset, times, width, label=gen)
-
+        times = [
+            (results[gen].get(s, {}).get("mean_time_per_level") or 1e-6)
+            for s in sizes
+        ]
+        offset = (i - len(generators) / 2) * width2 + width2 / 2
+        ax.bar(x + offset, times, width2, label=gen)
     ax.set_xlabel("Grid size")
-    ax.set_ylabel("Mean time to find one accepted level (s)")
+    ax.set_ylabel("Mean time to find one accepted level, s (log scale)")
+    ax.set_yscale("log")
+    ax.set_ylim(bottom=1e-3)
     ax.set_title("Mean Time per Accepted Level by Generator and Grid Size")
     ax.set_xticks(x)
     ax.set_xticklabels(sizes)
     ax.legend(loc="upper left", fontsize=8)
+    ax.grid(axis="y", alpha=0.3, which="both")
     fig.tight_layout()
     fig.savefig(OUTPUT_DIR / "time_per_accepted_level.png", dpi=150)
     plt.close(fig)
     print("Saved time_per_accepted_level.png")
 
-    # --- Plot 3: Mean attempts to find one accepted level ---
+    # --- Plot 3: Mean attempts (log scale, with std error bars and failure notes) ---
     fig, ax = plt.subplots(figsize=(12, 6))
-    for i, gen in enumerate(generators):
-        attempts = []
-        for size in sizes:
-            data = results[gen].get(size, {})
-            if data.get("skipped") or not data:
-                attempts.append(0.0)
-            else:
-                a = data.get("mean_attempts_per_level")
-                attempts.append(a if a is not None else 0.0)
-        offset = (i - len(generators) / 2) * width + width / 2
-        ax.bar(x + offset, attempts, width, label=gen)
-
+    values, errs = [], []
+    for gen in generators:
+        means, stds = [], []
+        for s in sizes:
+            d = results[gen].get(s, {})
+            means.append(d.get("mean_attempts_per_level") or 1)
+            stds.append(d.get("std_attempts_per_level") or 0)
+        values.append(means)
+        errs.append(stds)
+    _bar_with_failure_annotations(
+        ax, x, values, errs, generators, sizes, results, width2
+    )
     ax.set_xlabel("Grid size")
-    ax.set_ylabel("Mean attempts to find one accepted level")
+    ax.set_ylabel("Mean attempts (log scale)")
+    ax.set_yscale("log")
+    ax.set_ylim(bottom=1)
     ax.set_title("Mean Attempts per Accepted Level by Generator and Grid Size")
     ax.set_xticks(x)
     ax.set_xticklabels(sizes)
     ax.legend(loc="upper left", fontsize=8)
+    ax.grid(axis="y", alpha=0.3, which="both")
     fig.tight_layout()
     fig.savefig(OUTPUT_DIR / "mean_attempts_per_level.png", dpi=150)
     plt.close(fig)

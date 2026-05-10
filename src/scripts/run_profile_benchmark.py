@@ -29,7 +29,7 @@ from solver.cooperation_profile_analyzer import CooperationProfileAnalyzer
 OUTPUT_DIR = Path(__file__).parent.parent.parent / "results" / "profile_benchmark"
 
 LEVELS_TO_GENERATE = 100
-LEVELS_TO_GENERATE_LARGE = 10  # reduced target for large grids
+LEVELS_TO_GENERATE_LARGE = 50  # reduced target for large grids
 
 CONFIGS = [
     # (rows, cols, agents, lasers, label, is_large)
@@ -163,18 +163,14 @@ def _make_plots(results: dict):
     generators = list(results.keys())
     sizes = [cfg[4] for cfg in CONFIGS]
 
-    # Grouped bar chart: x-axis = profile, groups = generator × size
-    profiles_present: set[str] = set()
-    for gen_data in results.values():
-        for size_data in gen_data.values():
-            profiles_present.update(size_data.get("profile_counts", {}).keys())
-    profiles = sorted(profiles_present)
+    # Always show all profile categories so absence is visible.
+    profiles = ["asymmetric", "mutual", "chain", "distributed", "fully_coupled", "cooperative"]
 
     n_groups = len(generators) * len(sizes)
     x = np.arange(len(profiles))
     width = 0.8 / n_groups
 
-    fig, ax = plt.subplots(figsize=(12, 6))
+    fig, ax = plt.subplots(figsize=(13, 6))
     colors = plt.cm.tab10(np.linspace(0, 1, n_groups))
 
     for idx, (gen_name, size_label) in enumerate(
@@ -186,11 +182,12 @@ def _make_plots(results: dict):
             frac = data.get("profile_fractions", {}).get(profile, 0.0)
             fractions.append(frac * 100)
         offset = (idx - n_groups / 2) * width + width / 2
+        n_levels = results[gen_name].get(size_label, {}).get("accepted", 0)
         ax.bar(
             x + offset,
             fractions,
             width,
-            label=f"{gen_name} / {size_label}",
+            label=f"{gen_name} / {size_label} (n={n_levels})",
             color=colors[idx],
         )
 
@@ -198,8 +195,10 @@ def _make_plots(results: dict):
     ax.set_ylabel("% of accepted levels")
     ax.set_title("Cooperation Profile Distribution by Generator and Grid Size")
     ax.set_xticks(x)
-    ax.set_xticklabels(profiles)
-    ax.legend(fontsize=8)
+    ax.set_xticklabels(profiles, rotation=15, ha="right")
+    ax.set_ylim(0, 105)
+    ax.legend(fontsize=8, loc="upper right")
+    ax.grid(axis="y", alpha=0.3)
     fig.tight_layout()
     fig.savefig(OUTPUT_DIR / "profile_distribution.png", dpi=150)
     plt.close(fig)

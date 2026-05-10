@@ -1,8 +1,6 @@
 #import "../../macros.typ": formalbox, proofbox
 
-== Cooperation Detection <cooperation-detection>
-
-=== Strict SAT Encoding
+== Strict SAT Encoding
 
 Recall from Definition 3.6 that strict beam semantics changes only one aspect of the dynamics:
 same-colour occupancy no longer truncates the corresponding beam. Same-colour immunity is
@@ -27,7 +25,7 @@ denote the resulting CNF formula by $Phi_("strict")(L, T_("max"))$ and the corre
 $"StrictSolver"$.
 
 
-=== Why This Captures Cooperation
+== Why This Captures Cooperation
 
 Under the LLE mechanics studied here, the cooperative action of interest is for an agent to occupy
 a cell that would otherwise allow its own beam to continue, thereby making another agent's path
@@ -38,7 +36,7 @@ semantics, every successful standard solution must rely on at least one same-col
 step.
 
 
-=== Formal Theorem and Proof
+== Formal Theorem and Proof
 
 #formalbox([Theorem 4.9 (Cooperation Detection Criterion)], [
   Let $L$ be an LLE level and $T_("max")$ a time horizon. Then $L$ requires cooperation with
@@ -67,7 +65,7 @@ step.
 ])
 
 
-=== Practical Algorithm
+== Practical Algorithm
 
 The cooperation detector runs two SAT calls on the same level:
 

@@ -85,11 +85,19 @@ This thesis makes the following contributions:
 
 == Thesis Structure
 
-The remainder of this thesis is organised as follows.
+The remainder of this thesis is organised as follows. Chapter 2 positions the work relative to
+cooperative MARL benchmarks, procedural content generation, and compilation-based planning
+literature. Chapter 3 fixes the technical setting: the LLE mechanics, the SAT background, and the
+formal model of bounded-horizon solvability and the cooperation requirement.
 
-Chapter 2 positions the work relative to cooperative MARL benchmarks, procedural content
-generation, and compilation-based planning literature. Chapter 3 introduces the environment model
-and formalises bounded-horizon solvability and the cooperation requirement. Chapter 4 presents the
-experimental work in two parts: Part 1 develops the original contribution — the SAT encoding, the
-cooperation detector, the cooperation profile taxonomy, and the generator family; Part 2 reports
-the results of the evaluation experiments. Chapter 5 concludes with a summary and future work.
+The three contribution chapters then develop the original technical content of the thesis in
+logical order. Chapter 4 introduces the SAT-based solver: a propositional encoding of bounded-horizon
+LLE solvability, with correctness proofs and a complexity-theoretic positioning. Chapter 5 builds
+on that encoding to define the cooperation detector based on a strict counterfactual semantics, and
+extends it with a profile analyzer that classifies the kind of cooperation a level exhibits.
+Chapter 6 then uses both decision procedures as acceptance oracles inside a family of procedural
+generators that produce levels certified to satisfy the advertised properties.
+
+Chapter 7 reports the empirical evaluation: the SAT encoding comparison, generator rejection rates,
+the cooperation profile distribution, and the transfer experiment to human-designed levels.
+Chapter 8 concludes with a summary and directions for future work.

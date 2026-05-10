@@ -13,7 +13,7 @@
   if it.depth == 1 {
     let chapter_num = counter(heading.where(level: 1)).at(it.location()).at(0)
 
-    if { 0 < chapter_num and chapter_num < 5 } {
+    if { 0 < chapter_num and chapter_num < 8 } {
       pagebreak()
       v(100pt)
 
@@ -93,37 +93,33 @@
 
 #include "chapters/introduction.typ"
 
-= State of the Art
+= Related Work
 
 #include "chapters/related_work.typ"
 
-= Method
+= Background and Formalization
 
 #include "chapters/methods/background.typ"
 
 #include "chapters/methods/formalization.typ"
 
-= Experiments
+= SAT-based Solver <sat-reduction>
 
-== Part 1 — Contribution
+#include "chapters/contribution/sat_reduction.typ"
 
-#include "chapters/contribution/overview.typ"
+= Cooperation Detection <cooperation-detection>
 
-#[
-  #set heading(offset: 1)
-  == Solver by Reduction to SAT <sat-reduction>
-  #include "chapters/contribution/sat_reduction.typ"
-  #include "chapters/contribution/benchmarking.typ"
-  #include "chapters/contribution/cooperation.typ"
-  #include "chapters/contribution/generators.typ"
-]
+#include "chapters/contribution/cooperation.typ"
 
-== Part 2 — Results <experiments>
+= Procedural Generators <generators>
 
-#[
-  #set heading(offset: 1)
-  #include "chapters/experiments.typ"
-]
+#include "chapters/contribution/generators.typ"
+
+= Empirical Evaluation <experiments>
+
+#include "chapters/contribution/benchmarking.typ"
+
+#include "chapters/experiments.typ"
 
 = Conclusion
 

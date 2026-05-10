@@ -1,6 +1,4 @@
-== Level Generators <generators>
-
-=== Design Pattern
+== Design Pattern
 
 All generators follow a common architecture built around three principles:
 
@@ -19,7 +17,7 @@ cooperative generators add the strict-beam counterfactual test and, optionally, 
 cooperation-profile filter.
 
 
-=== Generation Targets
+== Generation Targets
 
 Viewed through the solvability and cooperation definitions of @formalization, the generator family
 targets the three level categories shown in Figure @fig-generator-categories. Solvable generators
@@ -43,7 +41,7 @@ and unsolvable levels in category (a) are always rejected.
 ) <fig-generator-categories>
 
 
-=== Random Solvable Generator
+== Random Solvable Generator
 
 The random solvable generator is the baseline member of the family. It samples pairwise-distinct
 positions for agent starts, exits, walls, and laser sources uniformly over the grid, assigns a
@@ -58,7 +56,7 @@ rejection rate. As the grid grows and the number of interacting entities increas
 layouts quickly become dominated by unsolvable or trivial instances.
 
 
-=== Constrained Random Solvable Generator
+== Constrained Random Solvable Generator
 
 A structured variant that biases generation toward solvable configurations before any SAT call is
 made. Relative to the random solvable generator, it rejects candidates that are already
@@ -71,7 +69,7 @@ formal solvability guarantee, while typically spending less time on layouts that
 local geometric reasons.
 
 
-=== Random Cooperative Generator
+== Random Cooperative Generator
 
 The random cooperative generator extends the random solvable generator with a second SAT test based
 on the strict semantics of @cooperation-detection. A candidate is accepted only if it is
@@ -108,7 +106,7 @@ uses those certified levels as input and acts as a classification and filtering 
 generator.
 
 
-=== Constrained Random Cooperative Generator
+== Constrained Random Cooperative Generator
 
 The constrained random cooperative generator combines the geometric filters of the constrained
 solvable generator with the binary cooperation test and optional profile filter of the random
@@ -120,7 +118,7 @@ generator, but with a sampling distribution biased away from trivial failures. I
 the goal is not only to obtain cooperative levels, but to obtain them with fewer discarded samples.
 
 
-=== Constructive Solvable Generator
+== Constructive Solvable Generator
 
 The constructive solvable generator replaces blind sampling with a partial-by-construction layout.
 It reserves one disjoint horizontal or vertical lane per agent, places each start at one end of its
@@ -130,7 +128,7 @@ reserved cells. The solver still acts as the final verifier, but the sampling pr
 biased toward jointly solvable instances.
 
 
-=== Constructive Cooperative Generator
+== Constructive Cooperative Generator
 
 The constructive cooperative generator further specialises the constructive idea by planting a
 deliberate dependency pattern. One laser is placed so that a helper agent must truncate a beam of
@@ -141,7 +139,7 @@ cooperative instances rather than merely sampling for cooperation and hoping to 
 rejection.
 
 
-=== Summary
+== Summary
 
 #figure(
   table(

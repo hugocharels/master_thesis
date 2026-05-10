@@ -86,3 +86,16 @@ coordinate their movements for unrelated geometric reasons — without any laser
 involved — would not be identified as cooperative by this detector. This definition is not claimed
 to exhaust every possible interpretation of cooperation in multi-agent environments; it is the
 specific mechanism studied in this benchmark, and the formal guarantee is scoped accordingly.
+
+*Model-dependence of finer-grained analyses.* The binary detector above is a property of the
+*level*: the satisfiability of $Phi(L, T_("max"))$ and $Phi_("strict")(L, T_("max"))$ does not
+depend on which satisfying assignment the SAT solver happens to return. Any finer-grained
+classification of cooperation, however — such as the cooperation profile analyzer introduced in
+@generators, which builds a directed dependency graph between agents from a single extracted joint
+plan — does depend on the specific model returned. A cooperative level typically admits many valid
+joint plans, and different plans may exhibit different helping patterns: an agent that helps
+another in one solution may be passive in another. Consequently, the profile label attached to a
+level reflects the structure of the extracted plan, not an intrinsic invariant of the level. This
+is acceptable for the generation use case considered here — the analyzer still acts as a sound
+filter that certifies the extracted plan exhibits the targeted profile — but two solver runs on
+the same level can in principle yield different profile labels.

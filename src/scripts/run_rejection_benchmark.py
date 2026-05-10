@@ -34,10 +34,10 @@ from generators.constructive_solvable_generator import ConstructiveSolvableGener
 # ---------------------------------------------------------------------------
 
 MAX_TRIALS = 200                    # number of accepted levels to find per (generator, size)
-MAX_TRIALS_LARGE = 50               # reduced target for large grids
+MAX_TRIALS_LARGE = 20               # reduced target for large grids (memory-leak-bound)
 MAX_ATTEMPTS_PER_TRIAL = 500        # give up on a single trial after this many attempts
-MAX_ATTEMPTS_PER_TRIAL_LARGE = 200  # faster give-up for large grids
-TRIAL_TIMEOUT_LARGE = 60.0          # seconds: abort a large-grid trial if it exceeds this
+MAX_ATTEMPTS_PER_TRIAL_LARGE = 100  # faster give-up for large grids
+TRIAL_TIMEOUT_LARGE = 30.0          # seconds: abort a large-grid trial if it exceeds this
 
 CONFIGS = [
     # (rows, cols, agents, lasers, is_large)
@@ -86,12 +86,28 @@ def _make_generator(cls, rows, cols, agents, lasers):
 
 def run():
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+    json_path = OUTPUT_DIR / "benchmark_results.json"
+
+    # Resume: load any previously-saved configs.
     results: dict = {}
+    if json_path.exists():
+        try:
+            with json_path.open("r", encoding="utf-8") as f:
+                results = json.load(f)
+            n_saved = sum(len(v) for v in results.values())
+            print(f"  Resumed from {json_path}: {n_saved} configs already saved", flush=True)
+        except Exception as e:
+            print(f"  Warning: could not load existing JSON ({e}); starting fresh", flush=True)
+            results = {}
 
     for gen_name, gen_cls in GENERATOR_SPECS.items():
-        results[gen_name] = {}
+        if gen_name not in results:
+            results[gen_name] = {}
         for rows, cols, agents, lasers, is_large in CONFIGS:
             size_key = f"{rows}x{cols}"
+            if size_key in results[gen_name]:
+                print(f"  [{gen_name}] {size_key}: SKIP (already in JSON)", flush=True)
+                continue
             trials = MAX_TRIALS_LARGE if is_large else MAX_TRIALS
             print(f"  [{gen_name}] {size_key} ({agents} agents, {lasers} lasers, {trials} trials) ...", flush=True)
 
@@ -173,6 +189,12 @@ def run():
                 "note": f"{failed_trials} trials exhausted budget and are excluded from mean_attempts" if failed_trials else None,
             }
 
+            # Incremental save so a crash doesn't lose completed configs.
+            json_path = OUTPUT_DIR / "benchmark_results.json"
+            with json_path.open("w", encoding="utf-8") as f:
+                json.dump(results, f, indent=2)
+            print(f"    -> saved partial results to {json_path}", flush=True)
+
     json_path = OUTPUT_DIR / "benchmark_results.json"
     with json_path.open("w", encoding="utf-8") as f:
         json.dump(results, f, indent=2)
@@ -224,37 +246,34 @@ def _make_plots(results: dict):
     x = np.arange(len(sizes))
     width = 0.35
 
-    # --- Plot 1: Rejection rate, split into solvable / cooperative subplots ---
-    fig, (ax_solv, ax_coop) = plt.subplots(1, 2, figsize=(14, 6))
-    for ax, gens, ylim, title in (
-        (ax_solv, SOLVABLE_GENS, (0, 105), "Solvable generators"),
-        (ax_coop, COOPERATIVE_GENS, (90, 100.5), "Cooperative generators"),
-    ):
-        for i, gen in enumerate(gens):
-            rates = [
-                ((results[gen].get(s, {}).get("rejection_rate") or 0) * 100)
-                for s in sizes
-            ]
-            offset = (i - len(gens) / 2) * width + width / 2
-            bars = ax.bar(x + offset, rates, width, label=gen)
-            for bar, val in zip(bars, rates):
-                ax.text(
-                    bar.get_x() + bar.get_width() / 2,
-                    bar.get_height(),
-                    f"{val:.1f}%",
-                    ha="center",
-                    va="bottom",
-                    fontsize=8,
-                )
-        ax.set_xlabel("Grid size")
-        ax.set_ylabel("Rejection rate (%)")
-        ax.set_title(title)
-        ax.set_xticks(x)
-        ax.set_xticklabels(sizes)
-        ax.set_ylim(*ylim)
-        ax.legend(loc="upper left", fontsize=8)
-        ax.grid(axis="y", alpha=0.3)
-    fig.suptitle("Rejection Rate by Generator and Grid Size")
+    # --- Plot 1: Rejection rate, single panel with value labels ---
+    generators = list(results.keys())
+    width1 = 0.18
+    fig, ax = plt.subplots(figsize=(12, 6))
+    for i, gen in enumerate(generators):
+        rates = [
+            ((results[gen].get(s, {}).get("rejection_rate") or 0) * 100)
+            for s in sizes
+        ]
+        offset = (i - len(generators) / 2) * width1 + width1 / 2
+        bars = ax.bar(x + offset, rates, width1, label=gen)
+        for bar, val in zip(bars, rates):
+            ax.text(
+                bar.get_x() + bar.get_width() / 2,
+                bar.get_height(),
+                f"{val:.1f}%",
+                ha="center",
+                va="bottom",
+                fontsize=8,
+            )
+    ax.set_xlabel("Grid size")
+    ax.set_ylabel("Rejection rate (%)")
+    ax.set_title("Rejection Rate by Generator and Grid Size")
+    ax.set_xticks(x)
+    ax.set_xticklabels(sizes)
+    ax.set_ylim(0, 110)
+    ax.legend(loc="upper left", fontsize=8)
+    ax.grid(axis="y", alpha=0.3)
     fig.tight_layout()
     fig.savefig(OUTPUT_DIR / "rejection_rate_by_generator.png", dpi=150)
     plt.close(fig)
@@ -262,7 +281,6 @@ def _make_plots(results: dict):
 
     # --- Plot 2: Mean time to find one accepted level (log scale) ---
     fig, ax = plt.subplots(figsize=(12, 6))
-    generators = list(results.keys())
     width2 = 0.18
     for i, gen in enumerate(generators):
         times = [

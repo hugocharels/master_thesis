@@ -55,9 +55,10 @@ exact parameters.
     [Lasers], [1], [2], [3],
     [$T_"max"$ (rejection benchmark)], [8], [12], [20],
     [$T_"max"$ (profile benchmark)], [—], [12], [14],
-    [Trials (rejection benchmark)], [50], [50], [20],
-    [Max attempts per trial (rejection benchmark)], [500], [500], [500],
-    [Levels generated (profile benchmark)], [—], [100], [10],
+    [Trials (rejection benchmark)], [200], [200], [20],
+    [Max attempts per trial (rejection benchmark)], [500], [500], [100],
+    [Trial timeout, s (rejection benchmark, $8 times 8$ only)], [—], [—], [30],
+    [Levels generated (profile benchmark)], [—], [100], [50],
   ),
   caption: [Generator parameters used in the rejection rate and profile distribution benchmarks.],
 )

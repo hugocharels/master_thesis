@@ -2,10 +2,10 @@
   "constrained_random_cooperative": {
     "5x5": {
       "accepted": 100,
-      "rejected": 5140,
-      "total_attempts": 5240,
-      "rejection_rate": 0.9809160305343512,
-      "elapsed_seconds": 103.96609380000154,
+      "rejected": 5586,
+      "total_attempts": 5686,
+      "rejection_rate": 0.9824129440731622,
+      "elapsed_seconds": 120.7046476000105,
       "profile_counts": {
         "asymmetric": 100
       },
@@ -14,20 +14,20 @@
       }
     },
     "8x8": {
-      "accepted": 10,
-      "rejected": 533,
-      "total_attempts": 543,
-      "rejection_rate": 0.9815837937384899,
-      "elapsed_seconds": 63.08366580000438,
+      "accepted": 50,
+      "rejected": 1919,
+      "total_attempts": 1969,
+      "rejection_rate": 0.9746063991874048,
+      "elapsed_seconds": 257.2883951999829,
       "profile_counts": {
-        "asymmetric": 6,
+        "asymmetric": 46,
         "distributed": 2,
-        "mutual": 2
+        "chain": 2
       },
       "profile_fractions": {
-        "asymmetric": 0.6,
-        "distributed": 0.2,
-        "mutual": 0.2
+        "asymmetric": 0.92,
+        "distributed": 0.04,
+        "chain": 0.04
       }
     }
   },
@@ -37,7 +37,7 @@
       "rejected": 0,
       "total_attempts": 100,
       "rejection_rate": 0.0,
-      "elapsed_seconds": 4.412328399994294,
+      "elapsed_seconds": 7.309163300029468,
       "profile_counts": {
         "asymmetric": 100
       },
@@ -46,20 +46,16 @@
       }
     },
     "8x8": {
-      "accepted": 10,
-      "rejected": 414,
-      "total_attempts": 424,
-      "rejection_rate": 0.9764150943396226,
-      "elapsed_seconds": 53.0064476000116,
+      "accepted": 50,
+      "rejected": 12,
+      "total_attempts": 62,
+      "rejection_rate": 0.1935483870967742,
+      "elapsed_seconds": 23.62120860000141,
       "profile_counts": {
-        "asymmetric": 8,
-        "distributed": 1,
-        "mutual": 1
+        "asymmetric": 50
       },
       "profile_fractions": {
-        "asymmetric": 0.8,
-        "distributed": 0.1,
-        "mutual": 0.1
+        "asymmetric": 1.0
       }
     }
   }

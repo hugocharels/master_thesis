@@ -130,8 +130,7 @@ class ConstructiveCooperativeGenerator(ConstructiveSolvableGenerator):
                 continue
             if any(existing in beam_tiles for existing in used_sources):
                 continue
-            owner = (1 + len(placed)) % self.agents if self.agents > 0 else 0
-            placed.append((owner, pos, direction))
+            placed.append((1 + len(placed), pos, direction))
             used_sources.add(pos)
 
         return placed

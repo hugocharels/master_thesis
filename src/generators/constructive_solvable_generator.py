@@ -133,8 +133,7 @@ class ConstructiveSolvableGenerator(ConstrainedRandomSolvableGenerator):
                 continue
             if any(tile in reserved for tile in beam_tiles):
                 continue
-            owner = len(lasers) % self.agents if self.agents > 0 else 0
-            lasers.append((owner, pos, direction))
+            lasers.append((len(lasers), pos, direction))
             used_sources.add(pos)
 
         if len(lasers) != self.lasers:

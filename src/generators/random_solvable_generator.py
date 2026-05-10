@@ -56,6 +56,13 @@ class RandomSolvableGenerator(BaseGenerator):
         if self.lasers < 0:
             raise ValueError(f"lasers must be >= 0. Got {self.lasers}")
 
+        if self.lasers > self.agents:
+            raise ValueError(
+                f"lasers must be <= agents to keep one laser source per colour "
+                f"(SAT encoding assumption, see Definition 3.1). "
+                f"Got lasers={self.lasers}, agents={self.agents}."
+            )
+
         if self.num_walls < 0:
             raise ValueError(f"num_walls must be >= 0. Got {self.num_walls}")
 
@@ -152,8 +159,7 @@ class RandomSolvableGenerator(BaseGenerator):
 
         lasers = []
         for i, pos in enumerate(laser_positions):
-            owner = i % self.agents if self.agents > 0 else 0
-            lasers.append((owner, pos, self._random_direction()))
+            lasers.append((i, pos, self._random_direction()))
 
         return CandidateLayout(
             agents=agent_positions,

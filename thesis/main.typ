@@ -107,15 +107,15 @@
 
 == Part 1 — Contribution
 
-#include "chapters/contribution_overview.typ"
+#include "chapters/contribution/overview.typ"
 
 #[
   #set heading(offset: 1)
   == Solver by Reduction to SAT <sat-reduction>
-  #include "chapters/sat_reduction.typ"
-  #include "chapters/methods/benchmarking.typ"
-  #include "chapters/methods/cooperation.typ"
-  #include "chapters/methods/generators.typ"
+  #include "chapters/contribution/sat_reduction.typ"
+  #include "chapters/contribution/benchmarking.typ"
+  #include "chapters/contribution/cooperation.typ"
+  #include "chapters/contribution/generators.typ"
 ]
 
 == Part 2 — Results <experiments>

@@ -1,4 +1,4 @@
-#import "../macros.typ": formalbox, proofbox
+#import "../../macros.typ": formalbox, proofbox
 
 === Definition of Sets
 

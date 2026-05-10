@@ -117,16 +117,6 @@ class CooperationProfileAnalyzer:
         necessary_helpers = self._find_necessary_helpers()
         dependency_edges = self._extract_dependency_edges(helper_events)
 
-        # If selective strict checks prove a helper is necessary but the sampled plan
-        # does not expose a concrete beneficiary, keep the signal by attaching a
-        # conservative edge to every other agent.
-        for helper in necessary_helpers:
-            if any(src == helper for src, _ in dependency_edges):
-                continue
-            for agent in range(num_agents):
-                if agent != helper:
-                    dependency_edges.add((helper, agent))
-
         mutual_pairs = self._mutual_pairs(dependency_edges)
         largest_scc_size = self._largest_scc_size(dependency_edges, num_agents)
         longest_chain_length = self._longest_chain_length(dependency_edges, num_agents)
@@ -136,6 +126,7 @@ class CooperationProfileAnalyzer:
             dependency_edges=dependency_edges,
             mutual_pairs=mutual_pairs,
             largest_scc_size=largest_scc_size,
+            longest_chain_length=longest_chain_length,
             num_agents=num_agents,
         )
 
@@ -242,6 +233,7 @@ class CooperationProfileAnalyzer:
         dependency_edges: set[tuple[int, int]],
         mutual_pairs: set[tuple[int, int]],
         largest_scc_size: int,
+        longest_chain_length: int,
         num_agents: int,
     ) -> str:
         if not cooperation_required:
@@ -251,10 +243,23 @@ class CooperationProfileAnalyzer:
         if mutual_pairs:
             return "mutual"
         indegree = defaultdict(int)
-        for _, dst in dependency_edges:
+        outdegree = defaultdict(int)
+        nodes: set[int] = set()
+        for src, dst in dependency_edges:
             indegree[dst] += 1
+            outdegree[src] += 1
+            nodes.add(src)
+            nodes.add(dst)
         if any(count >= 2 for count in indegree.values()):
             return "distributed"
+        if (
+            dependency_edges
+            and longest_chain_length >= 2
+            and all(indegree[n] <= 1 for n in nodes)
+            and all(outdegree[n] <= 1 for n in nodes)
+            and longest_chain_length >= max(1, len(nodes) - 1)
+        ):
+            return "chain"
         if dependency_edges:
             return "asymmetric"
         return "cooperative"

@@ -42,6 +42,8 @@ class ConstructiveCooperativeGenerator(ConstructiveSolvableGenerator):
     def _make_constructive_candidate_layout(self) -> CandidateLayout | None:
         if self.agents < 2 or self.rows < self.agents + 1 or self.cols < 4:
             return None
+        if self.lasers < 1:
+            return None
 
         lane_rows = list(range(1, self.agents + 1))
         beam_col = self._rng.randint(1, self.cols - 2)
@@ -53,33 +55,86 @@ class ConstructiveCooperativeGenerator(ConstructiveSolvableGenerator):
         for row in lane_rows:
             for col in range(self.cols):
                 reserved.add((row, col))
-        reserved.add((0, beam_col))
+        structural_source = (0, beam_col)
+        reserved.add(structural_source)
 
-        walls = []
-        for row in range(self.rows):
-            for col in range(self.cols):
-                pos = (row, col)
-                if pos in reserved:
-                    continue
-                walls.append(pos)
+        structural_laser = (0, structural_source, Direction.SOUTH)
+        lasers = [structural_laser]
 
-        lasers = [(0, (0, beam_col), Direction.SOUTH)]
+        free_cells = [
+            (row, col)
+            for row in range(self.rows)
+            for col in range(self.cols)
+            if (row, col) not in reserved
+        ]
 
-        extra_lasers = self.lasers - len(lasers)
-        if extra_lasers > 0:
-            return None
+        extras_needed = self.lasers - len(lasers)
+        if extras_needed > 0:
+            extras = self._place_extra_lasers_outside(
+                reserved=reserved,
+                candidate_positions=list(free_cells),
+                existing_sources={structural_source},
+                count=extras_needed,
+            )
+            if extras is None or len(extras) < extras_needed:
+                return None
+            lasers.extend(extras)
+
+        used_laser_positions = {pos for _, pos, _ in lasers}
+        walls = [cell for cell in free_cells if cell not in used_laser_positions]
 
         if self.num_walls > len(walls):
             return None
+        walls = walls[: self.num_walls]
 
-        # Keep the structural walls that force the cooperation pattern.
-        # If the caller asks for fewer walls, we still keep the minimum needed.
         return CandidateLayout(
             agents=agents,
             exits=exits,
             walls=walls,
             lasers=lasers,
         )
+
+    def _place_extra_lasers_outside(
+        self,
+        reserved: set[tuple[int, int]],
+        candidate_positions: list[tuple[int, int]],
+        existing_sources: set[tuple[int, int]],
+        count: int,
+    ) -> list[tuple[int, tuple[int, int], Direction]] | None:
+        used_sources = set(existing_sources)
+        placed: list[tuple[int, tuple[int, int], Direction]] = []
+
+        candidates = []
+        for pos in candidate_positions:
+            for direction in [
+                Direction.NORTH,
+                Direction.SOUTH,
+                Direction.EAST,
+                Direction.WEST,
+            ]:
+                if self._points_out_immediately(pos, direction):
+                    continue
+                beam_tiles = self._beam_tiles(pos, direction, set(), used_sources)
+                if not beam_tiles:
+                    continue
+                if any(tile in reserved for tile in beam_tiles):
+                    continue
+                candidates.append((pos, direction, beam_tiles))
+
+        self._rng.shuffle(candidates)
+
+        for pos, direction, beam_tiles in candidates:
+            if len(placed) >= count:
+                break
+            if pos in used_sources:
+                continue
+            if any(existing in beam_tiles for existing in used_sources):
+                continue
+            owner = (1 + len(placed)) % self.agents if self.agents > 0 else 0
+            placed.append((owner, pos, direction))
+            used_sources.add(pos)
+
+        return placed
 
     def _analyze_profile(self, world):
         world.reset()

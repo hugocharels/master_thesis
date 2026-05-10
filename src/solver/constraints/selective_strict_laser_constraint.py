@@ -3,27 +3,16 @@ from .lasers import LaserConstraints
 
 class SelectiveStrictLaserConstraints(LaserConstraints):
     """
-    Laser constraints where only a selected subset of colors loses
-    same-color immunity and same-color beam-blocking ability.
+    Laser constraints where only a selected subset of colors loses the ability
+    to truncate their own beam. Same-colour immunity is preserved for every
+    colour, matching the strict beam semantics of Definition 3.6: agents can
+    still occupy cells crossed by their own beam, but the beam continues
+    through them when their colour is in strict_colors.
     """
 
     def __init__(self, ctx, strict_colors):
         super().__init__(ctx)
         self.strict_colors = frozenset(strict_colors)
-
-    def _no_step_on_active_laser(self):
-        agent_var = self.ctx.agent_var
-        laser_var = self.ctx.laser_var
-        all_positions = self.ctx.all_positions
-
-        for laser, _ in self.ctx.lasers:
-            for agent, _ in self.ctx.agents:
-                c1, c2 = agent.color, laser.color
-                if c1 == c2 and c1 not in self.strict_colors:
-                    continue
-                for t in range(self.T_MAX + 1):
-                    for x, y in all_positions:
-                        yield [-agent_var[c1, x, y, t], -laser_var[c2, x, y, t]]
 
     def _beam_propagation(self):
         agent_var = self.ctx.agent_var

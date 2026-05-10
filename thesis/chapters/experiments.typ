@@ -232,8 +232,10 @@ is a one-way dependency, and mutual dependencies require a more specific layout 
 The constructive generator achieves 0 % rejection on the $5 times 5$ grid (every generated
 candidate is accepted), confirming that the lane-reservation strategy reliably produces cooperative
 levels. On the $8 times 8$ grid its rejection rate rises to 96 %, comparable to the constrained
-random generator's 97 %, because with 2 lasers and 3 agents the constructive template falls back to
-random placement for the additional laser (only one deliberate dependency is planted per candidate).
+random generator's 97 %, because the constructive template plants only one deliberate dependency
+per candidate; any additional lasers are placed in non-reserved cells with directions that avoid
+the agent lanes, so the extra lasers do not contribute new certified cooperative interactions and
+the binary cooperation test still has to be passed by chance.
 
 The profile distribution reveals a limitation of the current generation approach: rare profiles
 such as `chain`, `distributed`, and `fully_coupled` do not appear in these samples. Generating

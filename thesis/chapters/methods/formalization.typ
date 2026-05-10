@@ -18,7 +18,10 @@ that $1 <= n_a <= 4$.
   An LLE level is a tuple $L = (H, W, C, s, cal(W), cal(S), cal(E))$ where:
 
   - $H, W in NN^+$ are the height and width of the grid.
-  - $P = {(x, y) | 0 <= x < W, 0 <= y < H}$ is the set of all grid positions.
+  - $P = {(x, y) | 0 <= x < W, 0 <= y < H}$ is the set of all grid positions. We use the
+    image-coordinates convention: $x$ is the column index and $y$ is the row index, so that
+    moving north decreases $y$ and moving east increases $x$. The implementation uses the
+    transposed naming $(i, j) = (y, x)$ but the SAT semantics are identical.
   - $C = {0, 1, ..., n_a - 1}$ is the set of agent colours, with $1 <= n_a <= 4$.
   - $s : C -> P$ assigns an initial position to each agent, and $s$ is injective.
   - $D = {N, S, E, W}$ is the set of laser directions.

@@ -82,7 +82,12 @@ def test_lle_level_4_has_expected_coupling_metrics():
     assert result.longest_chain_length == 0
 
 
-def test_custom_three_agent_level_is_distributed():
+def test_custom_three_agent_level_is_asymmetric():
+    """
+    With strict beam semantics that preserve same-colour immunity (Definition 3.6),
+    agent 0's traversal of its own beam at (2, 1) is purely navigational and not a
+    helping action. Only agent 1 must truncate its own beam to let agent 2 cross.
+    """
     result = analyze(
         build_world(
             5,
@@ -99,15 +104,46 @@ def test_custom_three_agent_level_is_distributed():
 
     assert result.solvable is True
     assert result.cooperation_required is True
-    assert result.profile == "distributed"
-    assert result.matches_profile("distributed")
+    assert result.profile == "asymmetric"
+    assert result.matches_profile("asymmetric")
     assert result.matches_profile("cooperative")
     assert not result.matches_profile("mutual")
     assert not result.matches_profile("fully_coupled")
-    assert result.necessary_helpers == frozenset({0, 1})
-    assert result.dependency_edges == frozenset({(0, 1), (0, 2), (1, 2)})
-    assert result.longest_chain_length == 2
+    assert not result.matches_profile("distributed")
+    assert result.necessary_helpers == frozenset({1})
+    assert result.dependency_edges == frozenset({(1, 2)})
+    assert result.longest_chain_length == 1
     assert result.largest_scc_size == 1
+
+
+def test_crossed_beams_three_agents_is_mutual():
+    """
+    Two horizontal beams of opposite colours fully overlap on row 2. Agents 0 and 1
+    each block their own beam to let the other cross, and both blockings together
+    open the middle column for agent 2. The mutual blocking dominates the
+    classification, producing a 'mutual' profile with a 2-agent SCC.
+    """
+    result = analyze(
+        build_world(
+            5,
+            5,
+            agents=[(0, 1), (0, 3), (0, 2)],
+            exits=[(4, 1), (4, 3), (4, 2)],
+            lasers=[
+                (0, (2, 0), Direction.EAST),
+                (1, (2, 4), Direction.WEST),
+            ],
+        ),
+        10,
+    )
+
+    assert result.solvable is True
+    assert result.cooperation_required is True
+    assert result.profile == "mutual"
+    assert result.matches_profile("mutual")
+    assert result.matches_profile("cooperative")
+    assert result.largest_scc_size == 2
+    assert (0, 1) in result.mutual_pairs or (1, 0) in result.mutual_pairs
 
 
 def test_unsolvable_world_returns_unsolvable_profile():

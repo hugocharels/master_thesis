@@ -137,11 +137,12 @@ Recording the number of attempts per accepted level is the most direct measureme
 generator's rejection cost: the mean number of attempts approximates the reciprocal of the
 acceptance rate.
 
-Four generators are evaluated: `constrained_random_solvable`, `constrained_random_cooperative`,
-`constructive_solvable`, and `constructive_cooperative`. The plain random generators are excluded
-as they serve primarily as structural baselines; the constrained and constructive variants are the
-generators of practical interest. Three grid sizes are used: $3 times 3$ with 2 agents and 1
-laser, $5 times 5$ with 3 agents and 2 lasers, and $8 times 8$ with 4 agents and 3 lasers.
+Five generators are evaluated: `constrained_random_solvable`, `constrained_random_cooperative`,
+`constructive_solvable`, `constructive_cooperative`, and `constructive_level6_style`. The plain
+random generators are excluded as they serve primarily as structural baselines; the constrained
+and constructive variants are the generators of practical interest. Three grid sizes are used:
+$3 times 3$ with 2 agents and 1 laser, $5 times 5$ with 3 agents and 2 lasers, and $8 times 8$
+with 4 agents and 3 lasers.
 
 === Results
 
@@ -199,6 +200,16 @@ result — at sizes large enough for the lane geometry to be feasible, the const
 template reliably plants a same-colour blocking dependency that the SAT-based cooperation test
 accepts on the first or second attempt.
 
+The `constructive_level6_style` generator sits between the two cooperative families on this
+benchmark. It shows the same near-saturated rejection on $3 times 3$ (98.6 %, 70 mean attempts) for
+the same geometric reason, but rejection rates of 84.3 % on $5 times 5$ and 79.8 % on $8 times 8$
+(6.4 and 5.0 mean attempts respectively) — substantially higher than the lane-based
+`constructive_cooperative`, but materially lower than the random cooperative generator. The
+clustered geometry forces all agents through a shared corridor, which makes solvability and
+cooperation requirement harder to satisfy simultaneously than in the lane-based template; in
+exchange, when a level is accepted, it carries a richer cooperation profile (see
+@profile-distribution).
+
 On the $8 times 8$ grid, `constrained_random_cooperative` had 5 failed trials out of 20, where
 the per-trial budget (100 attempts or 30 seconds) was exhausted without finding an accepted level;
 `constructive_cooperative` had 0 failed trials. Failed trials are excluded from the mean-attempts
@@ -218,10 +229,10 @@ profiles among accepted levels, using the cooperation profile analyzer introduce
 
 === Protocol
 
-For each of two cooperative generators (`constrained_random_cooperative` and `constructive_cooperative`) and
-two grid sizes ($5 times 5$ with 2 agents and 1 laser, $8 times 8$ with 3 agents and 2 lasers),
-100 cooperative levels are accepted on the small grid and 50 on the large grid, then classified by
-the cooperation profile analyzer. The classifier assigns each level to one of the following profile
+For each of three cooperative generators (`constrained_random_cooperative`,
+`constructive_cooperative`, and `constructive_level6_style`) and two grid sizes ($5 times 5$ with
+2 agents and 1 laser, $8 times 8$ with 3 agents and 2 lasers), 100 cooperative levels are accepted
+on the small grid and 50 on the large grid, then classified by the cooperation profile analyzer. The classifier assigns each level to one of the following profile
 families: `asymmetric`, `mutual`, `chain`, `distributed`, or `fully_coupled`. The analyzer also
 returns `cooperative` as a fallback when cooperation is required but no specific dependency structure
 is detected.
@@ -238,28 +249,44 @@ is detected.
 
 === Interpretation
 
-Both generators produce a strongly asymmetric distribution. On the $5 times 5$ grid, every
-accepted level from both generators is classified as `asymmetric`: one agent depends on another,
-but not vice versa. The $5 times 5$ configuration uses only 2 agents, so the profiles `chain`,
-`distributed`, and `fully_coupled` are *structurally impossible* by construction (they require at
-least 3 agents for chain/distributed and a non-trivial cycle of length $>= 3$ for `fully_coupled`).
-The 5 × 5 result is therefore a partition between `asymmetric` and `mutual`, and the absence of
-`mutual` levels indicates that random or constructive geometries on this grid rarely yield two
-reciprocally helping agents within the chosen horizon. On the $8 times 8$ grid (3 agents, 2 lasers),
-the random cooperative generator produces 92 % `asymmetric`, 4 % `distributed`, and 4 % `chain`
-levels (n = 50), with no `mutual` or `fully_coupled` instances observed. The constructive cooperative
-generator produces 100 % `asymmetric` levels on both grid sizes, which reflects its planted-dependency
-template: it deliberately introduces exactly one one-way helping relation. The concentration on
-`asymmetric` profiles is consistent with the structural bias introduced by same-colour
-beam-blocking: the simplest cooperation pattern to arise by chance or by construction is a one-way
-dependency, and richer profiles require more specific layout configurations.
+Most generators produce a strongly asymmetric distribution. On the $5 times 5$ grid, every
+accepted level from all three generators is classified as `asymmetric`: one agent depends on
+another, but not vice versa. The $5 times 5$ configuration uses only 2 agents, so the profiles
+`chain`, `distributed`, and `fully_coupled` are *structurally impossible* by construction (they
+require at least 3 agents for chain/distributed and a non-trivial cycle of length $>= 3$ for
+`fully_coupled`). The 5 × 5 result is therefore a partition between `asymmetric` and `mutual`, and
+the absence of `mutual` levels indicates that random or constructive geometries on this grid
+rarely yield two reciprocally helping agents within the chosen horizon. On the $8 times 8$ grid
+(3 agents, 2 lasers), the random cooperative generator produces 92 % `asymmetric`, 4 %
+`distributed`, and 4 % `chain` levels (n = 50), with no `mutual` or `fully_coupled` instances
+observed. The lane-based `constructive_cooperative` generator produces 100 % `asymmetric` levels
+on both grid sizes, which reflects its planted-dependency template: it deliberately introduces
+exactly one one-way helping relation.
 
-The constructive generator achieves 0 % rejection on the $5 times 5$ grid (every generated
-candidate is accepted) and 19 % on the $8 times 8$ grid, confirming that the lane-reservation
-strategy combined with the planted dependency reliably produces cooperative levels for the
-parameter combinations used here. By contrast, the random cooperative generator has 98 %
-rejection on $5 times 5$ and 97 % on $8 times 8$, because most randomly sampled layouts do not
-spontaneously require a beam-blocking step.
+The `constructive_level6_style` generator is the qualitative outlier. On $5 times 5$ with 2 agents
+it is also forced to 100 % `asymmetric` for the structural reason above, but on $8 times 8$ with 3
+agents it produces a much more varied distribution: 50 % `asymmetric`, 34 % `mutual`, and 16 %
+`distributed` (n = 50). The `mutual` and `distributed` fractions are by far the highest of any
+generator in this benchmark, and they reflect the geometry of the level-6-style template: when all
+agents are forced through a shared corridor, cooperation tends to involve multiple agents helping
+each other simultaneously, rather than a single one-way dependency. This is the closest match in
+the generator family to the dependency structure of the canonical LLE Level 6 (which itself is
+mutual under the analyzer's classification cascade).
+
+The concentration on `asymmetric` profiles in the other generators is consistent with the
+structural bias introduced by same-colour beam-blocking in lane-based or random layouts: the
+simplest cooperation pattern to arise is a one-way dependency, and richer profiles require either
+a more specific layout configuration or geometric pressure such as the shared-corridor constraint
+introduced by the level-6-style generator.
+
+The lane-based constructive cooperative generator achieves 0 % rejection on the $5 times 5$ grid
+(every generated candidate is accepted) and 19 % on the $8 times 8$ grid, confirming that the
+lane-reservation strategy combined with the planted dependency reliably produces cooperative levels
+for the parameter combinations used here. The level-6-style constructive generator has higher
+rejection on this benchmark — 39 % on $5 times 5$ and 44 % on $8 times 8$ — but trades that
+moderate cost for the much richer profile distribution discussed above. By contrast, the random
+cooperative generator has 98 % rejection on $5 times 5$ and 97 % on $8 times 8$, because most
+randomly sampled layouts do not spontaneously require a beam-blocking step.
 
 The profile distribution reveals a limitation of the current generation approach: although the
 larger random sample on $8 times 8$ now exposes rare `chain` and `distributed` profiles

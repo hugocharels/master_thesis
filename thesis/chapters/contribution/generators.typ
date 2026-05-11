@@ -139,6 +139,22 @@ cooperative instances rather than merely sampling for cooperation and hoping to 
 rejection.
 
 
+== Constructive Level-6-Style Generator
+
+The constructive level-6-style generator targets the specific layout shape of LLE Level 6: clustered
+agent starts and clustered exits placed on opposing sides of the grid, with a corridor of lasers
+between them. Agents are placed in a small rectangular cluster (a $2 times 2$ block for four agents)
+in one third of the grid; exits are placed in a matching cluster in the opposite third. The
+orientation (vertical with start above exit, or horizontal with start left of exit) is chosen at
+random per call, and the perpendicular position of each cluster is also randomised, so that the two
+clusters are always forced to span at least a third of the grid in their main axis. Lasers are then
+placed inside the corridor between the clusters, oriented perpendicular to the cluster axis so that
+each beam crosses the corridor; remaining free cells receive walls up to the requested wall budget.
+This geometry consistently produces *mutual* cooperation profiles that mirror the structure of
+Level 6, and it is the generator we recommend for producing training instances intended to transfer
+to Level 6.
+
+
 == Summary
 
 #figure(
@@ -154,6 +170,7 @@ rejection.
     [Constrained Random Cooperative], [Random + geometric rejection], [Yes (SAT check)], [Yes (strict UNSAT)],
     [Constructive Solvable], [Reserved agent lanes], [Yes (SAT check)], [No],
     [Constructive Cooperative], [Reserved lanes + planted dependency], [Yes (SAT check)], [Yes (strict UNSAT)],
+    [Constructive Level-6-Style], [Clustered starts/exits + corridor lasers], [Yes (SAT check)], [Yes (strict UNSAT)],
   ),
   caption: [Overview of the implemented generators and their guaranteed properties.],
 )

@@ -114,5 +114,34 @@
       "rejection_rate": 0.37500000000000006,
       "note": null
     }
+  },
+  "constructive_level6_style": {
+    "3x3": {
+      "successful_trials": 200,
+      "failed_trials": 0,
+      "mean_attempts_per_level": 70.495,
+      "std_attempts_per_level": 76.56004163400122,
+      "mean_time_per_level": 0.1807278194965329,
+      "rejection_rate": 0.9858145967799135,
+      "note": null
+    },
+    "5x5": {
+      "successful_trials": 200,
+      "failed_trials": 0,
+      "mean_attempts_per_level": 6.385,
+      "std_attempts_per_level": 5.545879100737772,
+      "mean_time_per_level": 0.09469691299862461,
+      "rejection_rate": 0.8433829287392326,
+      "note": null
+    },
+    "8x8": {
+      "successful_trials": 20,
+      "failed_trials": 0,
+      "mean_attempts_per_level": 4.95,
+      "std_attempts_per_level": 2.923610781208744,
+      "mean_time_per_level": 0.6082474499969976,
+      "rejection_rate": 0.797979797979798,
+      "note": null
+    }
   }
 }

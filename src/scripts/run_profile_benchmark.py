@@ -23,6 +23,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from generators.constrained_random_cooperative_generator import ConstrainedRandomCooperativeGenerator
 from generators.constructive_cooperative_generator import ConstructiveCooperativeGenerator
+from generators.constructive_level6_style_generator import ConstructiveLevel6StyleGenerator
 from solver import LLEAdapter
 from solver.cooperation_profile_analyzer import CooperationProfileAnalyzer
 
@@ -42,6 +43,7 @@ ALL_PROFILES = ["asymmetric", "mutual", "chain", "distributed", "fully_coupled",
 GENERATOR_SPECS = {
     "constrained_random_cooperative": ConstrainedRandomCooperativeGenerator,
     "constructive_cooperative": ConstructiveCooperativeGenerator,
+    "constructive_level6_style": ConstructiveLevel6StyleGenerator,
 }
 
 
@@ -64,11 +66,27 @@ def _make_generator(cls, rows, cols, agents, lasers, is_large=False):
 
 def run():
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+    json_path = OUTPUT_DIR / "benchmark_results.json"
+
+    # Resume: load any previously-saved configs.
     results: dict = {}
+    if json_path.exists():
+        try:
+            with json_path.open("r", encoding="utf-8") as f:
+                results = json.load(f)
+            n_saved = sum(len(v) for v in results.values())
+            print(f"  Resumed from {json_path}: {n_saved} configs already saved", flush=True)
+        except Exception as e:
+            print(f"  Warning: could not load existing JSON ({e}); starting fresh", flush=True)
+            results = {}
 
     for gen_name, gen_cls in GENERATOR_SPECS.items():
-        results[gen_name] = {}
+        if gen_name not in results:
+            results[gen_name] = {}
         for rows, cols, agents, lasers, size_label, is_large in CONFIGS:
+            if size_label in results[gen_name]:
+                print(f"  [{gen_name}] {size_label}: SKIP (already in JSON)", flush=True)
+                continue
             target = LEVELS_TO_GENERATE_LARGE if is_large else LEVELS_TO_GENERATE
             print(f"\n[{gen_name}] {size_label} — target: {target} levels", flush=True)
 
@@ -151,7 +169,11 @@ def run():
                 },
             }
 
-    json_path = OUTPUT_DIR / "benchmark_results.json"
+            # Incremental save so a crash doesn't lose completed configs.
+            with json_path.open("w", encoding="utf-8") as f:
+                json.dump(results, f, indent=2)
+            print(f"  -> saved partial results to {json_path}", flush=True)
+
     with json_path.open("w", encoding="utf-8") as f:
         json.dump(results, f, indent=2)
     print(f"\nResults saved to {json_path}")

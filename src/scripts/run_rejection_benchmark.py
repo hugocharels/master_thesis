@@ -27,6 +27,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 from generators.constrained_random_cooperative_generator import ConstrainedRandomCooperativeGenerator
 from generators.constrained_random_solvable_generator import ConstrainedRandomSolvableGenerator
 from generators.constructive_cooperative_generator import ConstructiveCooperativeGenerator
+from generators.constructive_level6_style_generator import ConstructiveLevel6StyleGenerator
 from generators.constructive_solvable_generator import ConstructiveSolvableGenerator
 
 # ---------------------------------------------------------------------------
@@ -51,6 +52,7 @@ GENERATOR_SPECS = {
     "constrained_random_cooperative": ConstrainedRandomCooperativeGenerator,
     "constructive_solvable": ConstructiveSolvableGenerator,
     "constructive_cooperative": ConstructiveCooperativeGenerator,
+    "constructive_level6_style": ConstructiveLevel6StyleGenerator,
 }
 
 OUTPUT_DIR = Path(__file__).parent.parent.parent / "results" / "rejection_benchmark"

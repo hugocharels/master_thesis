@@ -24,11 +24,23 @@ import numpy as np
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
+from benchmark._plot_style import DEFAULT_BAR_ALPHA, apply_thesis_style
 from generators.constrained_random_cooperative_generator import ConstrainedRandomCooperativeGenerator
 from generators.constrained_random_solvable_generator import ConstrainedRandomSolvableGenerator
 from generators.constructive_cooperative_generator import ConstructiveCooperativeGenerator
 from generators.constructive_level6_style_generator import ConstructiveLevel6StyleGenerator
 from generators.constructive_solvable_generator import ConstructiveSolvableGenerator
+
+apply_thesis_style()
+
+# Human-readable labels for the legend (no underscores, no jargon).
+GENERATOR_LABELS = {
+    "constrained_random_solvable": "Constrained random (solvable)",
+    "constrained_random_cooperative": "Constrained random (cooperative)",
+    "constructive_solvable": "Constructive (solvable)",
+    "constructive_cooperative": "Constructive (cooperative)",
+    "constructive_level6_style": "Constructive (Level-6 style)",
+}
 
 # ---------------------------------------------------------------------------
 # Experiment configuration
@@ -225,10 +237,16 @@ def _failure_note(data: dict) -> str:
     return ""
 
 
-def _bar_with_failure_annotations(ax, x, values, errs, gens, sizes, results, width):
+def _bar_with_failure_annotations(ax, x, values, errs, gens, gen_labels, sizes, results, width):
     for i, gen in enumerate(gens):
         offset = (i - len(gens) / 2) * width + width / 2
-        bars = ax.bar(x + offset, values[i], width, yerr=errs[i], capsize=3, label=gen)
+        bars = ax.bar(
+            x + offset, values[i], width,
+            yerr=errs[i], capsize=3,
+            label=gen_labels[i],
+            alpha=DEFAULT_BAR_ALPHA,
+            edgecolor="white", linewidth=0.5,
+        )
         for bar, size in zip(bars, sizes):
             note = _failure_note(results[gen].get(size, {}))
             if note:
@@ -250,6 +268,7 @@ def _make_plots(results: dict):
 
     # --- Plot 1: Rejection rate, single panel with value labels ---
     generators = list(results.keys())
+    legend_labels = [GENERATOR_LABELS.get(g, g.replace("_", " ")) for g in generators]
     width1 = 0.18
     fig, ax = plt.subplots(figsize=(12, 6))
     for i, gen in enumerate(generators):
@@ -258,7 +277,12 @@ def _make_plots(results: dict):
             for s in sizes
         ]
         offset = (i - len(generators) / 2) * width1 + width1 / 2
-        bars = ax.bar(x + offset, rates, width1, label=gen)
+        bars = ax.bar(
+            x + offset, rates, width1,
+            label=legend_labels[i],
+            alpha=DEFAULT_BAR_ALPHA,
+            edgecolor="white", linewidth=0.5,
+        )
         for bar, val in zip(bars, rates):
             ax.text(
                 bar.get_x() + bar.get_width() / 2,
@@ -269,17 +293,18 @@ def _make_plots(results: dict):
                 fontsize=8,
             )
     ax.set_xlabel("Grid size")
-    ax.set_ylabel("Rejection rate (%)")
-    ax.set_title("Rejection Rate by Generator and Grid Size")
+    ax.set_ylabel("Rejection rate (\\%)" if plt.rcParams.get("text.usetex") else "Rejection rate (%)")
+    ax.set_title("Rejection rate by generator and grid size")
     ax.set_xticks(x)
     ax.set_xticklabels(sizes)
     ax.set_ylim(0, 110)
-    ax.legend(loc="upper left", fontsize=8)
-    ax.grid(axis="y", alpha=0.3)
+    ax.legend(loc="upper left")
+    ax.grid(axis="y")
     fig.tight_layout()
-    fig.savefig(OUTPUT_DIR / "rejection_rate_by_generator.png", dpi=150)
+    fig.savefig(OUTPUT_DIR / "rejection_rate_by_generator.png", dpi=200)
+    fig.savefig(OUTPUT_DIR / "rejection_rate_by_generator.pdf")
     plt.close(fig)
-    print("Saved rejection_rate_by_generator.png")
+    print("Saved rejection_rate_by_generator.{png,pdf}")
 
     # --- Plot 2: Mean time to find one accepted level (log scale) ---
     fig, ax = plt.subplots(figsize=(12, 6))
@@ -290,20 +315,26 @@ def _make_plots(results: dict):
             for s in sizes
         ]
         offset = (i - len(generators) / 2) * width2 + width2 / 2
-        ax.bar(x + offset, times, width2, label=gen)
+        ax.bar(
+            x + offset, times, width2,
+            label=legend_labels[i],
+            alpha=DEFAULT_BAR_ALPHA,
+            edgecolor="white", linewidth=0.5,
+        )
     ax.set_xlabel("Grid size")
-    ax.set_ylabel("Mean time to find one accepted level, s (log scale)")
+    ax.set_ylabel("Mean time to find one accepted level (s, log scale)")
     ax.set_yscale("log")
     ax.set_ylim(bottom=1e-3)
-    ax.set_title("Mean Time per Accepted Level by Generator and Grid Size")
+    ax.set_title("Mean time per accepted level by generator and grid size")
     ax.set_xticks(x)
     ax.set_xticklabels(sizes)
-    ax.legend(loc="upper left", fontsize=8)
-    ax.grid(axis="y", alpha=0.3, which="both")
+    ax.legend(loc="upper left")
+    ax.grid(axis="y", which="both")
     fig.tight_layout()
-    fig.savefig(OUTPUT_DIR / "time_per_accepted_level.png", dpi=150)
+    fig.savefig(OUTPUT_DIR / "time_per_accepted_level.png", dpi=200)
+    fig.savefig(OUTPUT_DIR / "time_per_accepted_level.pdf")
     plt.close(fig)
-    print("Saved time_per_accepted_level.png")
+    print("Saved time_per_accepted_level.{png,pdf}")
 
     # --- Plot 3: Mean attempts (log scale, with std error bars and failure notes) ---
     fig, ax = plt.subplots(figsize=(12, 6))
@@ -317,21 +348,22 @@ def _make_plots(results: dict):
         values.append(means)
         errs.append(stds)
     _bar_with_failure_annotations(
-        ax, x, values, errs, generators, sizes, results, width2
+        ax, x, values, errs, generators, legend_labels, sizes, results, width2
     )
     ax.set_xlabel("Grid size")
     ax.set_ylabel("Mean attempts (log scale)")
     ax.set_yscale("log")
     ax.set_ylim(bottom=1)
-    ax.set_title("Mean Attempts per Accepted Level by Generator and Grid Size")
+    ax.set_title("Mean attempts per accepted level by generator and grid size")
     ax.set_xticks(x)
     ax.set_xticklabels(sizes)
-    ax.legend(loc="upper left", fontsize=8)
-    ax.grid(axis="y", alpha=0.3, which="both")
+    ax.legend(loc="upper left")
+    ax.grid(axis="y", which="both")
     fig.tight_layout()
-    fig.savefig(OUTPUT_DIR / "mean_attempts_per_level.png", dpi=150)
+    fig.savefig(OUTPUT_DIR / "mean_attempts_per_level.png", dpi=200)
+    fig.savefig(OUTPUT_DIR / "mean_attempts_per_level.pdf")
     plt.close(fig)
-    print("Saved mean_attempts_per_level.png")
+    print("Saved mean_attempts_per_level.{png,pdf}")
 
 
 if __name__ == "__main__":

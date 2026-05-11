@@ -21,11 +21,29 @@ import numpy as np
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
+from benchmark._plot_style import DEFAULT_BAR_ALPHA, apply_thesis_style
 from generators.constrained_random_cooperative_generator import ConstrainedRandomCooperativeGenerator
 from generators.constructive_cooperative_generator import ConstructiveCooperativeGenerator
 from generators.constructive_level6_style_generator import ConstructiveLevel6StyleGenerator
 from solver import LLEAdapter
 from solver.cooperation_profile_analyzer import CooperationProfileAnalyzer
+
+apply_thesis_style()
+
+GENERATOR_LABELS = {
+    "constrained_random_cooperative": "Constrained random (cooperative)",
+    "constructive_cooperative": "Constructive (cooperative)",
+    "constructive_level6_style": "Constructive (Level-6 style)",
+}
+
+PROFILE_LABELS = {
+    "asymmetric": "Asymmetric",
+    "mutual": "Mutual",
+    "chain": "Chain",
+    "distributed": "Distributed",
+    "fully_coupled": "Fully coupled",
+    "cooperative": "Cooperative",
+}
 
 OUTPUT_DIR = Path(__file__).parent.parent.parent / "results" / "profile_benchmark"
 
@@ -187,13 +205,13 @@ def _make_plots(results: dict):
 
     # Always show all profile categories so absence is visible.
     profiles = ["asymmetric", "mutual", "chain", "distributed", "fully_coupled", "cooperative"]
+    profile_labels = [PROFILE_LABELS.get(p, p.replace("_", " ").capitalize()) for p in profiles]
 
     n_groups = len(generators) * len(sizes)
     x = np.arange(len(profiles))
     width = 0.8 / n_groups
 
     fig, ax = plt.subplots(figsize=(13, 6))
-    colors = plt.cm.tab10(np.linspace(0, 1, n_groups))
 
     for idx, (gen_name, size_label) in enumerate(
         (g, s) for g in generators for s in sizes
@@ -205,26 +223,29 @@ def _make_plots(results: dict):
             fractions.append(frac * 100)
         offset = (idx - n_groups / 2) * width + width / 2
         n_levels = results[gen_name].get(size_label, {}).get("accepted", 0)
+        gen_label = GENERATOR_LABELS.get(gen_name, gen_name.replace("_", " "))
         ax.bar(
             x + offset,
             fractions,
             width,
-            label=f"{gen_name} / {size_label} (n={n_levels})",
-            color=colors[idx],
+            label=f"{gen_label} / {size_label} (n={n_levels})",
+            alpha=DEFAULT_BAR_ALPHA,
+            edgecolor="white", linewidth=0.5,
         )
 
     ax.set_xlabel("Cooperation profile")
-    ax.set_ylabel("% of accepted levels")
-    ax.set_title("Cooperation Profile Distribution by Generator and Grid Size")
+    ax.set_ylabel("\\% of accepted levels" if plt.rcParams.get("text.usetex") else "% of accepted levels")
+    ax.set_title("Cooperation profile distribution by generator and grid size")
     ax.set_xticks(x)
-    ax.set_xticklabels(profiles, rotation=15, ha="right")
+    ax.set_xticklabels(profile_labels, rotation=15, ha="right")
     ax.set_ylim(0, 105)
-    ax.legend(fontsize=8, loc="upper right")
-    ax.grid(axis="y", alpha=0.3)
+    ax.legend(loc="upper right")
+    ax.grid(axis="y")
     fig.tight_layout()
-    fig.savefig(OUTPUT_DIR / "profile_distribution.png", dpi=150)
+    fig.savefig(OUTPUT_DIR / "profile_distribution.png", dpi=200)
+    fig.savefig(OUTPUT_DIR / "profile_distribution.pdf")
     plt.close(fig)
-    print("Saved profile_distribution.png")
+    print("Saved profile_distribution.{png,pdf}")
 
 
 if __name__ == "__main__":

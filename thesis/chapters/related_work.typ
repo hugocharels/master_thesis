@@ -47,11 +47,11 @@ created by coloured lasers and same-colour blocking.
 
 Procedural Content Generation (PCG) is useful in reinforcement-learning settings because it can
 replace a small fixed benchmark set with a larger and more diverse stream of instances
-@Shaker2016. Within PCG, search-based methods — surveyed by @Togelius2011 — phrase content
-creation as an optimisation problem over a content space, which is conceptually close to the
+@Shaker2016. Within PCG, search-based methods — surveyed by #cite(<Togelius2011>, form: "prose") — phrase
+content creation as an optimisation problem over a content space, which is conceptually close to the
 solver-driven acceptance loop adopted in this thesis. The closest precedent for the present
-declarative-constraint approach is the Answer Set Programming generator of Smith and Mateas
-@SmithMateas2011, which uses an ASP solver as the acceptance oracle for game content. A
+declarative-constraint approach is the Answer Set Programming generator of
+#cite(<SmithMateas2011>, form: "prose"), which uses an ASP solver as the acceptance oracle for game content. A
 complementary line of work surveyed under the PCGML banner @Summerville2018PCGML uses
 machine-learned generators trained on existing levels, but typically provides no formal guarantee
 on the produced output. The difficulty for the present problem is not merely to produce varied
@@ -66,10 +66,10 @@ acts as an acceptance oracle rather than as a post-hoc descriptive tool.
 
 == SAT-based Planning
 
-A second compilation lineage directly relevant to this thesis is *SAT-based planning*. Kautz and
-Selman @KautzSelman1992 introduced SATPLAN, encoding bounded-horizon STRIPS planning instances as
-propositional formulas; subsequent work refined both the encodings and the search strategies
-@KautzSelman1996. The treatment by Rintanen, Heljanko and Niemelä @Rintanen2006 covers parallel-plan
+A second compilation lineage directly relevant to this thesis is *SAT-based planning*.
+#cite(<KautzSelman1992>, form: "prose") introduced SATPLAN, encoding bounded-horizon STRIPS planning
+instances as propositional formulas; subsequent work refined both the encodings and the search
+strategies @KautzSelman1996. The treatment by #cite(<Rintanen2006>, form: "prose") covers parallel-plan
 encodings and modern algorithmic refinements that drove SAT-based planners to competitive
 performance with dedicated planners. The bounded-horizon LLE encoding developed in this thesis sits
 in the same conceptual family: a state-transition decision problem reduced to SAT, with the encoding
@@ -83,7 +83,7 @@ Finding (MAPF). In standard MAPF, agents move on a discrete graph from start ver
 vertices while avoiding collisions. The computational difficulty comes from the interaction between
 multiple agents and the optimality criterion imposed on the solution.
 
-Surynek's survey @Surynek2022CompilationMAPF shows that MAPF has become a major testbed for
+The survey by #cite(<Surynek2022CompilationMAPF>, form: "prose") shows that MAPF has become a major testbed for
 compilation-based solving. Instead of searching directly in the original state space, one reduces a
 MAPF instance to a target formalism such as CSP, SAT, or MILP, then relies on the target solver to
 handle the combinatorial burden. MAPF research is not exclusively compilation-based; the dominant
@@ -105,7 +105,7 @@ path optimality, but solvability and cooperation under the benchmark mechanics.
 == SAT-Based MAPF Encoding Design
 
 Beyond the general survey, the MAPF literature also provides concrete lessons about SAT encoding
-design. The paper by Frommknecht and Surynek @FrommknechtSurynek2024 studies SAT-based MAPF solving
+design. The paper by #cite(<FrommknechtSurynek2024>, form: "prose") studies SAT-based MAPF solving
 under the makespan objective using an MDD-SAT formulation and compares different solver-facing
 choices, including eager versus lazy encodings and the use of informative initial assignments.
 

@@ -8,6 +8,7 @@
 )
 
 #set text(lang: "en")
+#set par(justify: true)
 
 #show heading: it => {
   if it.depth == 1 {
@@ -57,8 +58,8 @@
 #v(10pt)
 
 #align(center, text(18pt)[
-  *Procedural Generation of Solvable Cooperative Levels for the \
-  Laser Learning Environment*
+  *Procedural Generation of Solvable Cooperative Levels \
+  for the Laser Learning Environment*
 ])
 
 #v(10pt)
@@ -81,6 +82,10 @@
   Academic year 2025-2026
 ])
 
+#pagebreak()
+
+// Intentional blank page after the cover.
+#v(1fr)
 #pagebreak()
 
 // Table of contents

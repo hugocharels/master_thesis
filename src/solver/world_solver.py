@@ -1,4 +1,5 @@
 import time
+from enum import StrEnum
 
 from lle import Action
 from pysat.solvers import Minisat22
@@ -8,6 +9,8 @@ from .constraints import (
     InitializationConstraints,
     LaserConstraints,
     MovementConstraints,
+    SelectiveStrictLaserConstraints,
+    StrictLaserConstraints,
 )
 from .constraints.movements import METHOD_LOCAL
 from .model import SATModel
@@ -16,14 +19,28 @@ from .variables import VariableFactory
 from .world_data import WorldData
 
 
+class LaserMode(StrEnum):
+    STANDARD = "standard"
+    STRICT = "strict"
+    SELECTIVE_STRICT = "selective_strict"
+
+
 class WorldSolver:
     def __init__(
         self,
         world: WorldData,
-        T_MAX=10,
-        enable_profiling=False,
-        movement_method=METHOD_LOCAL,
+        T_MAX: int = 10,
+        *,
+        laser_mode: LaserMode = LaserMode.STANDARD,
+        strict_colors: frozenset[int] | None = None,
+        enable_profiling: bool = False,
+        movement_method: str = METHOD_LOCAL,
     ):
+        if laser_mode is LaserMode.SELECTIVE_STRICT and not strict_colors:
+            raise ValueError(
+                "laser_mode=selective_strict requires a non-empty strict_colors set"
+            )
+
         self.world = world
         self.T_MAX = T_MAX
         self.var = VariableFactory()
@@ -31,15 +48,25 @@ class WorldSolver:
         self.enable_profiling = enable_profiling
         self.profiler = SolverProfiler() if enable_profiling else None
         self.movement_method = movement_method
+        self.laser_mode = laser_mode
+        self.strict_colors = frozenset(strict_colors) if strict_colors else frozenset()
 
         self.ctx = ConstraintContext(world, self.var, T_MAX)
-
         self.constraints = [
             InitializationConstraints(self.ctx),
             MovementConstraints(self.ctx, movement_method=movement_method),
-            LaserConstraints(self.ctx),
+            self._build_laser_constraint(),
         ]
         self._model_built = False
+
+    def _build_laser_constraint(self):
+        if self.laser_mode is LaserMode.STANDARD:
+            return LaserConstraints(self.ctx)
+        if self.laser_mode is LaserMode.STRICT:
+            return StrictLaserConstraints(self.ctx)
+        if self.laser_mode is LaserMode.SELECTIVE_STRICT:
+            return SelectiveStrictLaserConstraints(self.ctx, self.strict_colors)
+        raise ValueError(f"Unknown laser_mode: {self.laser_mode}")
 
     def build_model(self):
         if self._model_built:

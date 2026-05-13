@@ -4,8 +4,7 @@ from collections import defaultdict
 from dataclasses import dataclass
 
 from .cooperation_solver import CooperationSolver
-from .world_solver import WorldSolver
-from .world_solver_selective_strict_laser import WorldSolverSelectiveStrictLaser
+from .world_solver import LaserMode, WorldSolver
 
 
 @dataclass(frozen=True)
@@ -159,10 +158,11 @@ class CooperationProfileAnalyzer:
     def _find_necessary_helpers(self) -> set[int]:
         necessary = set()
         for agent in self.world.agents:
-            sat, _ = WorldSolverSelectiveStrictLaser(
+            sat, _ = WorldSolver(
                 self.world,
-                strict_colors={agent.color},
                 T_MAX=self.T_MAX,
+                laser_mode=LaserMode.SELECTIVE_STRICT,
+                strict_colors=frozenset({agent.color}),
                 movement_method=self.movement_method,
             ).solve()
             if not sat:

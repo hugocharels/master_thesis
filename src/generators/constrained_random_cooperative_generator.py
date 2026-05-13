@@ -1,6 +1,6 @@
 from generators.constrained_random_solvable_generator import ConstrainedRandomSolvableGenerator
 from generators.registry import register_generator
-from solver.cooperation_profile_analyzer import CooperationProfileAnalyzer
+from solver import CooperationProfileAnalyzer
 
 
 @register_generator("constrained_random_cooperative")

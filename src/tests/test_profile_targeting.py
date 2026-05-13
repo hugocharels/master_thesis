@@ -12,7 +12,7 @@ from lle import World
 from generators.constrained_random_cooperative_generator import ConstrainedRandomCooperativeGenerator
 from generators.constructive_cooperative_generator import ConstructiveCooperativeGenerator
 from generators.random_cooperative_generator import RandomCooperativeGenerator
-from solver.cooperation_profile_analyzer import CooperationProfileAnalyzer
+from solver import CooperationProfileAnalyzer
 
 
 # ---------------------------------------------------------------------------

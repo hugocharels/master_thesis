@@ -1,4 +1,4 @@
-from .cooperation_profile_analyzer import (
+from .profile import (
     CooperationProfileAnalyzer,
     CooperationProfileResult,
     HelperEvent,

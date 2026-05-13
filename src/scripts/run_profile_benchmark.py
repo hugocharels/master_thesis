@@ -25,7 +25,7 @@ from benchmark._plot_style import DEFAULT_BAR_ALPHA, apply_thesis_style
 from generators.constrained_random_cooperative_generator import ConstrainedRandomCooperativeGenerator
 from generators.constructive_cooperative_generator import ConstructiveCooperativeGenerator
 from generators.constructive_level6_style_generator import ConstructiveLevel6StyleGenerator
-from solver.cooperation_profile_analyzer import CooperationProfileAnalyzer
+from solver import CooperationProfileAnalyzer
 
 apply_thesis_style()
 

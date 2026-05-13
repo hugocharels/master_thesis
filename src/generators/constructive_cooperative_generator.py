@@ -4,7 +4,7 @@ from generators.constructive_solvable_generator import ConstructiveSolvableGener
 from generators.random_solvable_generator import CandidateLayout
 from generators.registry import register_generator
 from lle import Direction
-from solver.cooperation_profile_analyzer import CooperationProfileAnalyzer
+from solver import CooperationProfileAnalyzer
 
 
 @register_generator("constructive_cooperative")

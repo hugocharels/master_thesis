@@ -1,6 +1,6 @@
 from generators.random_solvable_generator import RandomSolvableGenerator
 from generators.registry import register_generator
-from solver.cooperation_profile_analyzer import CooperationProfileAnalyzer
+from solver import CooperationProfileAnalyzer
 
 
 @register_generator("random_cooperative")

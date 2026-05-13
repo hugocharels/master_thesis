@@ -7,15 +7,15 @@ to get a real lle.World. The LLE string format is an internal detail.
 
 from __future__ import annotations
 
-from typing import Tuple
-
 from lle import Direction, World
 
-Position = Tuple[int, int]
+Position = tuple[int, int]
 
 
 def _dir_letter(direction: Direction) -> str:
-    return direction.name[0]
+    # lle.Direction.name returns a single letter ("N"/"S"/"E"/"W"), unlike
+    # stdlib Enum which would return the full member name.
+    return direction.name
 
 
 class WorldBuilder:
@@ -78,7 +78,9 @@ class WorldBuilder:
         self._grid[pos[0]][pos[1]] = "G"
         return self
 
-    def add_laser(self, agent_id: int, pos: Position, direction: Direction) -> "WorldBuilder":
+    def add_laser(
+        self, agent_id: int, pos: Position, direction: Direction
+    ) -> "WorldBuilder":
         self._check_bounds(pos)
         self._check_free(pos)
         self._grid[pos[0]][pos[1]] = f"L{agent_id}{_dir_letter(direction)}"

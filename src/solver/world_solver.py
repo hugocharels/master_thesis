@@ -13,9 +13,9 @@ from .constraints import (
     StrictLaserConstraints,
 )
 from .constraints.movements import METHOD_LOCAL
-from .model import SATModel
-from .profiler import SolverProfiler
-from .variables import VariableFactory
+from ._internal.model import SATModel
+from ._internal.profiler import SolverProfiler
+from ._internal.variables import VariableFactory
 from lle import World
 
 

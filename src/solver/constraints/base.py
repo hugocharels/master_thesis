@@ -1,30 +1,37 @@
 from abc import ABC, abstractmethod
 
-from solver.world_data import WorldData
+from lle import World
+
+from .._internal.grid import all_positions as _all_positions
+from .._internal.grid import get_neighbors as _get_neighbors
+from .._internal.grid import is_within_bounds as _is_within_bounds
+from .._internal.types import agents_from_world, laser_sources_from_world
 
 
 class ConstraintContext:
     """Pre-computed data shared across all constraint classes. Built once."""
 
-    def __init__(self, world: WorldData, var_factory, T_MAX):
+    def __init__(self, world: World, var_factory, T_MAX):
         self.world = world
         self.var = var_factory
         self.T_MAX = T_MAX
 
         # Pre-compute sets
-        self.walls = frozenset(world.wall_positions)
-        self.laser_positions = frozenset(src.position for src in world.laser_sources)
+        self.walls = frozenset(world.wall_pos)
+        _agents = agents_from_world(world)
+        _lasers = laser_sources_from_world(world)
+        self.laser_positions = frozenset(src.position for src in _lasers)
         self.blocked = self.walls | self.laser_positions
-        self.agents = [(a, a.position) for a in world.agents]
-        self.lasers = [(src, src.position) for src in world.laser_sources]
-        self.exits = world.exit_positions
-        self.all_positions = world.all_positions()
+        self.agents = [(a, a.position) for a in _agents]
+        self.lasers = [(src, src.position) for src in _lasers]
+        self.exits = list(world.exit_pos)
+        self.all_positions = _all_positions(world)
         self.valid_positions = [p for p in self.all_positions if p not in self.blocked]
 
         # Pre-compute neighbor map: pos -> [pos] + unblocked neighbors
         self.neighbor_map = {}
         for pos in self.valid_positions:
-            neighbors = [n for n in world.get_neighbors(pos) if n not in self.blocked]
+            neighbors = [n for n in _get_neighbors(world, pos) if n not in self.blocked]
             self.neighbor_map[pos] = [pos] + neighbors
 
         # Pre-compute variable IDs
@@ -61,11 +68,11 @@ class ConstraintContext:
             for x, y in self.all_positions:
                 nx = x + di
                 ny = y + dj
-                if not world.is_within_bounds((nx, ny)):
+                if not _is_within_bounds(world, (nx, ny)):
                     continue
                 if (nx, ny) in self.laser_positions:
                     continue
-                is_blocker = world.is_wall((nx, ny))
+                is_blocker = (nx, ny) in self.walls
                 entries.append((x, y, nx, ny, is_blocker))
             self.beam_propagation_map[key] = entries
 

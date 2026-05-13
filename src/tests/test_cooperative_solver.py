@@ -3,15 +3,13 @@ from lle import World
 
 from generators.world_builder import Direction, WorldBuilder
 from levels import LLE_LEVELS
-from solver import LLEAdapter
 from solver.cooperation_solver import CooperationSolver
 
 
 def cooperation_needed(world: World, t: int) -> bool:
     """Adapt an lle.World and run cooperation analysis."""
     world.reset()
-    adapted = LLEAdapter(world)
-    solver = CooperationSolver(adapted, T_MAX=t)
+    solver = CooperationSolver(world, T_MAX=t)
     return solver.analyze().cooperation_needed
 
 

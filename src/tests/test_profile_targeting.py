@@ -12,7 +12,6 @@ from lle import World
 from generators.constrained_random_cooperative_generator import ConstrainedRandomCooperativeGenerator
 from generators.constructive_cooperative_generator import ConstructiveCooperativeGenerator
 from generators.random_cooperative_generator import RandomCooperativeGenerator
-from solver import LLEAdapter
 from solver.cooperation_profile_analyzer import CooperationProfileAnalyzer
 
 
@@ -22,8 +21,7 @@ from solver.cooperation_profile_analyzer import CooperationProfileAnalyzer
 
 def analyze_profile(world: World, t_max: int = 10):
     world.reset()
-    adapted = LLEAdapter(world)
-    return CooperationProfileAnalyzer(adapted, T_MAX=t_max).analyze()
+    return CooperationProfileAnalyzer(world, T_MAX=t_max).analyze()
 
 
 def make_random_cooperative(**kwargs):

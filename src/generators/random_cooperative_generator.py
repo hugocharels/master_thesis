@@ -1,6 +1,5 @@
 from generators.random_solvable_generator import RandomSolvableGenerator
 from generators.registry import register_generator
-from solver import LLEAdapter
 from solver.cooperation_profile_analyzer import CooperationProfileAnalyzer
 
 
@@ -56,8 +55,7 @@ class RandomCooperativeGenerator(RandomSolvableGenerator):
 
     def _analyze_profile(self, world):
         world.reset()
-        adapted = LLEAdapter(world)
-        return CooperationProfileAnalyzer(adapted, T_MAX=self.t_max).analyze()
+        return CooperationProfileAnalyzer(world, T_MAX=self.t_max).analyze()
 
     def _accept_world(self, world):
         accepted, reason = super()._accept_world(world)

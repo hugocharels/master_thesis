@@ -3,6 +3,8 @@ from __future__ import annotations
 from collections import defaultdict
 from dataclasses import dataclass
 
+from ._internal.grid import is_within_bounds as _is_within_bounds
+from ._internal.types import agents_from_world, laser_sources_from_world
 from .cooperation_solver import CooperationSolver
 from .world_solver import LaserMode, WorldSolver
 
@@ -88,7 +90,7 @@ class CooperationProfileAnalyzer:
             movement_method=self.movement_method,
         )
         sat, model = solver.solve()
-        num_agents = len(self.world.agents)
+        num_agents = len(agents_from_world(self.world))
 
         if not sat:
             return CooperationProfileResult(
@@ -157,7 +159,7 @@ class CooperationProfileAnalyzer:
 
     def _find_necessary_helpers(self) -> set[int]:
         necessary = set()
-        for agent in self.world.agents:
+        for agent in agents_from_world(self.world):
             sat, _ = WorldSolver(
                 self.world,
                 T_MAX=self.T_MAX,
@@ -199,17 +201,18 @@ class CooperationProfileAnalyzer:
 
     def _raw_beam_paths(self) -> dict[int, list[tuple[tuple[int, int], list[tuple[int, int]]]]]:
         paths: dict[int, list[tuple[tuple[int, int], list[tuple[int, int]]]]] = defaultdict(list)
-        wall_positions = frozenset(self.world.wall_positions)
-        laser_sources = {src.position for src in self.world.laser_sources}
+        wall_positions = frozenset(self.world.wall_pos)
+        _lasers = laser_sources_from_world(self.world)
+        laser_source_positions = {src.position for src in _lasers}
 
-        for laser in self.world.laser_sources:
+        for laser in _lasers:
             di, dj = laser.direction
             x, y = laser.position
             x += di
             y += dj
             path: list[tuple[int, int]] = []
-            while self.world.is_within_bounds((x, y)):
-                if (x, y) in wall_positions or (x, y) in laser_sources:
+            while _is_within_bounds(self.world, (x, y)):
+                if (x, y) in wall_positions or (x, y) in laser_source_positions:
                     break
                 path.append((x, y))
                 x += di

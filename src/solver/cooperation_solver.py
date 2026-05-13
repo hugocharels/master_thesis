@@ -1,7 +1,8 @@
 from dataclasses import dataclass
 
+from lle import World
+
 from .constraints.movements import METHOD_LOCAL
-from .world_data import WorldData
 from .world_solver import LaserMode, WorldSolver
 
 
@@ -16,7 +17,7 @@ class CooperationSolver:
     Cooperation is needed iff the strict-laser solver is UNSAT.
     """
 
-    def __init__(self, world: WorldData, T_MAX: int = 10, movement_method=METHOD_LOCAL):
+    def __init__(self, world: World, T_MAX: int = 10, movement_method=METHOD_LOCAL):
         self.world = world
         self.T_MAX = T_MAX
         self.movement_method = movement_method

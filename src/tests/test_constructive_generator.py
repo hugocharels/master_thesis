@@ -1,12 +1,12 @@
 import pytest
 
 from generators.constructive_solvable_generator import ConstructiveSolvableGenerator
-from solver import LLEAdapter, WorldSolver
+from solver import WorldSolver
 
 
 def is_satisfiable(world, t_max):
     world.reset()
-    solver = WorldSolver(LLEAdapter(world), T_MAX=t_max)
+    solver = WorldSolver(world, T_MAX=t_max)
     result, _ = solver.solve()
     return bool(result)
 

@@ -6,7 +6,7 @@ from lle import World
 from generators.base_generator import BaseGenerator
 from generators.registry import register_generator
 from generators.world_builder import Direction, WorldBuilder
-from solver import LLEAdapter, WorldSolver
+from solver import WorldSolver
 
 
 @dataclass(frozen=True)
@@ -209,8 +209,7 @@ class RandomSolvableGenerator(BaseGenerator):
 
     def _is_satisfiable(self, world: World, t: int) -> bool:
         world.reset()
-        adapted = LLEAdapter(world)
-        solver = WorldSolver(adapted, T_MAX=t)
+        solver = WorldSolver(world, T_MAX=t)
         result, _ = solver.solve()
         return bool(result)
 

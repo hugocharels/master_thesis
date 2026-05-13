@@ -3,14 +3,13 @@ from lle import World
 from pysat.solvers import Minisat22
 
 from generators.world_builder import Direction, WorldBuilder
-from solver import LLEAdapter, WorldSolver
+from solver import WorldSolver
 
 
 def solve(world: World, t: int) -> bool:
     """Adapt an lle.World and solve it."""
     world.reset()
-    adapted = LLEAdapter(world)
-    solver = WorldSolver(adapted, T_MAX=t)
+    solver = WorldSolver(world, T_MAX=t)
     return bool(solver.solve()[0])
 
 
@@ -178,7 +177,7 @@ def test_lle_levels(level, t, expected):
 
 def test_world_solver_can_be_reused_without_accumulating_constraints():
     world = _world(2, 2, agents=[(0, 0)], exits=[(1, 1)])
-    solver = WorldSolver(LLEAdapter(world), T_MAX=2)
+    solver = WorldSolver(world, T_MAX=2)
 
     first_result, _ = solver.solve()
     first_clause_count = len(solver.model.cnf.clauses)

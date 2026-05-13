@@ -7,7 +7,7 @@ import numpy as np
 from lle import World
 
 from levels import LLE_LEVELS
-from solver import LLEAdapter, WorldSolver
+from solver import WorldSolver
 from solver.constraints.movements import METHOD_GLOBAL, METHOD_LOCAL
 
 METHODS = {
@@ -19,9 +19,8 @@ METHODS = {
 def run_single(world: World, t_max: int, method: str) -> dict:
     """Run solver once with profiling. Returns profiling dict."""
     world.reset()
-    adapted = LLEAdapter(world)
     solver = WorldSolver(
-        adapted,
+        world,
         T_MAX=t_max,
         enable_profiling=True,
         movement_method=method,

@@ -3,17 +3,17 @@ import pytest
 from generators.constructive_cooperative_generator import (
     ConstructiveCooperativeGenerator,
 )
-from solver import CooperationProfileAnalyzer, LLEAdapter, WorldSolver
+from solver import CooperationProfileAnalyzer, WorldSolver
 
 
 def analyze(world, t_max):
     world.reset()
-    return CooperationProfileAnalyzer(LLEAdapter(world), T_MAX=t_max).analyze()
+    return CooperationProfileAnalyzer(world, T_MAX=t_max).analyze()
 
 
 def is_satisfiable(world, t_max):
     world.reset()
-    result, _ = WorldSolver(LLEAdapter(world), T_MAX=t_max).solve()
+    result, _ = WorldSolver(world, T_MAX=t_max).solve()
     return bool(result)
 
 

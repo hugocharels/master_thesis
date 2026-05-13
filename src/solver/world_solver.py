@@ -16,7 +16,7 @@ from .constraints.movements import METHOD_LOCAL
 from .model import SATModel
 from .profiler import SolverProfiler
 from .variables import VariableFactory
-from .world_data import WorldData
+from lle import World
 
 
 class LaserMode(StrEnum):
@@ -28,7 +28,7 @@ class LaserMode(StrEnum):
 class WorldSolver:
     def __init__(
         self,
-        world: WorldData,
+        world: World,
         T_MAX: int = 10,
         *,
         laser_mode: LaserMode = LaserMode.STANDARD,

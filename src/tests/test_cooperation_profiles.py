@@ -2,13 +2,12 @@ import pytest
 from lle import World
 
 from generators.world_builder import Direction, WorldBuilder
-from solver import CooperationProfileAnalyzer, CooperationProfileResult, LLEAdapter
+from solver import CooperationProfileAnalyzer, CooperationProfileResult
 
 
 def analyze(world: World, t: int):
     world.reset()
-    adapted = LLEAdapter(world)
-    return CooperationProfileAnalyzer(adapted, T_MAX=t).analyze()
+    return CooperationProfileAnalyzer(world, T_MAX=t).analyze()
 
 
 def build_world(width, height, agents=(), exits=(), walls=(), lasers=()):

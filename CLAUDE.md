@@ -47,8 +47,8 @@ Python 3.13 is required (`requires-python = "=3.13"` in `pyproject.toml`).
 ```bash
 python3.13 -m pytest
 ruff check src/
-python3.13 src/generate.py random_solvable --size 5 5 --agents 2
-python3.13 src/generate.py random_cooperative --size 6 6 --agents 2
+python3.13 src/generate.py random --size 5 5 --agents 2
+python3.13 src/generate.py level6_style --size 13 13 --agents 4 --lasers 3 --t-max 21
 ```
 
 ## Key Design Decisions

@@ -10,7 +10,7 @@ if __package__ in (None, ""):
         runpy.run_module("scripts.test", run_name="__main__")
         raise SystemExit(0)
 
-from solver import CooperationSolver, LLEAdapter, WorldSolver
+from solver import CooperationSolver, WorldSolver
 
 from .custom_levels import CUSTOM_BENCHMARK_LEVELS
 
@@ -45,7 +45,7 @@ def main():
     plt.axis("off")
     plt.show()
 
-    print(WorldSolver(LLEAdapter(world), T_MAX=2).solve()[0])
+    print(WorldSolver(world, T_MAX=2).solve()[0])
 
 
 if __name__ == "__main__":

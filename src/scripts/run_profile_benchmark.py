@@ -25,7 +25,6 @@ from benchmark._plot_style import DEFAULT_BAR_ALPHA, apply_thesis_style
 from generators.constrained_random_cooperative_generator import ConstrainedRandomCooperativeGenerator
 from generators.constructive_cooperative_generator import ConstructiveCooperativeGenerator
 from generators.constructive_level6_style_generator import ConstructiveLevel6StyleGenerator
-from solver import LLEAdapter
 from solver.cooperation_profile_analyzer import CooperationProfileAnalyzer
 
 apply_thesis_style()
@@ -143,8 +142,7 @@ def run():
                 # --- profile analysis ---
                 t_analyze = time.perf_counter()
                 world.reset()
-                adapted = LLEAdapter(world)
-                result = CooperationProfileAnalyzer(adapted, T_MAX=t_max).analyze()
+                result = CooperationProfileAnalyzer(world, T_MAX=t_max).analyze()
                 t_analyze_total += time.perf_counter() - t_analyze
 
                 profile_counts[result.profile] += 1

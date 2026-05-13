@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 from lle import World
 from matplotlib.animation import FuncAnimation, PillowWriter
 
-from solver import LLEAdapter, WorldSolver
+from solver import WorldSolver
 
 if __package__ in (None, ""):
     from scripts.custom_levels import CUSTOM_BENCHMARK_LEVELS
@@ -100,10 +100,9 @@ def main():
     level = "5x5_agents=3_lasers=2"
 
     world = CUSTOM_BENCHMARK_LEVELS[level][0]
-    adapted = LLEAdapter(world)
 
-    solver = WorldSolver(adapted, T_MAX=CUSTOM_BENCHMARK_LEVELS[level][1])
-    # solver = WorldSolver(adapted, T_MAX=15)
+    solver = WorldSolver(world, T_MAX=CUSTOM_BENCHMARK_LEVELS[level][1])
+    # solver = WorldSolver(world, T_MAX=15)
 
     is_solvable, model = solver.solve()
     print("Solvable:", is_solvable)

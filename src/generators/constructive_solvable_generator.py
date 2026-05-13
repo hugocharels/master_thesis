@@ -5,7 +5,7 @@ from generators.constrained_random_solvable_generator import (
     ConstrainedRandomSolvableGenerator,
 )
 from generators.registry import register_generator
-from generators.world_builder import Direction
+from lle import Direction
 
 
 @register_generator("constructive_solvable")

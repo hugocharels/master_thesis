@@ -2,7 +2,8 @@
 
 from lle.lle import World
 
-from generators.world_builder import Direction, WorldBuilder
+from lle import Direction
+from generators.world_builder import WorldBuilder
 
 
 def _world(width, height, agents=(), exits=(), walls=(), lasers=()):

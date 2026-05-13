@@ -5,7 +5,8 @@ from lle import World
 
 from generators.base_generator import BaseGenerator
 from generators.registry import register_generator
-from generators.world_builder import Direction, WorldBuilder
+from lle import Direction
+from generators.world_builder import WorldBuilder
 from solver import WorldSolver
 
 

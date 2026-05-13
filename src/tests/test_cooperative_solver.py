@@ -1,7 +1,8 @@
 import pytest
 from lle import World
 
-from generators.world_builder import Direction, WorldBuilder
+from lle import Direction
+from generators.world_builder import WorldBuilder
 from levels import LLE_LEVELS
 from solver.cooperation_solver import CooperationSolver
 

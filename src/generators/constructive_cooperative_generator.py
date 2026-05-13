@@ -3,7 +3,7 @@ from __future__ import annotations
 from generators.constructive_solvable_generator import ConstructiveSolvableGenerator
 from generators.random_solvable_generator import CandidateLayout
 from generators.registry import register_generator
-from generators.world_builder import Direction
+from lle import Direction
 from solver.cooperation_profile_analyzer import CooperationProfileAnalyzer
 
 

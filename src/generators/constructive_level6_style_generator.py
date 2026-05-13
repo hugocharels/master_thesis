@@ -18,7 +18,7 @@ from __future__ import annotations
 from generators.constructive_cooperative_generator import ConstructiveCooperativeGenerator
 from generators.random_solvable_generator import CandidateLayout
 from generators.registry import register_generator
-from generators.world_builder import Direction
+from lle import Direction
 
 
 @register_generator("constructive_level6_style")

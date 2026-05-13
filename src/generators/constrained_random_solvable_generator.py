@@ -3,7 +3,7 @@ from generators.random_solvable_generator import (
     RandomSolvableGenerator,
 )
 from generators.registry import register_generator
-from generators.world_builder import Direction
+from lle import Direction
 
 
 @register_generator("constrained_random_solvable")

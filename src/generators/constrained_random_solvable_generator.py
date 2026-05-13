@@ -1,9 +1,7 @@
-from generators.random_solvable_generator import (
-    CandidateLayout,
-    RandomSolvableGenerator,
-)
+from generators.candidates import CandidateLayout
+from generators.geometry import beam_tiles, in_bounds, points_out_immediately
+from generators.random_solvable_generator import RandomSolvableGenerator
 from generators.registry import register_generator
-from lle import Direction
 
 
 @register_generator("constrained_random_solvable")
@@ -42,43 +40,13 @@ class ConstrainedRandomSolvableGenerator(RandomSolvableGenerator):
         self.debug_rejections = False
 
     def _in_bounds(self, r: int, c: int) -> bool:
-        return 0 <= r < self.rows and 0 <= c < self.cols
+        return in_bounds((r, c), self.rows, self.cols)
 
-    def _delta(self, d: Direction) -> tuple[int, int]:
-        if d == Direction.NORTH:
-            return -1, 0
-        if d == Direction.SOUTH:
-            return 1, 0
-        if d == Direction.WEST:
-            return 0, -1
-        return 0, 1  # EAST
+    def _beam_tiles(self, src, direction, wall_set, laser_set):
+        return beam_tiles(src, direction, wall_set, laser_set, self.rows, self.cols)
 
-    def _beam_tiles(
-        self,
-        src: tuple[int, int],
-        direction: Direction,
-        wall_set: set[tuple[int, int]],
-        laser_set: set[tuple[int, int]],
-    ) -> list[tuple[int, int]]:
-        dr, dc = self._delta(direction)
-        r, c = src[0] + dr, src[1] + dc
-        tiles: list[tuple[int, int]] = []
-
-        while self._in_bounds(r, c):
-            if (r, c) in wall_set or (r, c) in laser_set:
-                break
-            tiles.append((r, c))
-            r += dr
-            c += dc
-
-        return tiles
-
-    def _points_out_immediately(
-        self, src: tuple[int, int], direction: Direction
-    ) -> bool:
-        dr, dc = self._delta(direction)
-        nr, nc = src[0] + dr, src[1] + dc
-        return not self._in_bounds(nr, nc)
+    def _points_out_immediately(self, src, direction):
+        return points_out_immediately(src, direction, self.rows, self.cols)
 
     def validate_candidate(self, layout: CandidateLayout) -> tuple[bool, str]:
         ok, reason = super().validate_candidate(layout)

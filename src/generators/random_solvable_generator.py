@@ -1,20 +1,12 @@
 import random
-from dataclasses import dataclass
 
 from lle import Direction, World
 
 from generators.base_generator import BaseGenerator
+from generators.candidates import CandidateLayout
 from generators.registry import register_generator
 from generators.world_builder import WorldBuilder
 from solver import WorldSolver
-
-
-@dataclass(frozen=True)
-class CandidateLayout:
-    agents: list[tuple[int, int]]
-    exits: list[tuple[int, int]]
-    walls: list[tuple[int, int]]
-    lasers: list[tuple[int, tuple[int, int], Direction]]  # (owner, pos, dir)
 
 
 @register_generator("random_solvable")

@@ -17,9 +17,9 @@ from __future__ import annotations
 
 from lle import Direction
 
-from generators.candidates import CandidateLayout
-from generators.cooperative import CooperativeGenerator
-from generators.registry import register_generator
+from .candidates import CandidateLayout
+from .cooperative import CooperativeGenerator
+from .registry import register_generator
 
 
 @register_generator("level6_style")

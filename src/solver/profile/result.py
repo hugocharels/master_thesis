@@ -8,6 +8,8 @@ from dataclasses import dataclass
 
 @dataclass(frozen=True)
 class HelperEvent:
+    """A single blocking event where one agent shields another from a laser."""
+
     helper: int
     beneficiary: int
     time: int
@@ -17,6 +19,8 @@ class HelperEvent:
 
 @dataclass(frozen=True)
 class CooperationProfileResult:
+    """Full cooperation-profile analysis result for an LLE world."""
+
     solvable: bool
     cooperation_required: bool
     num_agents: int

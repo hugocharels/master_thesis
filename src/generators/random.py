@@ -7,11 +7,11 @@ from typing import TYPE_CHECKING
 
 from lle import World
 
-from generators.base import BaseGenerator
-from generators.candidates import CandidateLayout
-from generators.geometry import beam_tiles, in_bounds, points_out_immediately
-from generators.registry import register_generator
-from generators.world_builder import WorldBuilder
+from .base import BaseGenerator
+from .candidates import CandidateLayout
+from .geometry import beam_tiles, in_bounds, points_out_immediately
+from .registry import register_generator
+from .world_builder import WorldBuilder
 from solver import WorldSolver
 
 if TYPE_CHECKING:

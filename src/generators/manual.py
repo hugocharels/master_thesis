@@ -1,8 +1,8 @@
 from lle import Direction, World
 
-from generators.base import BaseGenerator
-from generators.registry import register_generator
-from generators.world_builder import WorldBuilder
+from .base import BaseGenerator
+from .registry import register_generator
+from .world_builder import WorldBuilder
 
 
 @register_generator("manual")

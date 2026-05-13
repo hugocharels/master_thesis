@@ -15,6 +15,8 @@ from .result import CooperationProfileResult, HelperEvent
 
 
 class CooperationProfileAnalyzer:
+    """Analyzes the cooperation profile of an LLE world and classifies its dependency structure."""
+
     def __init__(self, world: World, T_MAX: int = 10, movement_method: str = "local"):
         self.world = world
         self.T_MAX = T_MAX

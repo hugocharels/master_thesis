@@ -4,10 +4,10 @@ from __future__ import annotations
 
 from lle import Direction
 
-from generators.candidates import CandidateLayout
-from generators.geometry import beam_tiles, points_out_immediately
-from generators.random import RandomGenerator
-from generators.registry import register_generator
+from .candidates import CandidateLayout
+from .geometry import beam_tiles, points_out_immediately
+from .random import RandomGenerator
+from .registry import register_generator
 
 
 @register_generator("constructive")

@@ -20,12 +20,16 @@ from lle import World
 
 
 class LaserMode(StrEnum):
+    """Laser blocking semantics used by the SAT solver."""
+
     STANDARD = "standard"
     STRICT = "strict"
     SELECTIVE_STRICT = "selective_strict"
 
 
 class WorldSolver:
+    """SAT-based solver for LLE worlds; verifies solvability within T_MAX steps."""
+
     def __init__(
         self,
         world: World,

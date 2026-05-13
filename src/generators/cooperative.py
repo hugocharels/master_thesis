@@ -4,10 +4,10 @@ from __future__ import annotations
 
 from lle import Direction
 
-from generators.candidates import CandidateLayout
-from generators.constructive import ConstructiveGenerator
-from generators.geometry import beam_tiles, points_out_immediately
-from generators.registry import register_generator
+from .candidates import CandidateLayout
+from .constructive import ConstructiveGenerator
+from .geometry import beam_tiles, points_out_immediately
+from .registry import register_generator
 from solver import CooperationProfileAnalyzer
 
 

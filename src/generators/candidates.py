@@ -9,6 +9,8 @@ from lle import Direction
 
 @dataclass(frozen=True)
 class CandidateLayout:
+    """Immutable layout snapshot sampled by a generator before world construction."""
+
     agents: list[tuple[int, int]]
     exits: list[tuple[int, int]]
     walls: list[tuple[int, int]]

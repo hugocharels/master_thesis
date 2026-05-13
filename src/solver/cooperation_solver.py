@@ -8,6 +8,8 @@ from .world_solver import LaserMode, WorldSolver
 
 @dataclass
 class CooperationResult:
+    """Result of a cooperation analysis: whether cooperation is required."""
+
     cooperation_needed: bool
 
 

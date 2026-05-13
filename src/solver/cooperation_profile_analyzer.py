@@ -3,6 +3,8 @@ from __future__ import annotations
 from collections import defaultdict
 from dataclasses import dataclass
 
+from lle import World
+
 from ._internal.grid import is_within_bounds as _is_within_bounds
 from ._internal.types import agents_from_world, laser_sources_from_world
 from .cooperation_solver import CooperationSolver
@@ -78,7 +80,7 @@ class CooperationProfileResult:
 
 
 class CooperationProfileAnalyzer:
-    def __init__(self, world, T_MAX: int = 10, movement_method="local"):
+    def __init__(self, world: World, T_MAX: int = 10, movement_method: str = "local"):
         self.world = world
         self.T_MAX = T_MAX
         self.movement_method = movement_method

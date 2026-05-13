@@ -3,9 +3,10 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Tuple
 
-Position = Tuple[int, int]
+from lle import World
+
+Position = tuple[int, int]
 
 
 @dataclass(frozen=True)
@@ -17,15 +18,15 @@ class AgentData:
 @dataclass(frozen=True)
 class LaserSourceData:
     color: int
-    direction: Tuple[int, int]
+    direction: tuple[int, int]
     position: Position
 
 
-def agents_from_world(world) -> list[AgentData]:
+def agents_from_world(world: World) -> list[AgentData]:
     return [AgentData(color=i, position=pos) for i, pos in enumerate(world.start_pos)]
 
 
-def laser_sources_from_world(world) -> list[LaserSourceData]:
+def laser_sources_from_world(world: World) -> list[LaserSourceData]:
     return [
         LaserSourceData(
             color=src.agent_id,

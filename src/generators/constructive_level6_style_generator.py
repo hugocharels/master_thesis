@@ -28,6 +28,26 @@ class ConstructiveLevel6StyleGenerator(ConstructiveCooperativeGenerator):
     opposing sides of the grid (LLE Level 6 inspired).
     """
 
+    _FLUSH_PROB = 0.75
+
+    _WALL_SHAPES = (
+        # (weight, offsets-from-anchor)
+        (4, ((0, 0), (0, 1))),                  # bar-2 horizontal
+        (4, ((0, 0), (1, 0))),                  # bar-2 vertical
+        (1, ((0, 0), (0, 1), (0, 2))),          # bar-3 horizontal
+        (1, ((0, 0), (1, 0), (2, 0))),          # bar-3 vertical
+        (1, ((0, 0), (0, 1), (1, 0))),          # L
+        (1, ((0, 0), (0, 1), (1, 1))),
+        (1, ((0, 0), (1, 0), (1, 1))),
+        (1, ((0, 1), (1, 0), (1, 1))),
+        (2, ((0, 0), (0, 1), (1, 0), (1, 1))),  # 2x2 block
+    )
+
+    def _flush_offset(self, max_offset: int) -> int:
+        """0 (flush against the edge) most of the time, 1-cell margin sometimes."""
+        margin = 0 if self._rng.random() < self._FLUSH_PROB else 1
+        return min(margin, max(0, max_offset))
+
     def _cluster_shape(self) -> tuple[int, int]:
         """Return (rows, cols) of the cluster rectangle to fit ``self.agents`` cells."""
         n = self.agents
@@ -63,8 +83,9 @@ class ConstructiveLevel6StyleGenerator(ConstructiveCooperativeGenerator):
                 return None
             start_row_max = max(0, third - cluster_h)
             exit_row_min = self.rows - third
-            start_row = self._rng.randint(0, start_row_max)
-            exit_row = self._rng.randint(exit_row_min, self.rows - cluster_h)
+            exit_row_slack = max(0, self.rows - cluster_h - exit_row_min)
+            start_row = self._flush_offset(start_row_max)
+            exit_row = self.rows - cluster_h - self._flush_offset(exit_row_slack)
             start_col = self._rng.randint(0, self.cols - cluster_w)
             exit_col = self._rng.randint(0, self.cols - cluster_w)
             start_tl = (start_row, start_col)
@@ -76,8 +97,9 @@ class ConstructiveLevel6StyleGenerator(ConstructiveCooperativeGenerator):
                 return None
             start_col_max = max(0, third - cluster_w)
             exit_col_min = self.cols - third
-            start_col = self._rng.randint(0, start_col_max)
-            exit_col = self._rng.randint(exit_col_min, self.cols - cluster_w)
+            exit_col_slack = max(0, self.cols - cluster_w - exit_col_min)
+            start_col = self._flush_offset(start_col_max)
+            exit_col = self.cols - cluster_w - self._flush_offset(exit_col_slack)
             start_row = self._rng.randint(0, self.rows - cluster_h)
             exit_row = self._rng.randint(0, self.rows - cluster_h)
             start_tl = (start_row, start_col)
@@ -133,16 +155,14 @@ class ConstructiveLevel6StyleGenerator(ConstructiveCooperativeGenerator):
                 reserved.add(src)
                 lasers.append((i, src, direction))
 
-        # Place walls in the remaining free cells, subject to budget.
+        # Place walls as connected mini-shapes (bars / L / 2x2), within budget.
         free_cells = [
             (r, c)
             for r in range(self.rows)
             for c in range(self.cols)
             if (r, c) not in reserved
         ]
-        self._rng.shuffle(free_cells)
-        wall_count = min(self.num_walls, len(free_cells))
-        walls = free_cells[:wall_count]
+        walls = self._place_wall_shapes(free_cells, self.num_walls)
 
         return CandidateLayout(
             agents=agent_cells,
@@ -150,6 +170,41 @@ class ConstructiveLevel6StyleGenerator(ConstructiveCooperativeGenerator):
             walls=walls,
             lasers=lasers,
         )
+
+    def _place_wall_shapes(
+        self,
+        free_cells: list[tuple[int, int]],
+        budget: int,
+    ) -> list[tuple[int, int]]:
+        """Place walls as connected mini-shapes (bars / L / 2x2), within budget."""
+        free_set = set(free_cells)
+        anchors = list(free_cells)
+        self._rng.shuffle(anchors)
+        weights = [w for w, _ in self._WALL_SHAPES]
+        shapes = [s for _, s in self._WALL_SHAPES]
+        walls: list[tuple[int, int]] = []
+
+        for anchor in anchors:
+            if budget <= 0:
+                break
+            if anchor not in free_set:
+                continue
+            chosen_cells: list[tuple[int, int]] | None = None
+            for shape in self._rng.choices(shapes, weights=weights, k=4):
+                if len(shape) > budget:
+                    continue
+                cells = [(anchor[0] + dr, anchor[1] + dc) for dr, dc in shape]
+                if all(cell in free_set for cell in cells):
+                    chosen_cells = cells
+                    break
+            if chosen_cells is None:
+                chosen_cells = [anchor]
+            for cell in chosen_cells:
+                free_set.discard(cell)
+            walls.extend(chosen_cells)
+            budget -= len(chosen_cells)
+
+        return walls
 
     def _failure_description(self) -> str:
         return "a valid level-6-style cooperative world"

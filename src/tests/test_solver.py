@@ -1,6 +1,5 @@
 import pytest
 from lle import Direction, World
-from pysat.solvers import Minisat22
 
 from generators.world_builder import WorldBuilder
 from solver import WorldSolver

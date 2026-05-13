@@ -1,4 +1,3 @@
-from lle.lle import World
 
 import runpy
 import sys
@@ -10,9 +9,8 @@ if __package__ in (None, ""):
         runpy.run_module("scripts.test", run_name="__main__")
         raise SystemExit(0)
 
-from solver import CooperationSolver, WorldSolver
+from solver import WorldSolver
 
-from .custom_levels import CUSTOM_BENCHMARK_LEVELS
 
 
 def main():

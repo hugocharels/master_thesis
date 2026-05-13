@@ -266,7 +266,6 @@ def _bar_with_failure_annotations(ax, x, values, errs, gens, gen_labels, sizes, 
 def _make_plots(results: dict):
     sizes = ["3x3", "5x5", "8x8"]
     x = np.arange(len(sizes))
-    width = 0.35
 
     # --- Plot 1: Rejection rate, single panel with value labels ---
     generators = list(results.keys())

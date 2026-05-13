@@ -9,13 +9,13 @@ from lle import World
 
 from .base import BaseGenerator
 from .candidates import CandidateLayout
-from .geometry import beam_tiles, in_bounds, points_out_immediately
+from .geometry import beam_tiles, points_out_immediately
 from .registry import register_generator
 from .world_builder import WorldBuilder
 from solver import WorldSolver
 
 if TYPE_CHECKING:
-    from solver import CooperationProfileAnalyzer  # for typing only
+    pass  # for typing only
 
 
 @register_generator("random")

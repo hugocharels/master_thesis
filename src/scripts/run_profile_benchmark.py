@@ -120,8 +120,6 @@ def run():
             t_analyze_total = 0.0
 
             while accepted < target and (accepted + rejected) < max_total_attempts:
-                total_so_far = accepted + rejected
-
                 # --- generation attempt ---
                 t_gen = time.perf_counter()
                 try:

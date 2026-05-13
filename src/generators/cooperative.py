@@ -1,26 +1,31 @@
+"""Constructive cooperative generator: enforces cooperation requirement via profile filter."""
+
 from __future__ import annotations
 
-from generators.constructive_solvable_generator import ConstructiveSolvableGenerator
-from generators.random_solvable_generator import CandidateLayout
-from generators.registry import register_generator
 from lle import Direction
+
+from generators.candidates import CandidateLayout
+from generators.constructive import ConstructiveGenerator
+from generators.geometry import beam_tiles, points_out_immediately
+from generators.registry import register_generator
 from solver import CooperationProfileAnalyzer
 
 
-@register_generator("constructive_cooperative")
-class ConstructiveCooperativeGenerator(ConstructiveSolvableGenerator):
+@register_generator("cooperative")
+class CooperativeGenerator(ConstructiveGenerator):
     """
-    Constructive cooperative generator.
+    Constructive solvable generator that additionally enforces a cooperation
+    profile requirement. SAT is still used as the final verifier.
 
-    Builds a level around a deliberate same-colour laser-blocking dependency:
-    one helper lane is crossed before a beneficiary lane by a vertical beam,
-    so the helper must block its own-colour beam to let the beneficiary pass.
-    SAT is still used as the final verifier and cooperation classifier.
+    The constructive layout places a deliberate same-colour laser-blocking
+    dependency: a structural laser at row 0 points SOUTH across all agent
+    lanes, so the helper must block its own-colour beam to let the beneficiary
+    pass. SAT is still used as the final verifier and cooperation classifier.
     """
 
     @staticmethod
     def add_arguments(parser):
-        ConstructiveSolvableGenerator.add_arguments(parser)
+        ConstructiveGenerator.add_arguments(parser)
         parser.add_argument(
             "--profile",
             choices=["cooperative", "asymmetric"],
@@ -37,6 +42,8 @@ class ConstructiveCooperativeGenerator(ConstructiveSolvableGenerator):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.profile = "cooperative"
+
+    # ----- cooperative layout strategy -----
 
     def _make_constructive_candidate_layout(self) -> CandidateLayout | None:
         if self.agents < 2 or self.rows < self.agents + 1 or self.cols < 4:
@@ -111,28 +118,30 @@ class ConstructiveCooperativeGenerator(ConstructiveSolvableGenerator):
                 Direction.EAST,
                 Direction.WEST,
             ]:
-                if self._points_out_immediately(pos, direction):
+                if points_out_immediately(pos, direction, self.rows, self.cols):
                     continue
-                beam_tiles = self._beam_tiles(pos, direction, set(), used_sources)
-                if not beam_tiles:
+                tiles = beam_tiles(pos, direction, set(), used_sources, self.rows, self.cols)
+                if not tiles:
                     continue
-                if any(tile in reserved for tile in beam_tiles):
+                if any(tile in reserved for tile in tiles):
                     continue
-                candidates.append((pos, direction, beam_tiles))
+                candidates.append((pos, direction, tiles))
 
         self._rng.shuffle(candidates)
 
-        for pos, direction, beam_tiles in candidates:
+        for pos, direction, tiles in candidates:
             if len(placed) >= count:
                 break
             if pos in used_sources:
                 continue
-            if any(existing in beam_tiles for existing in used_sources):
+            if any(existing in tiles for existing in used_sources):
                 continue
             placed.append((1 + len(placed), pos, direction))
             used_sources.add(pos)
 
         return placed
+
+    # ----- profile acceptance -----
 
     def _analyze_profile(self, world):
         world.reset()
@@ -142,14 +151,12 @@ class ConstructiveCooperativeGenerator(ConstructiveSolvableGenerator):
         accepted, reason = super()._accept_world(world)
         if not accepted:
             return accepted, reason
-
         analysis = self._analyze_profile(world)
         if not analysis.matches_profile(self.profile):
             return (
                 False,
                 f"profile={analysis.profile}, required={self.profile}",
             )
-
         return True, f"profile={analysis.profile}, constructive_cooperative"
 
     def _failure_description(self) -> str:

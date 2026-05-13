@@ -3,7 +3,7 @@ import pytest
 from benchmark.plots import _sort_level_keys as plot_sort_level_keys
 from benchmark.report import _sort_level_keys as report_sort_level_keys
 from benchmark.runner import run_benchmark
-from generators.random_solvable_generator import RandomSolvableGenerator
+from generators.random import RandomGenerator
 
 
 @pytest.mark.parametrize(
@@ -29,7 +29,7 @@ from generators.random_solvable_generator import RandomSolvableGenerator
 )
 def test_random_solvable_generator_validates_invalid_inputs(kwargs, match):
     with pytest.raises(ValueError, match=match):
-        RandomSolvableGenerator(**kwargs)
+        RandomGenerator(**kwargs)
 
 
 def test_sort_level_keys_orders_numeric_values_numerically():

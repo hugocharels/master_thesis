@@ -1,22 +1,21 @@
+"""Constructive generator: reserves one lane per agent for a constructive solvability proof."""
+
 from __future__ import annotations
 
-from generators.constrained_random_solvable_generator import (
-    CandidateLayout,
-    ConstrainedRandomSolvableGenerator,
-)
-from generators.registry import register_generator
 from lle import Direction
 
+from generators.candidates import CandidateLayout
+from generators.geometry import beam_tiles, points_out_immediately
+from generators.random import RandomGenerator
+from generators.registry import register_generator
 
-@register_generator("constructive_solvable")
-class ConstructiveSolvableGenerator(ConstrainedRandomSolvableGenerator):
+
+@register_generator("constructive")
+class ConstructiveGenerator(RandomGenerator):
     """
-    Constructive solvable generator.
-
-    Instead of sampling a full layout blindly, it first reserves one disjoint
-    lane per agent so a joint solution exists by construction, then places
-    walls and lasers only outside those lanes. SAT is still used as a final
-    verifier before acceptance.
+    Reserves one disjoint lane per agent so a joint solution exists by
+    construction, then places walls and lasers only outside those lanes.
+    SAT is still used as a final verifier.
     """
 
     @classmethod
@@ -41,10 +40,8 @@ class ConstructiveSolvableGenerator(ConstrainedRandomSolvableGenerator):
             orientations.append(("horizontal", self.area - self.agents * self.cols))
         if self.cols >= self.agents:
             orientations.append(("vertical", self.area - self.agents * self.rows))
-
         if not orientations:
             return None
-
         orientations.sort(key=lambda item: item[1], reverse=True)
         for orientation, free_cells in orientations:
             if free_cells < self.num_walls + self.lasers:
@@ -72,10 +69,8 @@ class ConstructiveSolvableGenerator(ConstrainedRandomSolvableGenerator):
             for col in range(self.cols)
             if (row, col) not in reserved
         ]
-
         if len(free_positions) < self.num_walls + self.lasers:
             return None
-
         self._rng.shuffle(free_positions)
         walls = free_positions[: self.num_walls]
         laser_pool = free_positions[self.num_walls :]
@@ -87,55 +82,44 @@ class ConstructiveSolvableGenerator(ConstrainedRandomSolvableGenerator):
         )
         if lasers is None:
             return None
-
         return CandidateLayout(
-            agents=agents,
-            exits=exits,
-            walls=walls,
-            lasers=lasers,
+            agents=agents, exits=exits, walls=walls, lasers=lasers
         )
 
-    def _place_safe_lasers(
-        self,
-        reserved: set[tuple[int, int]],
-        wall_positions: list[tuple[int, int]],
-        candidate_positions: list[tuple[int, int]],
-    ) -> list[tuple[int, tuple[int, int], Direction]] | None:
+    def _place_safe_lasers(self, reserved, wall_positions, candidate_positions):
         walls = set(wall_positions)
         used_sources: set[tuple[int, int]] = set()
         lasers: list[tuple[int, tuple[int, int], Direction]] = []
-
         candidates = []
         for pos in candidate_positions:
-            for direction in [
+            for direction in (
                 Direction.NORTH,
                 Direction.SOUTH,
                 Direction.EAST,
                 Direction.WEST,
-            ]:
-                if self._points_out_immediately(pos, direction):
+            ):
+                if points_out_immediately(pos, direction, self.rows, self.cols):
                     continue
-                beam_tiles = self._beam_tiles(pos, direction, walls, used_sources)
-                if not beam_tiles:
+                tiles = beam_tiles(
+                    pos, direction, walls, used_sources, self.rows, self.cols
+                )
+                if not tiles:
                     continue
-                if any(tile in reserved for tile in beam_tiles):
+                if any(tile in reserved for tile in tiles):
                     continue
-                candidates.append((pos, direction, beam_tiles))
-
+                candidates.append((pos, direction, tiles))
         self._rng.shuffle(candidates)
-
-        for pos, direction, beam_tiles in candidates:
+        for pos, direction, tiles in candidates:
             if len(lasers) >= self.lasers:
                 break
             if pos in used_sources:
                 continue
-            if any(existing_pos in beam_tiles for _, existing_pos, _ in lasers):
+            if any(existing_pos in tiles for _, existing_pos, _ in lasers):
                 continue
-            if any(tile in reserved for tile in beam_tiles):
+            if any(tile in reserved for tile in tiles):
                 continue
             lasers.append((len(lasers), pos, direction))
             used_sources.add(pos)
-
         if len(lasers) != self.lasers:
             return None
         return lasers

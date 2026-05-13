@@ -22,17 +22,17 @@ import numpy as np
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from benchmark._plot_style import DEFAULT_BAR_ALPHA, apply_thesis_style
-from generators.constrained_random_cooperative_generator import ConstrainedRandomCooperativeGenerator
-from generators.constructive_cooperative_generator import ConstructiveCooperativeGenerator
-from generators.constructive_level6_style_generator import ConstructiveLevel6StyleGenerator
+from generators.cooperative import CooperativeGenerator
+from generators.level6_style import Level6StyleGenerator
+from generators.random import ConstrainedRandomCooperativeGenerator
 from solver import CooperationProfileAnalyzer
 
 apply_thesis_style()
 
 GENERATOR_LABELS = {
-    "constrained_random_cooperative": "Constrained random (cooperative)",
-    "constructive_cooperative": "Constructive (cooperative)",
-    "constructive_level6_style": "Constructive (Level-6 style)",
+    "constrained_random_cooperative": "Random (geom-validated) + cooperation",
+    "cooperative": "Constructive (cooperative)",
+    "level6_style": "Constructive (Level-6 style)",
 }
 
 PROFILE_LABELS = {
@@ -59,8 +59,8 @@ ALL_PROFILES = ["asymmetric", "mutual", "chain", "distributed", "fully_coupled",
 
 GENERATOR_SPECS = {
     "constrained_random_cooperative": ConstrainedRandomCooperativeGenerator,
-    "constructive_cooperative": ConstructiveCooperativeGenerator,
-    "constructive_level6_style": ConstructiveLevel6StyleGenerator,
+    "cooperative": CooperativeGenerator,
+    "level6_style": Level6StyleGenerator,
 }
 
 

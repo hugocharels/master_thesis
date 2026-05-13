@@ -6,7 +6,7 @@ opposing sides of the grid (top vs bottom, or left vs right, chosen at random).
 Lasers are placed inside the corridor between the two clusters, crossing it
 perpendicular to the cluster axis, so that any agent path between the clusters
 must cross at least some laser beams. SAT verification (inherited from
-ConstructiveCooperativeGenerator) decides cooperation requirement and profile
+CooperativeGenerator) decides cooperation requirement and profile
 matching.
 
 Inspired by LLE Level 6 (clustered starts/exits, walls, multiple lasers blocking
@@ -15,14 +15,15 @@ the central corridor).
 
 from __future__ import annotations
 
-from generators.constructive_cooperative_generator import ConstructiveCooperativeGenerator
-from generators.random_solvable_generator import CandidateLayout
-from generators.registry import register_generator
 from lle import Direction
 
+from generators.candidates import CandidateLayout
+from generators.cooperative import CooperativeGenerator
+from generators.registry import register_generator
 
-@register_generator("constructive_level6_style")
-class ConstructiveLevel6StyleGenerator(ConstructiveCooperativeGenerator):
+
+@register_generator("level6_style")
+class Level6StyleGenerator(CooperativeGenerator):
     """
     Constructive cooperative generator with clustered starts and exits on
     opposing sides of the grid (LLE Level 6 inspired).

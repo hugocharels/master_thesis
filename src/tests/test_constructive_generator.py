@@ -1,6 +1,6 @@
 import pytest
 
-from generators.constructive_solvable_generator import ConstructiveSolvableGenerator
+from generators.constructive import ConstructiveGenerator
 from solver import WorldSolver
 
 
@@ -13,7 +13,7 @@ def is_satisfiable(world, t_max):
 
 @pytest.mark.parametrize("seed", list(range(10)))
 def test_constructive_generator_produces_satisfiable_worlds(seed):
-    generator = ConstructiveSolvableGenerator(
+    generator = ConstructiveGenerator(
         size=(6, 6),
         agents=2,
         lasers=1,
@@ -41,7 +41,7 @@ def test_constructive_generator_produces_satisfiable_worlds(seed):
 def test_constructive_generator_supports_multiple_grid_shapes(
     rows, cols, agents, lasers, num_walls, t_max
 ):
-    generator = ConstructiveSolvableGenerator(
+    generator = ConstructiveGenerator(
         size=(rows, cols),
         agents=agents,
         lasers=lasers,
@@ -57,7 +57,7 @@ def test_constructive_generator_supports_multiple_grid_shapes(
 
 
 def test_constructive_generator_respects_t_min_window():
-    generator = ConstructiveSolvableGenerator(
+    generator = ConstructiveGenerator(
         size=(6, 6),
         agents=2,
         lasers=0,
@@ -75,7 +75,7 @@ def test_constructive_generator_respects_t_min_window():
 
 
 def test_constructive_generator_often_accepts_first_attempt_on_easy_instance():
-    generator = ConstructiveSolvableGenerator(
+    generator = ConstructiveGenerator(
         size=(6, 6),
         agents=2,
         lasers=1,

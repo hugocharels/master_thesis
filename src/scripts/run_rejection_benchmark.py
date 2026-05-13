@@ -25,21 +25,23 @@ import numpy as np
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from benchmark._plot_style import DEFAULT_BAR_ALPHA, apply_thesis_style
-from generators.constrained_random_cooperative_generator import ConstrainedRandomCooperativeGenerator
-from generators.constrained_random_solvable_generator import ConstrainedRandomSolvableGenerator
-from generators.constructive_cooperative_generator import ConstructiveCooperativeGenerator
-from generators.constructive_level6_style_generator import ConstructiveLevel6StyleGenerator
-from generators.constructive_solvable_generator import ConstructiveSolvableGenerator
+from generators.constructive import ConstructiveGenerator
+from generators.cooperative import CooperativeGenerator
+from generators.level6_style import Level6StyleGenerator
+from generators.random import (
+    ConstrainedRandomCooperativeGenerator,
+    RandomGenerator,
+)
 
 apply_thesis_style()
 
 # Human-readable labels for the legend (no underscores, no jargon).
 GENERATOR_LABELS = {
-    "constrained_random_solvable": "Constrained random (solvable)",
-    "constrained_random_cooperative": "Constrained random (cooperative)",
-    "constructive_solvable": "Constructive (solvable)",
-    "constructive_cooperative": "Constructive (cooperative)",
-    "constructive_level6_style": "Constructive (Level-6 style)",
+    "random": "Random (geom-validated)",
+    "constrained_random_cooperative": "Random (geom-validated) + cooperation",
+    "constructive": "Constructive (solvable)",
+    "cooperative": "Constructive (cooperative)",
+    "level6_style": "Constructive (Level-6 style)",
 }
 
 # ---------------------------------------------------------------------------
@@ -60,11 +62,11 @@ CONFIGS = [
 ]
 
 GENERATOR_SPECS = {
-    "constrained_random_solvable": ConstrainedRandomSolvableGenerator,
+    "random": RandomGenerator,                 # was constrained_random_solvable
     "constrained_random_cooperative": ConstrainedRandomCooperativeGenerator,
-    "constructive_solvable": ConstructiveSolvableGenerator,
-    "constructive_cooperative": ConstructiveCooperativeGenerator,
-    "constructive_level6_style": ConstructiveLevel6StyleGenerator,
+    "constructive": ConstructiveGenerator,     # was constructive_solvable
+    "cooperative": CooperativeGenerator,       # was constructive_cooperative
+    "level6_style": Level6StyleGenerator,      # was constructive_level6_style
 }
 
 OUTPUT_DIR = Path(__file__).parent.parent.parent / "results" / "rejection_benchmark"
@@ -224,8 +226,8 @@ def run():
 # Plots
 # ---------------------------------------------------------------------------
 
-SOLVABLE_GENS = ["constrained_random_solvable", "constructive_solvable"]
-COOPERATIVE_GENS = ["constrained_random_cooperative", "constructive_cooperative"]
+SOLVABLE_GENS = ["random", "constructive"]
+COOPERATIVE_GENS = ["constrained_random_cooperative", "cooperative"]
 
 
 def _failure_note(data: dict) -> str:

@@ -1,8 +1,6 @@
 import pytest
 
-from generators.constructive_cooperative_generator import (
-    ConstructiveCooperativeGenerator,
-)
+from generators.cooperative import CooperativeGenerator
 from solver import CooperationProfileAnalyzer, WorldSolver
 
 
@@ -19,7 +17,7 @@ def is_satisfiable(world, t_max):
 
 @pytest.mark.parametrize("seed", list(range(5)))
 def test_constructive_cooperative_generator_produces_cooperative_worlds(seed):
-    generator = ConstructiveCooperativeGenerator(
+    generator = CooperativeGenerator(
         size=(5, 6),
         agents=2,
         lasers=1,
@@ -39,7 +37,7 @@ def test_constructive_cooperative_generator_produces_cooperative_worlds(seed):
 
 
 def test_constructive_cooperative_generator_supports_three_agents():
-    generator = ConstructiveCooperativeGenerator(
+    generator = CooperativeGenerator(
         size=(6, 7),
         agents=3,
         lasers=1,
@@ -58,7 +56,7 @@ def test_constructive_cooperative_generator_supports_three_agents():
 
 
 def test_constructive_cooperative_generator_accepts_asymmetric_profile():
-    generator = ConstructiveCooperativeGenerator(
+    generator = CooperativeGenerator(
         size=(5, 6),
         agents=2,
         lasers=1,
@@ -76,7 +74,7 @@ def test_constructive_cooperative_generator_accepts_asymmetric_profile():
 
 
 def test_constructive_cooperative_generator_often_accepts_first_attempt():
-    generator = ConstructiveCooperativeGenerator(
+    generator = CooperativeGenerator(
         size=(5, 6),
         agents=2,
         lasers=1,

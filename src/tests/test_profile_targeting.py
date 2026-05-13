@@ -2,16 +2,15 @@
 Tests for profile targeting in cooperative generators.
 
 Verifies that RandomCooperativeGenerator, ConstrainedRandomCooperativeGenerator,
-and ConstructiveCooperativeGenerator correctly accept the --profile argument
+and CooperativeGenerator correctly accept the --profile argument
 and that accepted levels match the requested profile.
 """
 
 import pytest
 from lle import World
 
-from generators.constrained_random_cooperative_generator import ConstrainedRandomCooperativeGenerator
-from generators.constructive_cooperative_generator import ConstructiveCooperativeGenerator
-from generators.random_cooperative_generator import RandomCooperativeGenerator
+from generators.random import ConstrainedRandomCooperativeGenerator, RandomCooperativeGenerator
+from generators.cooperative import CooperativeGenerator
 from solver import CooperationProfileAnalyzer
 
 
@@ -39,7 +38,7 @@ def make_constrained_cooperative(**kwargs):
 def make_constructive_cooperative(**kwargs):
     defaults = dict(size=(6, 6), agents=2, lasers=1, t_max=15, max_attempts=200, seed=7)
     defaults.update(kwargs)
-    return ConstructiveCooperativeGenerator(**defaults)
+    return CooperativeGenerator(**defaults)
 
 
 # ---------------------------------------------------------------------------

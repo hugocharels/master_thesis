@@ -1,5 +1,6 @@
 import pytest
-from lle import Direction, World
+from lle import World
+from lle.tiles import Direction
 
 from generators.world_builder import WorldBuilder
 from solver import CooperationProfileAnalyzer, CooperationProfileResult

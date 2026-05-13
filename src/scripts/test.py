@@ -28,7 +28,7 @@ def main():
     # result = solver.analyze().cooperation_needed
     # print(f"Cooperation needed for {level}: {result}")
 
-    from lle import Direction
+    from lle.tiles import Direction
     from generators.world_builder import WorldBuilder
 
     builder = WorldBuilder(3, 3)

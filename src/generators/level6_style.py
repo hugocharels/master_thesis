@@ -15,7 +15,7 @@ the central corridor).
 
 from __future__ import annotations
 
-from lle import Direction
+from lle.tiles import Direction
 
 from .candidates import CandidateLayout
 from .cooperative import CooperativeGenerator

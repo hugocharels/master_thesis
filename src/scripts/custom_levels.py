@@ -2,7 +2,7 @@
 
 from lle.lle import World
 
-from lle import Direction
+from lle.tiles import Direction
 from generators.world_builder import WorldBuilder
 
 

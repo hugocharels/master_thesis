@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from lle import Direction
+from lle.tiles import Direction
 
 Position = tuple[int, int]
 

@@ -147,7 +147,7 @@ class RandomGenerator(BaseGenerator):
         return self._rng.sample(all_positions, k)
 
     def _random_direction(self):
-        from lle import Direction
+        from lle.tiles import Direction
         return self._rng.choice(
             [Direction.NORTH, Direction.SOUTH, Direction.EAST, Direction.WEST]
         )

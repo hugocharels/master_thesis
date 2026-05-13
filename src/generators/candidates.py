@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from lle import Direction
+from lle.tiles import Direction
 
 
 @dataclass(frozen=True)

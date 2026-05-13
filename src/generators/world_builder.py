@@ -7,7 +7,8 @@ to get a real lle.World. The LLE string format is an internal detail.
 
 from __future__ import annotations
 
-from lle import Direction, World
+from lle import World
+from lle.tiles import Direction
 
 Position = tuple[int, int]
 

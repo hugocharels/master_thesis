@@ -145,7 +145,7 @@ This is the lowest-risk path and fits the current codebase.
 You already have:
 
 - `WorldSolver`: decides solvability and returns a model
-- `WorldSolverStrictLaser`: removes same-colour blocking
+- `WorldSolver(world, laser_mode=LaserMode.STRICT)`: removes same-colour blocking
 - `CooperationSolver`: binary cooperation check
 
 That means the hard formal machinery already exists.

@@ -11,24 +11,25 @@ The subject is procedural generation of solvable, cooperative levels for the Las
 ```
 src/
   solver/                         SAT-based solver (pysat / Minisat22)
-    world_data.py                 WorldData Protocol — solver/LLE boundary (do not break)
-    adapter.py                    LLEAdapter: wraps lle.World as WorldData
-    world_solver.py               WorldSolver: builds CNF model, calls SAT solver
-    world_solver_strict_laser.py  Variant: agents cannot block their own color laser
-    cooperation_solver.py         Detects cooperation requirement (UNSAT strict = needs cooperation)
+    world_solver.py               WorldSolver with laser_mode param (standard / strict / selective_strict)
+    cooperation_solver.py         Binary "needs cooperation?" check
+    profile/                      Cooperation-profile analysis
+      result.py                   HelperEvent, CooperationProfileResult dataclasses
+      graph_metrics.py            SCC, longest chain, synchronous width (pure functions)
+      analyzer.py                 CooperationProfileAnalyzer orchestrator
     constraints/                  SAT constraint modules
-    variables.py                  VariableFactory wrapping pysat IDPool
-    model.py                      SATModel: thin CNF wrapper
-    profiler.py                   SolverProfiler for timing
+    _internal/                    pysat plumbing (SATModel, VariableFactory, SolverProfiler, grid + value helpers)
   generators/                     Level generators
-    base_generator.py             Abstract BaseGenerator
+    base.py                       Abstract BaseGenerator
     registry.py                   @register_generator decorator + generator lookup
     world_builder.py              Programmatic lle.World construction
-    random_solvable_generator.py
-    constrained_random_solvable_generator.py
-    random_cooperative_generator.py
-    constrained_random_cooperative_generator.py
-    manual_generator.py
+    geometry.py                   Pure grid-geometry helpers (beam_tiles, etc.)
+    candidates.py                 CandidateLayout dataclass
+    random.py                     RandomGenerator + thesis-only Random{,Constrained}Cooperative variants
+    constructive.py               ConstructiveGenerator (lane-based)
+    cooperative.py                CooperativeGenerator (cooperation profile filter)
+    level6_style.py               Level6StyleGenerator (clustered starts/exits, LLE Level 6 inspired)
+    manual.py                     ManualGenerator
   benchmark/                      Benchmarking runner, plots, report generation
   scripts/                        Demo and utility scripts
   tests/                          pytest test suite
@@ -52,9 +53,13 @@ python3.13 src/generate.py random_cooperative --size 6 6 --agents 2
 
 ## Key Design Decisions
 
-### WorldData Protocol
+### Direct lle.World use
 
-`WorldData` is a structural Protocol that decouples the solver from LLE entirely. The solver never imports `lle` directly. `LLEAdapter` bridges `lle.World` to `WorldData`. New level sources must implement this Protocol.
+The solver imports `lle.World` directly. Grid helpers (`all_positions`,
+`is_within_bounds`, `get_neighbors`) live in `solver/_internal/grid.py`.
+Agent and laser-source field names are accessed via thin value-type
+adapters in `solver/_internal/types.py` (`agents_from_world`,
+`laser_sources_from_world`).
 
 ### Cooperation Definition
 
@@ -66,7 +71,7 @@ Levels encoded as CNF over timesteps `T=0..T_MAX`. Variables represent agent pos
 
 ### Generator Pattern
 
-Extend `BaseGenerator`, register with `@register_generator`, expose `from_args(cls, args)` classmethod for CLI wiring.
+Extend `BaseGenerator` (in `generators/base.py`), register with `@register_generator`, expose `from_args(cls, args)` classmethod for CLI wiring. Key generators: `RandomGenerator`, `ConstructiveGenerator`, `CooperativeGenerator`, `Level6StyleGenerator`, `ManualGenerator`. Geometric validation is enabled by default in `RandomGenerator` (replaces the old `ConstrainedRandomSolvableGenerator`). Strict-laser mode is selected via `WorldSolver(world, laser_mode=LaserMode.STRICT)` rather than a separate class.
 
 ### Constraint Pattern
 

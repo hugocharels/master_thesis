@@ -85,18 +85,18 @@ pytest src/tests/
 ### 1. SAT-Based Solver
 
 - CNF encoding of LLE levels over timesteps T=0..T_MAX
-- `WorldSolver`: checks solvability via Minisat
-- `WorldSolverStrictLaser`: variant where agents cannot block their own-color lasers
+- `WorldSolver`: checks solvability via Minisat; laser strictness selected via `laser_mode` param
+- `WorldSolver(world, laser_mode=LaserMode.STRICT)`: variant where agents cannot block their own-color lasers
 - `CooperationSolver`: detects cooperation requirement (solvable normally but not with strict lasers)
-- `WorldData` Protocol: clean boundary between solver and LLE
+- Solver takes `lle.World` directly (no separate WorldData abstraction layer)
 
 ### 2. Level Generation Framework
 
 - Modular generator architecture (`BaseGenerator` + `@register_generator`)
-- `RandomSolvableGenerator`: random sampling with SAT filter
-- `ConstrainedRandomSolvableGenerator`: adds geometric constraints (beam length, exit placement)
-- `RandomCooperativeGenerator`: adds cooperation filter
-- `ConstrainedRandomCooperativeGenerator`: combines both filters
+- `RandomGenerator`: random sampling with SAT filter; geometric validation enabled by default
+- `CooperativeGenerator`: adds cooperation filter using cooperation profile analysis
+- `ConstructiveGenerator`: lane-based constructive generation
+- `Level6StyleGenerator`: clustered starts/exits, LLE Level 6 inspired
 - `WorldBuilder`: programmatic level construction
 
 ### 3. Benchmarking Tools

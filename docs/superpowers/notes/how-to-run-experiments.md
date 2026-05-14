@@ -74,6 +74,8 @@ Get-Content results\curriculum_experiment_smoke\runs\B3_IQL_seed0\level6_eval.cs
 
 If both files exist and the JSON contains `success_rate_level6` (probably `0.0` at 5k steps — that's fine; we're checking the pipeline, not learning), the smoke is green. **Delete `results/curriculum_experiment_smoke/` afterwards** — don't pollute your real output dir.
 
+The runner also writes `checkpoints/step_*` subfolders every 100k env steps; for a 5k smoke you'll see no checkpoints (the cadence hasn't fired). To exercise the resume path manually, kill a longer run and re-launch it with the same `--condition / --algo / --seed / --out-dir` — see "Resuming an interrupted run" below.
+
 If you want a longer end-to-end smoke that actually exercises the curriculum scheduler (~30–60 min):
 ```powershell
 & $PY -m experiments.curriculum.run_experiment `
@@ -81,6 +83,35 @@ If you want a longer end-to-end smoke that actually exercises the curriculum sch
     --out-dir results\curriculum_experiment_smoke
 ```
 Verify `stage_progress.csv` shows at least one stage transition.
+
+---
+
+## Resuming an interrupted run
+
+Each run dir contains `checkpoints/step_<10-digit-step>/` subfolders written every **100k env steps** (a single 1.5M-step run produces ~15 checkpoints, of which only the **2 latest are kept** — older ones are pruned automatically). Each checkpoint stores:
+
+- `trainer/` — full trainer weights via marl's `trainer.save()`.
+- `scheduler.json` — `StageScheduler.state_dict()` (CURR only).
+- `progress.json` — `{step, episode, wall_clock_seconds}` cursor.
+
+**Disk usage:** ~150–500MB per run for the 2 retained checkpoints (depends on Q-network / mixer size; QMix > VDN ≈ IQL).
+
+**To resume**: just re-launch the *exact same command* (same `--condition`, `--algo`, `--seed`, `--out-dir`):
+
+```powershell
+& $PY -m experiments.curriculum.run_experiment `
+    --condition CURR --algo QMIX --seed 0 --steps 1500000
+```
+
+The runner detects `checkpoints/step_*` automatically, loads the latest one, prints `Resuming from step <N>, episode <M>, stage <S>` to stderr, truncates `level6_eval.csv` and `stage_progress.csv` to rows with `step <= checkpoint_step` (so no duplicate / inconsistent rows), and continues training. `final_results.json` is only written on clean completion of the full step budget.
+
+**Edge cases / gotchas:**
+
+- **Same `--seed` is required.** Resume uses the trainer/optimizer/replay weights from disk, but the runner re-seeds Python/numpy/torch from `--seed` at startup. Changing the seed only affects fresh streams (e.g. eval RNG); the *trained* state still comes from the checkpoint. Result: a mismatched seed produces a hybrid run that is non-reproducible — **don't do it**.
+- **Changing `--steps` mid-resume**: increasing it just keeps training longer (the eval / checkpoint cadences continue from where they left off); decreasing it below the checkpointed step value will exit immediately at the top of the loop and write `final_results.json` from the resumed state.
+- **Changing `--condition` or `--algo`**: the run dir name changes (`{condition}_{algo}_seed{N}`), so a different sub-tree is created and there's no resume — you start fresh under the new dir.
+- **Corrupt / partial checkpoint** (e.g. killed mid-`trainer.save`): the runner logs a `warning: failed to load checkpoint ...` to stderr and starts from scratch. The retained N=2 policy means at least one earlier checkpoint usually survives; if you're unlucky, delete `checkpoints/<step_dir>/` manually and re-launch.
+- **Wiping a run**: to start over, delete the entire run dir (`results/curriculum_experiment/runs/<condition>_<algo>_seed<N>/`). Just removing `final_results.json` is not enough — the checkpoints will trigger a resume.
 
 ---
 

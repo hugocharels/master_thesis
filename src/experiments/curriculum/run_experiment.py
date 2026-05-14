@@ -35,7 +35,9 @@ import json
 import math
 import os
 import random
+import shutil
 import sys
+import time
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Literal
@@ -442,19 +444,54 @@ def _train_loop(
     csv_writer_stage,
     eval_rng: random.Random,
     log_stage_transitions: bool,
+    start_step: int = 0,
+    start_episode: int = 0,
+    start_wall_clock_seconds: float = 0.0,
+    run_dir: Path | None = None,
+    scheduler_for_checkpoint: StageScheduler | None = None,
 ) -> int:
     """Drive the shared trainer through ``total_steps`` env steps.
 
     Returns the actual number of env steps consumed (which may slightly
     exceed ``total_steps`` because we never cut an episode in flight).
-    """
-    time_step = 0
-    episode_num = 0
-    next_eval_at = EVAL_FREQUENCY_STEPS  # do the first eval at 20k, not at 0
 
-    # Initial stage-progress row for CURR.
-    if log_stage_transitions:
+    Parameters
+    ----------
+    start_step, start_episode
+        Cursor from which to resume; both ``0`` for a fresh start.
+    start_wall_clock_seconds
+        Wall-clock seconds already spent in previous (pre-resume) runs;
+        added back into the per-checkpoint sidecar so the running
+        total reflects cumulative time across restarts.
+    run_dir
+        If provided (and ``CHECKPOINT_INTERVAL_STEPS`` > 0), the loop
+        writes a checkpoint every :data:`CHECKPOINT_INTERVAL_STEPS`
+        env steps under ``<run_dir>/checkpoints/``. ``None`` disables
+        checkpointing (used by a few tests).
+    scheduler_for_checkpoint
+        If non-None, the scheduler whose state should be persisted
+        alongside the trainer (CURR only). Baselines pass ``None``.
+    """
+    time_step = start_step
+    episode_num = start_episode
+    # Skip eval steps that already lie at or before the resume cursor:
+    # they were already written out before the prior run was killed (and
+    # the truncate helper has clipped any post-checkpoint stragglers).
+    next_eval_at = ((time_step // EVAL_FREQUENCY_STEPS) + 1) * EVAL_FREQUENCY_STEPS
+    # Same logic for checkpoints: the next save is the first multiple
+    # of CHECKPOINT_INTERVAL_STEPS strictly past the resume cursor.
+    next_checkpoint_at = (
+        ((time_step // CHECKPOINT_INTERVAL_STEPS) + 1) * CHECKPOINT_INTERVAL_STEPS
+        if CHECKPOINT_INTERVAL_STEPS > 0
+        else None
+    )
+
+    # Initial stage-progress row for CURR (only on a fresh start; on
+    # resume the stage history is already in ``stage_progress.csv``).
+    if log_stage_transitions and time_step == 0:
         csv_writer_stage.writerow([0, sampler.current_stage_id])
+
+    loop_started_at = time.monotonic()
 
     while time_step < total_steps:
         if sampler.is_finished():
@@ -497,11 +534,238 @@ def _train_loop(
             csv_writer_eval.writerow([next_eval_at, f"{sr:.6f}", f"{mr:.6f}"])
             next_eval_at += EVAL_FREQUENCY_STEPS
 
+        # Periodic checkpoint. We allow multiple cadences in one
+        # iteration only defensively; in practice a single episode
+        # never spans 100k env steps.
+        if (
+            run_dir is not None
+            and next_checkpoint_at is not None
+            and time_step >= next_checkpoint_at
+        ):
+            elapsed = time.monotonic() - loop_started_at
+            wall_clock_total = start_wall_clock_seconds + elapsed
+            _save_checkpoint(
+                run_dir=run_dir,
+                step=next_checkpoint_at,
+                episode=episode_num,
+                wall_clock_seconds=wall_clock_total,
+                trainer=trainer,
+                scheduler=scheduler_for_checkpoint,
+            )
+            # Advance the cursor past whatever interval boundaries were
+            # crossed by this episode (defensive in case of >100k-step
+            # episodes).
+            while time_step >= next_checkpoint_at:
+                next_checkpoint_at += CHECKPOINT_INTERVAL_STEPS
+
     return time_step
 
 
 # ---------------------------------------------------------------------------
 # Orchestration / IO
+# ---------------------------------------------------------------------------
+
+
+# ---------------------------------------------------------------------------
+# Checkpointing
+# ---------------------------------------------------------------------------
+
+CHECKPOINT_INTERVAL_STEPS = 100_000
+"""How often (in env steps) to dump a checkpoint to disk."""
+
+KEEP_LATEST_CHECKPOINTS = 2
+"""Bound on disk usage: only keep the N most-recent checkpoints."""
+
+_STEP_DIR_PREFIX = "step_"
+_STEP_DIR_DIGITS = 10
+"""10-digit zero-padded step in folder name so lexicographic sort = step order."""
+
+
+def _checkpoints_root(run_dir: Path) -> Path:
+    """The ``checkpoints/`` subdirectory of a per-run output directory."""
+    return run_dir / "checkpoints"
+
+
+def _step_dir_name(step: int) -> str:
+    """Format a step count as ``step_0000123456`` (10-digit, zero-padded)."""
+    return f"{_STEP_DIR_PREFIX}{step:0{_STEP_DIR_DIGITS}d}"
+
+
+def _parse_step_dir(name: str) -> int | None:
+    """Inverse of :func:`_step_dir_name`. Returns None on malformed input.
+
+    Accepts shorter-than-10-digit suffixes too in case an older run
+    produced a non-padded folder name.
+    """
+    if not name.startswith(_STEP_DIR_PREFIX):
+        return None
+    suffix = name[len(_STEP_DIR_PREFIX):]
+    if not suffix.isdigit():
+        return None
+    return int(suffix)
+
+
+def find_latest_checkpoint(run_dir: Path) -> Path | None:
+    """Return the highest-step ``step_*`` subdir under ``run_dir/checkpoints``.
+
+    Returns ``None`` if the checkpoints root is missing, empty, or
+    contains no parseable ``step_*`` directories. The selection is by
+    parsed step count (not lexicographic) so it stays correct even if
+    a non-padded folder slips in.
+    """
+    root = _checkpoints_root(run_dir)
+    if not root.is_dir():
+        return None
+    best: tuple[int, Path] | None = None
+    for child in root.iterdir():
+        if not child.is_dir():
+            continue
+        step = _parse_step_dir(child.name)
+        if step is None:
+            continue
+        if best is None or step > best[0]:
+            best = (step, child)
+    return None if best is None else best[1]
+
+
+def _prune_old_checkpoints(run_dir: Path, keep: int = KEEP_LATEST_CHECKPOINTS) -> None:
+    """Delete all but the ``keep`` newest ``step_*`` checkpoints.
+
+    Sort by parsed step (descending), keep the first ``keep`` entries,
+    ``shutil.rmtree`` the rest. Silently no-ops if the checkpoints root
+    does not exist or contains <= ``keep`` entries.
+    """
+    root = _checkpoints_root(run_dir)
+    if not root.is_dir():
+        return
+    entries: list[tuple[int, Path]] = []
+    for child in root.iterdir():
+        if not child.is_dir():
+            continue
+        step = _parse_step_dir(child.name)
+        if step is None:
+            continue
+        entries.append((step, child))
+    entries.sort(key=lambda t: t[0], reverse=True)
+    for _step, path in entries[keep:]:
+        shutil.rmtree(path, ignore_errors=True)
+
+
+def _save_checkpoint(
+    *,
+    run_dir: Path,
+    step: int,
+    episode: int,
+    wall_clock_seconds: float,
+    trainer,
+    scheduler: StageScheduler | None,
+) -> Path:
+    """Persist trainer + scheduler + progress sidecar at ``step``.
+
+    Layout (single checkpoint)::
+
+        checkpoints/step_0000100000/
+            trainer/         <- trainer.save() output
+            scheduler.json   <- scheduler.state_dict() (CURR only)
+            progress.json    <- {step, episode, wall_clock_seconds}
+
+    Old checkpoints are pruned so only :data:`KEEP_LATEST_CHECKPOINTS`
+    remain. Returns the path to the newly written checkpoint dir.
+    """
+    ckpt_dir = _checkpoints_root(run_dir) / _step_dir_name(step)
+    trainer_dir = ckpt_dir / "trainer"
+    trainer_dir.mkdir(parents=True, exist_ok=True)
+    trainer.save(trainer_dir)
+
+    if scheduler is not None:
+        (ckpt_dir / "scheduler.json").write_text(
+            json.dumps(scheduler.state_dict(), indent=2),
+            encoding="utf-8",
+        )
+
+    progress = {
+        "step": int(step),
+        "episode": int(episode),
+        "wall_clock_seconds": int(wall_clock_seconds),
+    }
+    (ckpt_dir / "progress.json").write_text(
+        json.dumps(progress, indent=2, sort_keys=True), encoding="utf-8"
+    )
+
+    _prune_old_checkpoints(run_dir, keep=KEEP_LATEST_CHECKPOINTS)
+    return ckpt_dir
+
+
+def _truncate_csv_to_step(csv_path: Path, max_step: int) -> None:
+    """Drop rows whose first column (``step``) is strictly greater than ``max_step``.
+
+    Used on resume to bring CSVs back in sync with the checkpoint:
+
+    * ``level6_eval.csv`` may contain rows past the checkpoint because
+      eval cadence (20k steps) is finer than checkpoint cadence (100k
+      steps).
+    * ``stage_progress.csv`` may have post-checkpoint stage transitions.
+
+    A missing file is a no-op (fresh start). A header-only file is also
+    preserved as-is. The first column is parsed as ``int``; any
+    unparseable value (e.g. the literal ``"step"`` header) is treated
+    as a header and kept.
+    """
+    if not csv_path.is_file():
+        return
+    with csv_path.open("r", newline="", encoding="utf-8") as f:
+        rows = list(csv.reader(f))
+    if not rows:
+        return
+    kept: list[list[str]] = []
+    for row in rows:
+        if not row:
+            kept.append(row)
+            continue
+        try:
+            step_val = int(row[0])
+        except ValueError:
+            # Header row (or any non-int first col): always keep.
+            kept.append(row)
+            continue
+        if step_val <= max_step:
+            kept.append(row)
+    with csv_path.open("w", newline="", encoding="utf-8") as f:
+        csv.writer(f).writerows(kept)
+
+
+def _load_checkpoint(
+    *,
+    ckpt_dir: Path,
+    trainer,
+    scheduler: StageScheduler | None,
+) -> tuple[int, int, float]:
+    """Restore trainer + scheduler from ``ckpt_dir``; return (step, episode, wall).
+
+    Reads ``trainer/`` via ``trainer.load(...)``, optionally reads
+    ``scheduler.json`` via :meth:`StageScheduler.load_state_dict`,
+    then reads ``progress.json`` for the resume cursor. Raises if any
+    expected file is missing - the caller has already verified the dir
+    exists by calling :func:`find_latest_checkpoint`.
+    """
+    trainer_dir = ckpt_dir / "trainer"
+    trainer.load(trainer_dir)
+
+    if scheduler is not None:
+        sched_path = ckpt_dir / "scheduler.json"
+        if sched_path.is_file():
+            sched_state = json.loads(sched_path.read_text(encoding="utf-8"))
+            scheduler.load_state_dict(sched_state)
+
+    progress_path = ckpt_dir / "progress.json"
+    progress = json.loads(progress_path.read_text(encoding="utf-8"))
+    return (
+        int(progress["step"]),
+        int(progress["episode"]),
+        float(progress.get("wall_clock_seconds", 0)),
+    )
+
+
 # ---------------------------------------------------------------------------
 
 
@@ -549,6 +813,7 @@ def main(argv: list[str] | None = None) -> int:
 
     # Load training pools and build sampler.
     pools = _load_pools_for_condition(args.condition, out_dir)
+    scheduler: StageScheduler | None
     if args.condition == "CURR":
         scheduler = StageScheduler(
             stages=CURRICULUM_STAGES,
@@ -562,6 +827,7 @@ def main(argv: list[str] | None = None) -> int:
         # Baselines have a single pool; CURR's first stage starts at index 0.
         sample_env = _build_sample_env_config("CURR", pools)
     else:
+        scheduler = None
         # Disentangle the pool-sampling RNG from torch/numpy by deriving
         # it from a separate stream (seed + RNG_SEED) just like the
         # scheduler does.
@@ -590,17 +856,61 @@ def main(argv: list[str] | None = None) -> int:
     # threaded for forward-compatibility with held-out evals.)
     eval_rng = random.Random(args.seed * 1_000_003 + 17)
 
-    # Open CSV writers in append-friendly mode and drive the loop.
+    # ---- Resume from checkpoint (if any) -----------------------------------
     eval_csv_path = run_dir / "level6_eval.csv"
     stage_csv_path = run_dir / "stage_progress.csv"
     eval_csv_path.parent.mkdir(parents=True, exist_ok=True)
 
-    with eval_csv_path.open("w", newline="", encoding="utf-8") as eval_f, \
-            stage_csv_path.open("w", newline="", encoding="utf-8") as stage_f:
+    scheduler_for_ckpt: StageScheduler | None = scheduler
+
+    latest_ckpt = find_latest_checkpoint(run_dir)
+    start_step = 0
+    start_episode = 0
+    start_wall_clock = 0.0
+    resumed = False
+    if latest_ckpt is not None:
+        try:
+            start_step, start_episode, start_wall_clock = _load_checkpoint(
+                ckpt_dir=latest_ckpt,
+                trainer=trainer,
+                scheduler=scheduler_for_ckpt,
+            )
+            resumed = True
+        except Exception as exc:
+            # Corrupt / partial checkpoint: fall back to a fresh start
+            # rather than crashing - the user can always wipe the dir
+            # manually if they prefer.
+            print(
+                f"warning: failed to load checkpoint {latest_ckpt}: {exc!r}; "
+                "starting from scratch.",
+                file=sys.stderr,
+            )
+            resumed = False
+
+    if resumed:
+        # Truncate CSVs to the checkpoint cursor so we don't double-write
+        # rows that survived past the last successful save.
+        _truncate_csv_to_step(eval_csv_path, start_step)
+        _truncate_csv_to_step(stage_csv_path, start_step)
+        stage_id_msg = (
+            scheduler.current_stage_id if scheduler is not None else "n/a"
+        )
+        print(
+            f"Resuming from step {start_step}, episode {start_episode}, "
+            f"stage {stage_id_msg}",
+            file=sys.stderr,
+        )
+
+    # Open CSV writers. Append mode on resume preserves prior rows; on a
+    # fresh start we (re)write the header at the top.
+    csv_mode = "a" if resumed else "w"
+    with eval_csv_path.open(csv_mode, newline="", encoding="utf-8") as eval_f, \
+            stage_csv_path.open(csv_mode, newline="", encoding="utf-8") as stage_f:
         eval_writer = csv.writer(eval_f)
-        eval_writer.writerow(["step", "success_rate", "mean_return"])
         stage_writer = csv.writer(stage_f)
-        stage_writer.writerow(["step", "stage_id"])
+        if not resumed:
+            eval_writer.writerow(["step", "success_rate", "mean_return"])
+            stage_writer.writerow(["step", "stage_id"])
 
         steps_consumed = _train_loop(
             sampler=sampler,
@@ -614,6 +924,11 @@ def main(argv: list[str] | None = None) -> int:
             csv_writer_stage=stage_writer,
             eval_rng=eval_rng,
             log_stage_transitions=(args.condition == "CURR"),
+            start_step=start_step,
+            start_episode=start_episode,
+            start_wall_clock_seconds=start_wall_clock,
+            run_dir=run_dir,
+            scheduler_for_checkpoint=scheduler_for_ckpt,
         )
 
     # Final eval on Level 6.

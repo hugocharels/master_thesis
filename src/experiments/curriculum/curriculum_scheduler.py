@@ -245,3 +245,99 @@ class StageScheduler(Generic[W]):
         # ``sum`` of bools is fine and avoids the float overhead of
         # ``statistics.mean`` on a tiny deque.
         return sum(self._recent_successes) / len(self._recent_successes)
+
+    # -- Checkpointing -------------------------------------------------------
+
+    def state_dict(self) -> dict:
+        """Return a JSON-serialisable snapshot of the scheduler's state.
+
+        Captures the bookkeeping needed to resume mid-run from a
+        checkpoint:
+
+        * ``stage_idx`` and the per-stage cumulative ``stage_steps``;
+        * the rolling ``recent_successes`` window (as a plain list);
+        * the ``finished`` terminal flag;
+        * the underlying ``random.Random`` state so the next pool draw
+          continues the exact same pseudo-random sequence (key for
+          reproducibility across restarts).
+
+        The static configuration (``stages``, ``pools``,
+        ``per_stage_step_cap``, ``success_threshold``,
+        ``success_window``) is *not* serialised: the caller is expected
+        to rebuild the scheduler with the same constructor arguments
+        and only restore the dynamic state via
+        :meth:`load_state_dict`.
+        """
+        return {
+            "stage_idx": self._stage_idx,
+            "stage_steps": self._stage_steps,
+            "recent_successes": list(self._recent_successes),
+            "finished": self._finished,
+            # ``random.Random.getstate`` returns a tuple of (version, tuple,
+            # gauss_next). It is not JSON-friendly as-is (nested tuples,
+            # potential ``None``); convert to a list-of-lists round-trip
+            # safe form. ``load_state_dict`` reverses this.
+            "rng_state": _rng_state_to_jsonable(self._rng.getstate()),
+        }
+
+    def load_state_dict(self, state: dict) -> None:
+        """Restore scheduler state previously produced by :meth:`state_dict`.
+
+        After this call:
+
+        * the active stage index, per-stage step counter, success
+          deque and ``_finished`` flag match the snapshot;
+        * the internal RNG resumes from the exact recorded state, so
+          the next ``sample_world()`` call returns the same world the
+          original (uninterrupted) run would have returned;
+        * the active :class:`PoolSampler` is rebound to the correct
+          stage's pool.
+        """
+        stage_idx = int(state["stage_idx"])
+        if not 0 <= stage_idx < len(self._stages):
+            raise ValueError(
+                f"stage_idx={stage_idx} out of range [0, {len(self._stages)})"
+            )
+        stage_steps = int(state["stage_steps"])
+        if stage_steps < 0:
+            raise ValueError(f"stage_steps must be non-negative, got {stage_steps}")
+
+        self._stage_idx = stage_idx
+        self._stage_steps = stage_steps
+        # Rebuild the deque with the configured maxlen so the rolling
+        # window keeps its size invariant after the restore.
+        recent = [bool(x) for x in state.get("recent_successes", [])]
+        self._recent_successes = deque(recent, maxlen=self._success_window)
+        self._finished = bool(state.get("finished", False))
+
+        rng_state = state.get("rng_state")
+        if rng_state is not None:
+            self._rng.setstate(_rng_state_from_jsonable(rng_state))
+
+        # Re-bind the sampler to the (now possibly different) active
+        # stage's pool. Reuse the same RNG to preserve the global PRNG
+        # sequence (matches advance-time semantics in
+        # :meth:`maybe_advance`).
+        self._sampler = PoolSampler(self._pools[self._stage_idx], self._rng)
+
+
+# ---------------------------------------------------------------------------
+# RNG state JSON helpers
+# ---------------------------------------------------------------------------
+
+
+def _rng_state_to_jsonable(state: tuple) -> list:
+    """Convert ``random.Random.getstate()`` output to a JSON-safe list.
+
+    ``state`` is a ``(version, internalstate_tuple, gauss_next_or_None)``
+    triple. We return a 3-element list ``[version, list(internal),
+    gauss_next]`` so it survives a JSON round-trip.
+    """
+    version, internal, gauss_next = state
+    return [int(version), [int(x) for x in internal], gauss_next]
+
+
+def _rng_state_from_jsonable(serialised: list) -> tuple:
+    """Inverse of :func:`_rng_state_to_jsonable`."""
+    version, internal, gauss_next = serialised
+    return (int(version), tuple(int(x) for x in internal), gauss_next)

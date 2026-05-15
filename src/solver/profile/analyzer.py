@@ -11,6 +11,7 @@ from .._internal.types import agents_from_world, laser_sources_from_world
 from ..cooperation_solver import CooperationSolver
 from ..world_solver import LaserMode, WorldSolver
 from .graph_metrics import largest_scc_size, longest_chain_length, mutual_pairs, synchronous_width
+from .level import CooperationLevel
 from .result import CooperationProfileResult, HelperEvent
 
 
@@ -43,7 +44,7 @@ class CooperationProfileAnalyzer:
                 longest_chain_length=0,
                 largest_scc_size=0,
                 synchronous_width=0,
-                profile="unsolvable",
+                profile=CooperationLevel.UNSOLVABLE,
             )
 
         cooperation_required = CooperationSolver(
@@ -170,13 +171,13 @@ class CooperationProfileAnalyzer:
         largest_scc_size: int,
         longest_chain_length: int,
         num_agents: int,
-    ) -> str:
+    ) -> CooperationLevel:
         if not cooperation_required:
-            return "independent"
+            return CooperationLevel.INDEPENDENT
         if largest_scc_size == num_agents and num_agents > 1:
-            return "fully_coupled"
+            return CooperationLevel.FULLY_COUPLED
         if mutual_pairs:
-            return "mutual"
+            return CooperationLevel.MUTUAL
         indegree = defaultdict(int)
         outdegree = defaultdict(int)
         nodes: set[int] = set()
@@ -186,7 +187,7 @@ class CooperationProfileAnalyzer:
             nodes.add(src)
             nodes.add(dst)
         if any(count >= 2 for count in indegree.values()):
-            return "distributed"
+            return CooperationLevel.DISTRIBUTED
         if (
             dependency_edges
             and longest_chain_length >= 2
@@ -194,7 +195,7 @@ class CooperationProfileAnalyzer:
             and all(outdegree[n] <= 1 for n in nodes)
             and longest_chain_length >= max(1, len(nodes) - 1)
         ):
-            return "chain"
+            return CooperationLevel.CHAIN
         if dependency_edges:
-            return "asymmetric"
-        return "cooperative"
+            return CooperationLevel.ASYMMETRIC
+        return CooperationLevel.COOPERATIVE

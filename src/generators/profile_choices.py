@@ -1,10 +1,5 @@
 """Shared cooperation-profile choice set for cooperation-aware generators."""
 
-COOP_PROFILE_CHOICES = (
-    "cooperative",
-    "asymmetric",
-    "mutual",
-    "chain",
-    "distributed",
-    "fully_coupled",
-)
+from solver import CooperationLevel
+
+COOP_PROFILE_CHOICES = tuple(level.value for level in CooperationLevel.cooperative_subtypes())

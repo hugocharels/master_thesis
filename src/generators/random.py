@@ -10,6 +10,7 @@ from lle import World
 from .base import BaseGenerator
 from .candidates import CandidateLayout
 from .geometry import beam_tiles, points_out_immediately
+from .profile_choices import COOP_PROFILE_CHOICES
 from .registry import register_generator
 from .world_builder import WorldBuilder
 from solver import WorldSolver
@@ -272,16 +273,6 @@ class RandomGenerator(BaseGenerator):
 # ===== Cooperative random variants (thesis-only — likely not moved to LLE) =====
 
 
-_COOP_PROFILE_CHOICES = (
-    "cooperative",
-    "asymmetric",
-    "mutual",
-    "chain",
-    "distributed",
-    "fully_coupled",
-)
-
-
 class _RandomCooperativeBase(RandomGenerator):
     """Shared logic for random cooperative variants — applies a profile filter."""
 
@@ -294,7 +285,7 @@ class _RandomCooperativeBase(RandomGenerator):
         RandomGenerator.add_arguments(parser)
         parser.add_argument(
             "--profile",
-            choices=list(_COOP_PROFILE_CHOICES),
+            choices=list(COOP_PROFILE_CHOICES),
             default="cooperative",
             help="Target cooperation profile for accepted levels",
         )

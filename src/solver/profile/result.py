@@ -5,6 +5,8 @@ from __future__ import annotations
 from collections import defaultdict
 from dataclasses import dataclass
 
+from .level import CooperationLevel
+
 
 @dataclass(frozen=True)
 class HelperEvent:
@@ -31,24 +33,28 @@ class CooperationProfileResult:
     longest_chain_length: int
     largest_scc_size: int
     synchronous_width: int
-    profile: str
+    profile: CooperationLevel
 
-    def matches_profile(self, target: str | None) -> bool:
+    def matches_profile(self, target: CooperationLevel | str | None) -> bool:
         if target in (None, "", "any"):
             return True
-        if target == "independent":
+        try:
+            target = CooperationLevel(target)
+        except ValueError as exc:
+            raise ValueError(f"Unknown cooperation profile: {target}") from exc
+        if target == CooperationLevel.INDEPENDENT:
             return not self.cooperation_required
-        if target == "cooperative":
+        if target == CooperationLevel.COOPERATIVE:
             return self.cooperation_required
-        if target == "asymmetric":
-            return self.cooperation_required and self.profile == "asymmetric"
-        if target == "mutual":
+        if target == CooperationLevel.ASYMMETRIC:
+            return self.cooperation_required and self.profile == CooperationLevel.ASYMMETRIC
+        if target == CooperationLevel.MUTUAL:
             return bool(self.mutual_pairs)
-        if target == "chain":
+        if target == CooperationLevel.CHAIN:
             return self.cooperation_required and self._is_chain_like()
-        if target == "distributed":
+        if target == CooperationLevel.DISTRIBUTED:
             return self.cooperation_required and self._has_distributed_support()
-        if target == "fully_coupled":
+        if target == CooperationLevel.FULLY_COUPLED:
             return (
                 self.cooperation_required
                 and self.largest_scc_size == self.num_agents

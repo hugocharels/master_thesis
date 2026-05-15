@@ -6,11 +6,14 @@ and CooperativeGenerator correctly accept the --profile argument
 and that accepted levels match the requested profile.
 """
 
+import argparse
+
 import pytest
 from lle import World
 
-from generators.random import ConstrainedRandomCooperativeGenerator, RandomCooperativeGenerator
 from generators.cooperative import CooperativeGenerator
+from generators.level6_style import Level6StyleGenerator
+from generators.random import ConstrainedRandomCooperativeGenerator, RandomCooperativeGenerator
 from solver import CooperationProfileAnalyzer
 
 
@@ -63,11 +66,34 @@ def test_constrained_random_cooperative_accepts_profile_argument(profile):
     assert gen.profile == profile
 
 
-@pytest.mark.parametrize("profile", ["cooperative", "asymmetric"])
+@pytest.mark.parametrize("profile", [
+    "cooperative", "asymmetric", "mutual", "chain", "distributed", "fully_coupled"
+])
 def test_constructive_cooperative_accepts_profile_argument(profile):
     gen = make_constructive_cooperative()
     gen.profile = profile
     assert gen.profile == profile
+
+
+# ---------------------------------------------------------------------------
+# CLI argparse surface: every cooperation-aware generator accepts the full
+# choice set via add_arguments (widening reaches subclasses via inheritance).
+# ---------------------------------------------------------------------------
+
+@pytest.mark.parametrize("generator_cls", [
+    RandomCooperativeGenerator,
+    ConstrainedRandomCooperativeGenerator,
+    CooperativeGenerator,
+    Level6StyleGenerator,
+])
+@pytest.mark.parametrize("profile", [
+    "cooperative", "asymmetric", "mutual", "chain", "distributed", "fully_coupled"
+])
+def test_add_arguments_accepts_full_profile_set(generator_cls, profile):
+    parser = argparse.ArgumentParser()
+    generator_cls.add_arguments(parser)
+    args = parser.parse_args(["--size", "5", "5", "--profile", profile])
+    assert args.profile == profile
 
 
 # ---------------------------------------------------------------------------

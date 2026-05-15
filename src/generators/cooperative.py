@@ -7,6 +7,7 @@ from lle.tiles import Direction
 from .candidates import CandidateLayout
 from .constructive import ConstructiveGenerator
 from .geometry import beam_tiles, points_out_immediately
+from .profile_choices import COOP_PROFILE_CHOICES
 from .registry import register_generator
 from solver import CooperationProfileAnalyzer
 
@@ -28,7 +29,7 @@ class CooperativeGenerator(ConstructiveGenerator):
         ConstructiveGenerator.add_arguments(parser)
         parser.add_argument(
             "--profile",
-            choices=["cooperative", "asymmetric"],
+            choices=list(COOP_PROFILE_CHOICES),
             default="cooperative",
             help="Target cooperation profile for accepted levels",
         )

@@ -121,22 +121,72 @@ the goal is not only to obtain cooperative levels, but to obtain them with fewer
 == Constructive Solvable Generator
 
 The constructive solvable generator replaces blind sampling with a partial-by-construction layout.
-It reserves one disjoint horizontal or vertical lane per agent, places each start at one end of its
-lane and the corresponding exit at the other end, and only samples walls and lasers outside the
-reserved traversable lanes. Additional lasers are accepted only if their beam segments avoid the
-reserved cells. The solver still acts as the final verifier, but the sampling process is strongly
-biased toward jointly solvable instances.
+On a grid of $H$ rows and $W$ columns with $n_a$ agents, it picks a random orientation, samples
+a set of $n_a$ distinct *lane indices* without replacement on the orientation axis (rows for the
+horizontal orientation, columns for the vertical one), places one agent start at one end of each
+lane and the corresponding exit at the other end, and reserves every cell of every lane as
+non-buildable. Walls and lasers are sampled only from the remaining cells, with walls drawn from
+a uniformly shuffled list of free cells and truncated to the requested wall budget. Additional
+lasers are accepted only if their full beam segment avoids every reserved cell. The solver acts
+as the final verifier, but the sampling process is strongly biased toward jointly solvable
+instances. Lanes are sampled *without* the contiguity constraint used in earlier prototypes, so
+the lane band can be split anywhere on the orientation axis, which is the main source of
+within-pool diversity.
 
 
 == Constructive Cooperative Generator
 
-The constructive cooperative generator further specialises the constructive idea by planting a
-deliberate dependency pattern. One laser is placed so that a helper agent must truncate a beam of
-its own colour before another lane becomes traversable. The resulting candidate is then verified
-with the standard and strict SAT encodings. In the current implementation, this generator supports
-the `cooperative` and `asymmetric` profile filters. It is useful when one wants deliberately
-cooperative instances rather than merely sampling for cooperation and hoping to find it by
-rejection.
+The constructive cooperative generator inherits the lane machinery of the constructive solvable
+generator and replaces its laser-placement step with one that plants a deliberate cooperation
+dependency for every laser, not just one. The geometry is built in the following sequence
+(see `src/generators/cooperative.py`).
+
++ *Orientation.* One of the two orientations (horizontal lanes / vertical lanes) is chosen
+  uniformly at random per call, subject to feasibility constraints on the grid dimensions.
+
++ *Lane sample.* A set $L subset.eq {0, ..., D - 1}$ of $|L| = n_a$ lane indices is sampled
+  without replacement on the orientation axis ($D = H$ or $D = W$). The lanes are *not* required
+  to be contiguous; any subset of size $n_a$ is admissible.
+
++ *Rotation flip.* Independently of the orientation, a fair coin chooses whether the agent
+  starts sit on the first or the last index of the perpendicular axis (and the exits sit on the
+  opposite edge). Combined with the two orientations this gives all four rotations
+  (agents on left, right, top, or bottom) with equal probability.
+
++ *Structural laser placement.* For each of the $n_l$ requested lasers, the generator picks
+  - a *perpendicular column* (or row, in the vertical orientation) from a pool of distinct
+    values in the interior of the perpendicular axis: ${1, ..., D_("perp") - 2}$;
+  - an axis position $a in.not L$ strictly before the lane band ($a < min(L)$) or strictly
+    after it ($a > max(L)$);
+  - a direction perpendicular to the lane axis, pointing toward the lane band.
+  These choices are independent across the $n_l$ lasers. Distinctness of the perpendicular
+  columns guarantees that the resulting beams are parallel straight lines on disjoint columns,
+  so no two laser sources or beam segments coincide. Each laser is given a *distinct colour* in
+  ${0, ..., n_l - 1}$.
+
++ *Beam-path reservation.* The full unblocked beam segment of every laser, from source to grid
+  edge, is added to the reserved cell set. Without this step, walls placed in the next step
+  could land on a beam cell strictly between two non-adjacent lanes and clip the beam before it
+  reaches the far lane, which would silently break the cooperation requirement.
+
++ *Walls.* The remaining free cells are shuffled uniformly and the first `num_walls` of them
+  are placed as walls. Shuffling — rather than taking the row-major prefix — is what gives
+  within-pool wall-mask diversity.
+
++ *SAT verification and profile filter.* The candidate is built into an `lle.World`, the
+  standard and strict SAT encodings of @cooperation-detection are run, and the cooperation
+  profile analyzer is applied. The candidate is accepted only if it is satisfiable under the
+  standard semantics and unsatisfiable under the strict one — the binary cooperation criterion
+  of Theorem 4.9 — and if the profile analyzer's classification matches the requested family
+  (default: `cooperative`, which accepts any same-colour beam-truncation requirement).
+
+The distinct-colour multi-laser construction is the key qualitative change relative to a
+single-structural-laser template: with $n_l >= 2$ each laser's beam can only be safely
+truncated by the unique agent of its colour, so cooperation involves $n_l$ helpers acting on
+their own beams in turn, rather than a single helper acting on one beam. On the parameter
+configurations of the experiments in @experiments this consistently produces *mutual* profiles
+(every helper is also a beneficiary) for $n_l = 2$ and a mix of *mutual* and *distributed*
+profiles for $n_l >= 3$ when the grid is large enough.
 
 
 == Constructive Level-6-Style Generator

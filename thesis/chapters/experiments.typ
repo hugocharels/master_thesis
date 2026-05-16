@@ -316,39 +316,335 @@ levels.
 What these experiments do not establish is whether certified levels are useful for training. The
 generator framework guarantees formal properties of accepted levels, but whether those properties
 translate into better or faster learning for MARL agents compared to uncertified baselines remains
-an open empirical question, addressed in @transfer-experiment.
+an open empirical question, addressed in @learnability-experiment and @transfer-experiment.
 
 
-== Transfer to Human-Designed Levels <transfer-experiment>
+== Learnability of Generated Cooperative Levels <learnability-experiment>
 
 === Experimental Question
 
-The preceding experiments establish that the generator framework produces formally certified
-levels with controlled cooperation structure. They do not, however, address the downstream
-question of whether those levels are useful for training. This section addresses RQ4: can agents
-trained exclusively on procedurally generated levels transfer their behaviour to human-designed
-levels?
+We now ask whether off-the-shelf MARL agents can learn to solve levels produced by the
+`cooperative` generator, and whether the choice of MARL algorithm matters as the cooperation
+requirement scales up in grid size and agent count. The cooperative generator certifies every
+accepted level under the binary criterion of @cooperation-detection: standard SAT and strict
+UNSAT, so every training and evaluation level requires at least one same-colour beam-truncation
+step. The learnability question is therefore not whether the levels are solvable in principle
+(they are, by construction), but whether the joint policy that solves them is reachable by
+common value-decomposition methods within a modest training budget.
 
-The test set used for evaluation is the set of hand-crafted levels distributed with the benchmark,
-which includes levels of varying complexity and cooperation structure. Transfer is measured by
-evaluating trained agents on those levels without any fine-tuning after training.
+We restrict ourselves to three baseline cooperative-MARL algorithms: independent
+$Q$-learning (IQL), value-decomposition networks (VDN), and QMIX. They form a natural
+progression in the strength of the credit-assignment assumption: from none (IQL), to additive
+team-value (VDN), to a monotonic mixing network (QMIX).
+
+The experiment proceeds in two phases of increasing difficulty. Phase 1 fixes a small two-agent
+configuration that all three algorithms are expected to solve; its purpose is to establish a
+floor and to verify that the training pipeline and the generated levels are well-formed. Phase 2
+scales up to three agents and two lasers, where credit assignment is expected to become the
+dominant difficulty.
 
 === Protocol
 
-Agents are trained using a cooperative MARL algorithm on a curriculum of levels produced by the
-generator framework. Training levels are sampled from the cooperative generators to ensure that
-every training instance requires the blocking-based cooperative interaction. After training, agents
-are evaluated on the benchmark's human-designed levels. Performance is reported as the fraction of
-episodes in which all agents reach their exit tiles within the time horizon.
+Each phase fixes a grid geometry, an agent and laser count, a horizon $T_("max")$, and a
+generator. The two phases use the configurations summarised in @tab-learnability-phases, both
+drawn from the cooperative generator with seeded pre-flight pool generation
+(`PHASE1_GRID`, `PHASE2_GRID` in `src/experiments/learnability/configs.py`).
+
+#figure(
+  table(
+    columns: 7,
+    stroke: black,
+    inset: 8pt,
+    align: horizon,
+    table.header(
+      [*Phase*], [*Grid*], [*Agents*], [*Lasers*], [*$T_("max")$*],
+      [*Generator*], [*Steps*],
+    ),
+    [Phase 1], [6×6], [2], [1], [10], [`cooperative`], [100,000],
+    [Phase 2], [8×8], [3], [2], [16], [`cooperative`], [200,000],
+  ),
+  caption: [
+    Learnability-experiment configurations. The generator name refers to the registry key in
+    `src/generators/registry.py`, which corresponds to the descriptive name
+    `constructive_cooperative` used in @generators.
+  ],
+) <tab-learnability-phases>
+
+For each phase, the pre-flight script generates two disjoint level pools from independent seeded
+streams: a training pool of $|cal(D)_("train")| = 20$ levels (split seed 20260515) and a held-out
+test pool of $|cal(D)_("test")| = 20$ levels (split seed 20260516). The same pools are reused for
+all algorithms and all training seeds within a phase, so any cross-algorithm difference is
+attributable to optimisation rather than to a pool resample. Per-level renderings of both pools
+are reproduced in the appendix (@appendix-learnability-p1, @appendix-learnability-p2).
+
+For each phase we train $|cal(A)| times |cal(S)| = 3 times 20 = 60$ independent agent
+instances:
+$
+  cal(A) = {"IQL", "VDN", "QMIX"}, quad cal(S) = {0, 1, ..., 19}
+$
+The seed $s in cal(S)$ controls the Python, NumPy, and PyTorch random streams as well as the
+pool-sampling RNG. Hyperparameters are identical across algorithms and identical across phases
+(@appendix-learnability-hyperparams): an Adam optimiser at learning rate $5 times 10^(-4)$, batch
+size 64, discount factor $gamma = 0.95$, a gradient update every 5 environment steps, gradient-norm
+clipping at 10, an $epsilon$-greedy training policy decaying linearly from 1.0 to 0.05 over the
+first 100,000 environment steps, and a fully greedy evaluation policy.
+
+Within each training run, every episode samples one level $L in cal(D)_("train")$ uniformly with
+replacement; the episode horizon equals the generator's $T_("max")$. Every 10,000 environment
+steps we run a greedy evaluation of 50 episodes on $cal(D)_("train")$ and 50 episodes on
+$cal(D)_("test")$, sampling levels uniformly from each pool. After the final training step we
+run a longer evaluation of 200 episodes per pool; the success rate $hat(s)$ reported below is
+this final greedy estimate, with one estimate per (algorithm, seed) cell:
+$
+  hat(s)_("train")(a, s) = 1/200 sum_(i=1)^200 bb(1)[text("episode") i text(" reaches all exits")]
+$
+and analogously for $hat(s)_("test")(a, s)$.
+
+The headline aggregate per algorithm $a in cal(A)$ is the mean and standard deviation over the
+twenty seeds; we also report a 95 % confidence interval $plus.minus 1.96 sigma / sqrt(20)$ in the
+per-seed appendix tables.
+
+=== Results — Phase 1
+
+@fig-learnability-p1-curves shows the learning curves and @fig-learnability-p1-bar the final
+greedy success rates. All three algorithms converge to $hat(s) = 1.000$ on both
+$cal(D)_("train")$ and $cal(D)_("test")$ for every seed (60 / 60 runs at 100 % final success;
+per-seed values in @appendix-learnability-p1-results). The standard deviation across seeds is
+exactly zero, so the per-algorithm confidence interval is degenerate. The three algorithms differ
+only in the time at which the greedy success rate first plateaus: VDN reaches $1.0$ earliest, at
+approximately $5.5 times 10^4$ environment steps, followed by IQL at approximately
+$7.0 times 10^4$, and QMIX at approximately $8.0 times 10^4$.
+
+#figure(
+  image("../../results/learnability/figures/learning_curves.pdf", width: 90%),
+  caption: [
+    Phase 1 learning curves: greedy success rate on the train pool (solid) and test pool (dashed)
+    as a function of environment steps, averaged over 20 seeds per algorithm; shaded bands are
+    $plus.minus 1$ standard deviation across seeds.
+  ],
+) <fig-learnability-p1-curves>
+
+#figure(
+  image("../../results/learnability/figures/final_bar_chart.pdf", width: 75%),
+  caption: [
+    Phase 1 final greedy success rate after 100,000 environment steps, evaluated over 200 episodes
+    per pool, per algorithm. All three algorithms reach $1.000 plus.minus 0.000$ on both pools.
+  ],
+) <fig-learnability-p1-bar>
+
+The train / test gap on this configuration is identically zero. We read this as evidence that the
+20-level cooperative pool on a 6×6 grid is small enough that any policy able to clear it
+generalises to the held-out pool of the same distribution; phase 1 does not discriminate between
+algorithms and does not exercise the cooperative generator's representational diversity.
+
+=== Results — Phase 2
+
+@fig-learnability-p2-curves and @fig-learnability-p2-bar report the same plots for the harder
+Phase 2 configuration. The per-algorithm final mean and standard deviation (over seeds 0–19, with
+QMIX additionally including seed 42 as a re-run of a Phase-2 partial; see footnote on
+@appendix-learnability-p2-results) are summarised in @tab-learnability-p2.
+
+#figure(
+  table(
+    columns: 3,
+    stroke: black,
+    inset: 8pt,
+    align: (horizon, center, center),
+    table.header([*Algorithm*], [*$hat(s)_("train")$ (mean ± std)*], [*$hat(s)_("test")$ (mean ± std)*]),
+    [QMIX], [$0.85 plus.minus 0.35$], [$0.85 plus.minus 0.35$],
+    [VDN],  [$0.60 plus.minus 0.44$], [$0.61 plus.minus 0.45$],
+    [IQL],  [$0.16 plus.minus 0.31$], [$0.16 plus.minus 0.30$],
+  ),
+  caption: [
+    Phase 2 final greedy success rate after 200,000 environment steps, evaluated over 200
+    episodes per pool. Mean and standard deviation across $n = 20$ training seeds (QMIX includes
+    one re-run, $n = 21$). Aggregates computed from the raw per-seed file
+    `results/learnability_phase2/runs/{algo}_seed{N}/final_results.json`.
+  ],
+) <tab-learnability-p2>
+
+#figure(
+  image("../../results/learnability_phase2/figures/learning_curves.pdf", width: 90%),
+  caption: [
+    Phase 2 learning curves: greedy success rate on the train pool (solid) and test pool (dashed)
+    as a function of environment steps, averaged over training seeds; shaded bands are
+    $plus.minus 1$ standard deviation across seeds.
+  ],
+) <fig-learnability-p2-curves>
+
+#figure(
+  image("../../results/learnability_phase2/figures/final_bar_chart.pdf", width: 75%),
+  caption: [
+    Phase 2 final greedy success rate after 200,000 environment steps, evaluated over 200 episodes
+    per pool, per algorithm. Error bars are $plus.minus 1$ standard deviation across seeds.
+  ],
+) <fig-learnability-p2-bar>
+
+Two observations follow. First, the train / test gap is again essentially zero across all three
+algorithms ($|hat(s)_("train") - hat(s)_("test")| <= 0.02$ for every algorithm in the
+phase-2 mean), which is the most direct evidence we have that the cooperative generator does not
+over-fit to a particular training pool: a policy that solves the 20 training levels solves the 20
+unseen test levels at the same rate. Second, the variance across seeds is large: for IQL and VDN
+the standard deviation across seeds exceeds the mean itself, reflecting the bimodal nature of the
+per-seed distribution. Inspecting the per-seed table (@appendix-learnability-p2-results), most
+seeds either converge fully ($hat(s) >= 0.95$) or fail to learn at all ($hat(s) <= 0.05$); only a
+small fraction sit at intermediate values. This bimodality concentrates the difference between
+algorithms in the *fraction of seeds that converge*, rather than in the asymptotic success rate of
+a converged seed.
+
+=== Discussion
+
+Phase 1 is undiscriminating: all three algorithms saturate the 6×6 cooperative pool quickly
+enough that the differences between IQL, VDN and QMIX are reduced to a small advantage in
+convergence time. Phase 2 separates the algorithms by credit-assignment strength, in the expected
+order: QMIX > VDN > IQL.
+
+The most informative diagnostic is the train / test gap, not the final mean. The cooperative
+generator is the only direct dependency of the training distribution in this experiment, and the
+absence of a measurable train / test gap in either phase indicates that the 20 cooperative levels
+in the training pool already span the cooperative-level distribution well enough that an unseen
+20-level sample from the same generator does not require additional adaptation. This is a
+necessary condition for the curriculum-transfer experiment in @transfer-experiment, which assumes
+that performance on a held-out generator pool is a valid proxy for the underlying cooperative
+distribution.
+
+
+== Curriculum Transfer to Level-6-Style Targets <transfer-experiment>
+
+=== Experimental Question
+
+The learnability experiment above demonstrates that off-the-shelf cooperative MARL can solve
+levels drawn from the `cooperative` generator at $8 times 8$ with three agents (Phase 2). The
+canonical hand-crafted target of this thesis — LLE Level 6 — is qualitatively harder: a
+$12 times 13$ corridor-like map with four agents and three lasers in which all agents must pass
+through a shared corridor. Direct training on a single level of that size and structure is known
+to be brittle for value-decomposition methods.
+
+We therefore ask whether *staged exposure* through a four-stage curriculum of generated levels
+transfers better to the Level-6-style target than three control conditions that skip the
+curriculum. The generators in the curriculum are the same ones characterised in
+@generator-rejection-rates and @profile-distribution, used here as a controlled source of
+training instances rather than as standalone artefacts.
+
+=== Curriculum Stages
+
+The curriculum is defined by the four `StageConfig` entries of
+`src/experiments/curriculum/configs.py`. Every stage uses four agents (so that all stages share
+the same observation and action spaces, and the trained $Q$-networks remain compatible across
+stage transitions) but varies grid size, laser count, horizon, and generator. The stages are
+summarised in @tab-curriculum-stages and rendered as sample grids in
+@appendix-curriculum-s1–@appendix-curriculum-s4.
+
+#figure(
+  table(
+    columns: 6,
+    stroke: black,
+    inset: 8pt,
+    align: horizon,
+    table.header(
+      [*Stage*], [*Grid*], [*Lasers*], [*$T_("max")$*],
+      [*Generator (thesis name)*], [*Pool size*],
+    ),
+    [1], [6×6],   [1], [12], [`constrained_random_solvable`],  [50 train],
+    [2], [8×8],   [2], [16], [`constructive_cooperative`],     [50 train],
+    [3], [10×10], [3], [18], [`constructive_cooperative`],     [50 train],
+    [4], [12×13], [3], [21], [`constructive_level6_style`],    [50 train + 50 eval],
+  ),
+  caption: [
+    Curriculum stages used by the CURR condition. Generator names are the descriptive
+    thesis-side names from `THESIS_GENERATOR_NAMES`; the corresponding runtime registry keys are
+    `random`, `cooperative`, `cooperative`, `level6_style`. All stages use 4 agents.
+  ],
+) <tab-curriculum-stages>
+
+Stages 1–3 each provide a 50-level training pool; stage 4 additionally provides a 50-level
+held-out evaluation pool that is never seen during training. Pool seeds are derived
+deterministically from `RNG_SEED = 20260514` and are documented in the per-pool `params.json` files
+under `results/curriculum_experiment/levels/`.
+
+=== Conditions
+
+We compare four conditions, all evaluated on the same hand-crafted Level 6 target. Each
+condition uses a single trainer (shared across stages where applicable), so the $Q$-network,
+replay buffer, and optimiser persist between stage transitions; only the source of training levels
+and the active $T_("max")$ change.
+
+- *B1 (target-only baseline).* Train exclusively on the stage-4 training pool (50 level-6-style
+  generated levels). This isolates the contribution of the level-6-style generator without any
+  curriculum.
+- *B2 (uniform-mix baseline).* Train on the union of all four stage training pools (200 levels
+  total), sampling uniformly from the union at every episode. This isolates the contribution of
+  level *diversity* without the staged ordering of CURR.
+- *B3 (oracle baseline).* Train exclusively on the hand-crafted Level 6, sampling that single
+  level at every episode. This is the "no procedural generation at all" control.
+- *CURR (curriculum).* Train on the four stages in order, advancing from stage $k$ to
+  stage $k+1$ as soon as the rolling success rate over the last
+  `ADVANCEMENT_WINDOW_EPISODES = 100` training episodes reaches
+  `ADVANCEMENT_SUCCESS_THRESHOLD = 0.80`. If the threshold is not met within the per-stage
+  step cap (`per_stage_step_cap_*`, 375,000 steps per stage for the full budget; halved for the
+  pilot), the scheduler advances anyway to prevent lock-up on a hard stage.
+
+The four conditions share the same total training budget. For the full experiment that budget is
+`FULL_RUN_TOTAL_STEPS = 1,500,000` environment steps; for the pilot reported here it is
+`PILOT_RUN_TOTAL_STEPS = 750,000` environment steps.
+
+=== Evaluation
+
+The headline metric is the greedy success rate on the hand-crafted Level 6, denoted
+$hat(s)_("level6")$, estimated from `FINAL_EVAL_EPISODES = 200` independent episodes after the
+last training step (epsilon = 0). Periodic evaluations of `EVAL_EPISODES = 50` episodes are
+logged every `EVAL_FREQUENCY_STEPS = 20,000` environment steps in `level6_eval.csv`. For the B1
+condition we additionally report the greedy success rate on the 50-level stage-4 held-out pool
+(`success_rate_held_out_pool` in `final_results.json`), which probes whether B1 over-fits to its
+own 50-level training pool.
+
+A positive transfer result is: $hat(s)_("level6")("CURR") > hat(s)_("level6")("B1")$ and
+$> hat(s)_("level6")("B2")$ at the same total step budget. A weaker but still informative
+result is: CURR reaches its asymptote in fewer environment steps than the baselines.
+
+=== Pilot Setup
+
+At the time of writing, only the *pilot* run is in progress: two seeds of QMIX per condition
+($|cal(S)_("pilot")| = 2$, $|cal(A)_("pilot")| = {"QMIX"}$) at the
+`PILOT_RUN_TOTAL_STEPS = 750,000` budget. The pilot's purpose is to verify that the curriculum
+scheduler, the per-stage advancement criterion, and the eval cadence behave as specified before
+committing the full ($1.5 times 10^6$ steps) $times$ ($3$ algos) $times$ (multiple seeds) run.
+The full design space is the cartesian product
+$
+  cal(C) times cal(A) times cal(S)
+  = {"B1","B2","B3","CURR"} times {"QMIX","VDN","IQL"} times cal(S)
+$
+which we will populate once the pilot's stability is confirmed.
 
 === Results
 
-_This section will be completed once the training experiments are run._
+// TODO: results
+//
+// The pilot is still in progress as of the thesis-writing date 2026-05-16.
+// Once the four pilot runs (B1, B2, B3, CURR; QMIX; 2 seeds) finish, the
+// expected outputs are:
+//   - results/curriculum_experiment/figures/level6_success_per_condition.pdf
+//   - results/curriculum_experiment/figures/learning_curves.pdf
+//   - the per-condition mean and 95 % CI of success_rate_level6 (and, for
+//     B1, success_rate_held_out_pool)
+// produced by src/experiments/curriculum/plot_results.py.
+//
+// Pending placeholders to fill in once the runs complete:
+//   - Insert level6_success_per_condition.pdf as figure <fig-curriculum-final>
+//   - Insert learning_curves.pdf as figure <fig-curriculum-curves>
+//   - Insert a per-condition mean ± std table analogous to tab-learnability-p2
+//   - Discuss whether CURR > B1, B2 at 750k steps (pilot conclusion)
 
-=== Interpretation
+_Results of the QMIX pilot will be reported once all four condition cells have completed their
+750,000-step budget; see the placeholder above for the figures and table to insert._
 
-A positive transfer result would confirm that the formal cooperation guarantee translates into
-useful training signal: levels that are provably cooperative expose agents to the coordination
-structure they need to solve the benchmark levels. A negative result would indicate that the
-distribution mismatch between generated and human-designed levels is a limiting factor, motivating
-further work on domain-adaptive generation.
+=== Anticipated Interpretation
+
+If CURR outperforms B1 at the pilot budget, the staged exposure provides curricular value beyond
+what level-6-style training alone supplies, and the procedural-generator framework of @generators
+is validated as a curriculum source for cooperative MARL on the Level-6 target. If CURR matches
+B2 (uniform mix) but neither outperforms B3 (single Level 6), the bottleneck is sample efficiency
+of QMIX on this target rather than the training distribution. If CURR underperforms B1, the
+implicit smoothness assumption of the curriculum — that policies useful at stage $k$ remain
+useful at stage $k+1$ — is violated for this specific generator sequence, motivating a redesign
+of the stage geometry rather than a different curriculum scheduler.

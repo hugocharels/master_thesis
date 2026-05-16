@@ -1,0 +1,24 @@
+{
+  "label": "learnability_phase1",
+  "pool_dir": "results/learnability/levels/6x6_2a_1L_cooperative",
+  "height": 6,
+  "width": 6,
+  "n_agents": 2,
+  "n_lasers": 1,
+  "t_max": 10,
+  "generator_name": "cooperative",
+  "splits": {
+    "train": {
+      "seed": 20260515,
+      "n_levels": 20,
+      "rendered_now": 20,
+      "images_dir": "results/learnability/levels/6x6_2a_1L_cooperative/train/images"
+    },
+    "test": {
+      "seed": 20260516,
+      "n_levels": 20,
+      "rendered_now": 20,
+      "images_dir": "results/learnability/levels/6x6_2a_1L_cooperative/test/images"
+    }
+  }
+}

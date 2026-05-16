@@ -213,10 +213,27 @@ def _target_obs_shape() -> tuple[int, int, int]:
     return (int(shape[0]), int(shape[1]), int(shape[2]))
 
 
-def _make_padded_env(world: World, t_max: int, target_obs_shape: tuple[int, int, int]):
-    """Build a ``ThesisLLEConfig``-backed env padded to ``target_obs_shape``."""
+def _target_state_shape() -> tuple[int]:
+    """Return the state shape that all stages must be padded up to.
+
+    Level 6 has 4 gems and its state vector is (16,). The thesis
+    generators produce 0-gem worlds whose state is (12,). The mixer
+    must see a single state size, so smaller-stage states are padded
+    with zeros up to Level 6's shape.
+    """
+    cfg = ThesisLLEConfig.from_world(World.level(6), t_max=CURRICULUM_STAGES[3].t_max)
+    return (int(cfg.env.state_shape[0]),)
+
+
+def _make_padded_env(
+    world: World,
+    t_max: int,
+    target_obs_shape: tuple[int, int, int],
+    target_state_shape: tuple[int, ...],
+):
+    """Build a ``ThesisLLEConfig``-backed env padded to the target shapes."""
     cfg = ThesisLLEConfig.from_world(world, t_max=t_max)
-    return PadObservations3D(cfg.env, target_obs_shape)
+    return PadObservations3D(cfg.env, target_obs_shape, target_state_shape)
 
 
 def _build_trainer(algo: str, sample_env: ThesisLLEConfig):
@@ -413,6 +430,7 @@ def _evaluate(
     n_episodes: int,
     eval_rng: random.Random,
     target_obs_shape: tuple[int, int, int],
+    target_state_shape: tuple[int, ...],
 ) -> tuple[float, float, float]:
     """Run ``n_episodes`` greedy evals over ``eval_pool``.
 
@@ -425,7 +443,12 @@ def _evaluate(
     try:
         for _ in range(n_episodes):
             world = eval_rng.choice(eval_pool)
-            env = _make_padded_env(world, t_max=eval_t_max, target_obs_shape=target_obs_shape)
+            env = _make_padded_env(
+                world,
+                t_max=eval_t_max,
+                target_obs_shape=target_obs_shape,
+                target_state_shape=target_state_shape,
+            )
             success, total_return = _greedy_eval_episode(env, eval_agent)
             successes.append(int(success))
             returns.append(total_return)
@@ -457,6 +480,7 @@ def _train_loop(
     eval_rng: random.Random,
     log_stage_transitions: bool,
     target_obs_shape: tuple[int, int, int],
+    target_state_shape: tuple[int, ...],
     start_step: int = 0,
     start_episode: int = 0,
     start_wall_clock_seconds: float = 0.0,
@@ -513,7 +537,12 @@ def _train_loop(
         # Sample a world for this episode and build the env.
         world = sampler.sample_world()
         t_max = sampler.current_t_max
-        env = _make_padded_env(world, t_max=t_max, target_obs_shape=target_obs_shape)
+        env = _make_padded_env(
+            world,
+            t_max=t_max,
+            target_obs_shape=target_obs_shape,
+            target_state_shape=target_state_shape,
+        )
 
         episode, last_info, time_step = _train_one_episode(
             env=env,
@@ -543,6 +572,7 @@ def _train_loop(
                 n_episodes=EVAL_EPISODES,
                 eval_rng=eval_rng,
                 target_obs_shape=target_obs_shape,
+                target_state_shape=target_state_shape,
             )
             csv_writer_eval.writerow([next_eval_at, f"{sr:.6f}", f"{mr:.6f}"])
             next_eval_at += EVAL_FREQUENCY_STEPS
@@ -826,9 +856,11 @@ def main(argv: list[str] | None = None) -> int:
 
     # Load training pools and build sampler.
     pools = _load_pools_for_condition(args.condition, out_dir)
-    # Q-network is sized once on stage 4's max obs shape; per-episode envs
-    # are zero-padded up to it (see ``PadObservations3D``).
+    # Q-network is sized once on stage 4's max obs shape and Level 6's
+    # max state shape; per-episode envs are zero-padded up to them
+    # (see ``PadObservations3D``).
     target_obs_shape = _target_obs_shape()
+    target_state_shape = _target_state_shape()
     scheduler: StageScheduler | None
     if args.condition == "CURR":
         scheduler = StageScheduler(
@@ -941,6 +973,7 @@ def main(argv: list[str] | None = None) -> int:
             eval_rng=eval_rng,
             log_stage_transitions=(args.condition == "CURR"),
             target_obs_shape=target_obs_shape,
+            target_state_shape=target_state_shape,
             start_step=start_step,
             start_episode=start_episode,
             start_wall_clock_seconds=start_wall_clock,
@@ -956,6 +989,7 @@ def main(argv: list[str] | None = None) -> int:
         n_episodes=FINAL_EVAL_EPISODES,
         eval_rng=eval_rng,
         target_obs_shape=target_obs_shape,
+        target_state_shape=target_state_shape,
     )
 
     final_payload: dict = {
@@ -983,6 +1017,7 @@ def main(argv: list[str] | None = None) -> int:
                 n_episodes=FINAL_EVAL_EPISODES,
                 eval_rng=eval_rng,
                 target_obs_shape=target_obs_shape,
+                target_state_shape=target_state_shape,
             )
             final_payload["success_rate_held_out_pool"] = held_sr
             final_payload["success_rate_held_out_pool_std"] = held_sr_std

@@ -164,25 +164,39 @@ class ThesisLLEConfig(EnvConfig[lle.LLE]):
 
 
 class PadObservations3D(RLEnvWrapper):
-    """Pad 3D ``(C, H, W)`` observations with zeros to a fixed target shape.
+    """Pad 3D ``(C, H, W)`` observations and (optionally) 1D state with zeros.
 
     LLE's layered observation has shape ``(C, H, W)`` whose channel count
     depends on the number of laser colours and whose spatial extent
-    matches the grid. The Q-network must be sized once for *all* stages,
-    so per-stage envs are wrapped to expose a single homogenised obs
-    shape. Padding is bottom-right (rows after the world's height,
-    columns after the world's width) and on the trailing channels, which
-    keeps the wrapped world's content at the origin of the padded
-    tensor.
+    matches the grid. LLE's state vector also varies in length because
+    it stores per-gem indicator flags (Level 6 has 4 gems, the thesis
+    generators produce 0-gem worlds). The Q-network and the QMix mixer
+    must each be sized once for *all* envs that will be fed in, so
+    per-episode envs are wrapped to expose a single homogenised
+    observation- and state-shape. Padding is bottom-right on the spatial
+    axes, and at the end on the trailing axis for both channels and
+    state features.
 
-    Only the observation is padded -- LLE's state, extras and action
-    space happen to be constant across the curriculum stages in this
-    experiment (see :data:`experiments.curriculum.configs.CURRICULUM_STAGES`).
+    Parameters
+    ----------
+    target_shape:
+        Target ``(C, H, W)`` for the observation.
+    target_state_shape:
+        Optional target shape for the 1D state vector. ``None`` leaves
+        the state untouched. When provided, must be a one-element tuple
+        whose value is at least as large as the wrapped env's
+        ``state_shape``.
     """
 
     target_shape: tuple[int, int, int]
+    target_state_shape: tuple[int, ...] | None
 
-    def __init__(self, env: MARLEnv, target_shape: tuple[int, int, int]) -> None:
+    def __init__(
+        self,
+        env: MARLEnv,
+        target_shape: tuple[int, int, int],
+        target_state_shape: tuple[int, ...] | None = None,
+    ) -> None:
         if len(env.observation_shape) != 3:
             raise ValueError(
                 f"PadObservations3D expects 3D observations, "
@@ -195,8 +209,29 @@ class PadObservations3D(RLEnvWrapper):
                 f"target_shape {target_shape} is smaller than the wrapped "
                 f"env's observation_shape {env.observation_shape}"
             )
-        super().__init__(env, observation_shape=target_shape)
+
+        state_kwargs: dict = {}
+        self._state_pad_width: tuple[tuple[int, int], ...] | None = None
+        if target_state_shape is not None:
+            if len(env.state_shape) != 1 or len(target_state_shape) != 1:
+                raise ValueError(
+                    f"target_state_shape only supports 1D states, got "
+                    f"env.state_shape={env.state_shape}, "
+                    f"target_state_shape={target_state_shape}"
+                )
+            s = env.state_shape[0]
+            ts = target_state_shape[0]
+            if ts < s:
+                raise ValueError(
+                    f"target_state_shape {target_state_shape} is smaller "
+                    f"than the wrapped env's state_shape {env.state_shape}"
+                )
+            self._state_pad_width = ((0, ts - s),)
+            state_kwargs["state_shape"] = target_state_shape
+
+        super().__init__(env, observation_shape=target_shape, **state_kwargs)
         self.target_shape = target_shape
+        self.target_state_shape = target_state_shape
         self._pad_widths_data = (
             (0, 0),                # n_agents axis: unchanged
             (0, tc - c),           # channels: pad at the end
@@ -211,14 +246,28 @@ class PadObservations3D(RLEnvWrapper):
             ).astype(np.float32, copy=False)
         return obs
 
+    def _pad_state(self, state):
+        if self._state_pad_width is None:
+            return state
+        if state.data.shape == self.target_state_shape:
+            return state
+        state.data = np.pad(
+            state.data, self._state_pad_width, mode="constant", constant_values=0.0
+        ).astype(np.float32, copy=False)
+        return state
+
     def reset(self, *, seed: int | None = None):
         obs, state = super().reset(seed=seed)
-        return self._pad_obs(obs), state
+        return self._pad_obs(obs), self._pad_state(state)
 
     def step(self, action):
         step = super().step(action)
         step.obs = self._pad_obs(step.obs)
+        step.state = self._pad_state(step.state)
         return step
 
     def get_observation(self):
         return self._pad_obs(super().get_observation())
+
+    def get_state(self):
+        return self._pad_state(super().get_state())

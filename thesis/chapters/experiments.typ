@@ -104,19 +104,199 @@ substantial on realistic LLE instances.
 
 What is *not* yet established empirically is the broader quality of the generator framework. The
 present experiment does not measure generator acceptance rates, diversity of accepted levels,
-distribution of cooperation profiles, or any downstream training effect on MARL agents. Whether the
-formal cooperation guarantee translates into useful training signal for MARL agents remains an open
-empirical question, addressed in @learnability-experiment and @transfer-experiment.
+distribution of cooperation profiles, or any downstream training effect on MARL agents. The
+following two sections address the first two of these open questions; the downstream MARL
+question is addressed in @learnability-experiment and @transfer-experiment.
 
-#block(fill: rgb("#fff4d6"), stroke: rgb("#d4a005"), radius: 4pt, inset: 10pt)[
-  *Note on regenerated benchmarks.* Earlier drafts of this chapter included two additional sections
-  — *Generator Rejection Rates* and *Cooperation Profile Distribution* — that characterised the
-  efficiency and the output diversity of every generator in the family. Both benchmarks were
-  computed against the pre-fix version of the `constructive_cooperative` generator described in
-  @generators, and are therefore stale: the new generator places multiple distinct-colour
-  structural lasers and yields a substantially different cooperation-profile distribution. Both
-  sections will be reinstated once the benchmarks are re-run against the post-fix generator.
+
+== Generator Rejection Rates <generator-rejection-rates>
+
+=== Experimental Question
+
+Acceptance rates determine the practical cost of the rejection-sampling strategy used by the
+generators. A generator with a 1 % acceptance rate requires approximately one hundred solver
+calls per usable level, which directly affects generation throughput. This experiment measures,
+for each generator and grid size, how many attempts are needed to find one accepted level and how
+much wall-clock time those attempts consume.
+
+=== Protocol
+
+For each generator type and grid size combination, a fixed number of independent trials is
+executed: 200 trials for the $3 times 3$ and $5 times 5$ grids, and 20 trials for the
+$8 times 8$ grid. Each trial searches for one accepted level by calling
+`generate()` repeatedly with `max_attempts=1` so that every call is a single attempt. A trial
+ends when one level is accepted or a per-trial budget is exhausted (500 attempts for the small
+grids; 100 attempts or 30 seconds for the $8 times 8$ grid). Failed trials are excluded from the
+mean attempt count and reported separately.
+
+Each single attempt samples a candidate layout, validates geometric constraints (where
+applicable), constructs an `lle.World`, and runs the SAT-based acceptance test of the generator.
+The mean number of attempts per accepted level is the direct measurement of the rejection cost:
+it is approximately the reciprocal of the acceptance rate.
+
+Five generators are evaluated: `constrained_random_solvable` (`random` in the runtime registry),
+`constrained_random_cooperative`, `constructive_solvable` (`constructive`),
+`constructive_cooperative` (`cooperative`), and `constructive_level6_style` (`level6_style`).
+Three grid configurations are used: $3 times 3$ with 2 agents and 1 laser, $5 times 5$ with 3
+agents and 2 lasers, and $8 times 8$ with 4 agents and 3 lasers.
+
+=== Results
+
+#figure(
+  image("../../results/rejection_benchmark/rejection_rate_by_generator.pdf", width: 90%),
+  caption: [
+    Rejection rate (%) per generator and grid size, derived from the mean number of attempts
+    per accepted level.
+  ],
+)
+
+#figure(
+  image("../../results/rejection_benchmark/mean_attempts_per_level.pdf", width: 90%),
+  caption: [
+    Mean number of attempts needed to find one accepted level, per generator and grid size.
+    Each attempt is one independent generation call; the mean is taken over successful trials only.
+  ],
+)
+
+#figure(
+  image("../../results/rejection_benchmark/time_per_accepted_level.pdf", width: 90%),
+  caption: [
+    Mean wall-clock time (seconds) to obtain one accepted level, per generator and grid size.
+    Time includes all rejected attempts that precede each accepted level.
+  ],
+)
+
+=== Interpretation
+
+The results split the five generators into three regimes.
+
+The `constrained_random_solvable` generator has rejection rates of 71.2 %, 86.8 %, and 83.9 %
+across the three grid sizes, with mean attempts of 3.5, 7.6, and 6.2. Rejection here is driven by
+the fact that random layouts rarely admit a valid joint trajectory within the requested horizon.
+On the $8 times 8$ grid, one trial out of twenty exhausted its budget without finding an accepted
+level.
+
+The two constructive generators are the cheapest in the family. The `constructive_solvable`
+generator runs at 0.0 %, 9.5 %, and 4.8 % rejection across the three grid sizes (1.00, 1.10, and
+1.05 mean attempts), and the post-fix `constructive_cooperative` runs at 0.0 %, 6.1 %, and 4.8 %
+(1.00, 1.06, and 1.05 mean attempts). The cooperative generator now matches its solvable
+counterpart almost exactly: the multi-colour structural-laser construction of @generators
+guarantees that every accepted candidate satisfies the binary cooperation criterion by
+construction, so the SAT acceptance step rejects only the small fraction of candidates whose
+random wall sample happens to produce an unsolvable or trivial layout. This is the largest
+quantitative change relative to the pre-fix generator, whose acceptance was driven by a
+rejection-sampling profile filter and which produced substantially higher rejection on small
+grids.
+
+The `constrained_random_cooperative` generator behaves consistently with the prior expectation
+on the two smaller grids: 98.7 % rejection at $3 times 3$ (79.5 mean attempts) and 98.5 % at
+$5 times 5$ (68.8 mean attempts). The high cost reflects the strict subset structure:
+cooperation-requiring layouts are a strict subset of solvable layouts, and a uniformly sampled
+candidate is unlikely to require beam-blocking.#footnote[
+  The $8 times 8$ configuration of `constrained_random_cooperative` could not be measured here:
+  the LLE C extension crashed during trial 6 of 20 (SIGSEGV) on a randomly-sampled world.
+  We report this row as missing rather than inferring a value, and excluded it from the plots.
 ]
+
+The `constructive_level6_style` generator sits between the two regimes. On the $3 times 3$ grid
+its rejection is 98.7 % (78.3 mean attempts), because the level-6 cluster template requires more
+grid cells than the small grid can offer without geometric conflicts. From $5 times 5$ upward
+the cluster geometry becomes feasible: rejection drops to 81.1 % and 76.2 % at $5 times 5$ and
+$8 times 8$ (5.3 and 4.2 mean attempts respectively). The level-6-style template trades a
+moderate efficiency cost for the richer cooperation profile reported in @profile-distribution.
+
+
+== Cooperation Profile Distribution <profile-distribution>
+
+=== Experimental Question
+
+The binary cooperation detector of @cooperation-detection certifies that every accepted
+cooperative level requires at least one same-colour beam-truncation step, but it does not
+distinguish *which* structural pattern of inter-agent dependency the level exhibits. This
+experiment measures the distribution of cooperation profiles among accepted levels, using the
+cooperation profile analyzer also introduced in @cooperation-detection.
+
+=== Protocol
+
+For each of three cooperative generators (`constrained_random_cooperative`,
+`constructive_cooperative`, and `constructive_level6_style`) and two grid configurations
+($5 times 5$ with 2 agents and 1 laser, $8 times 8$ with 3 agents and 2 lasers), the script
+accepts 100 cooperative levels on the small grid and 50 on the large grid, then classifies each
+into one of the analyzer's profile families: `asymmetric`, `mutual`, `chain`, `distributed`, or
+`fully_coupled`.
+
+=== Results
+
+#figure(
+  image("../../results/profile_benchmark/profile_distribution.pdf", width: 90%),
+  caption: [
+    Distribution of cooperation profiles among accepted cooperative levels, grouped by generator
+    and grid size. Each bar shows the fraction of accepted levels assigned to a given profile
+    family.
+  ],
+)
+
+=== Interpretation
+
+On the $5 times 5$ grid every accepted level from all three generators is classified as
+`asymmetric` (100 out of 100 in each case). With only 2 agents, the families `chain`,
+`distributed`, and `fully_coupled` are *structurally impossible* by construction — they require
+at least 3 agents — and the `mutual` family is in principle reachable but does not appear: with a
+single laser the cooperation pattern is restricted to a one-way blocking action by the laser's
+colour-matched agent.
+
+The $8 times 8$ configuration with 3 agents and 2 lasers is where the post-fix
+`constructive_cooperative` generator separates from the previous-generation behaviour. The new
+generator produces 46 `mutual`, 2 `asymmetric`, and 2 `distributed` levels out of 50, i.e. a
+92 % majority of mutual cooperation. This reflects the multi-colour structural-laser
+construction: with two distinct-colour lasers each crossing the entire lane band, the agent of
+colour 0 must block laser 0 for the other agents to pass, and symmetrically agent 1 must block
+laser 1, so two helpers act on their own beams in turn — the canonical mutual pattern. By
+contrast, the pre-fix `constructive_cooperative` generator produced exclusively `asymmetric`
+levels on the same configuration, with a single helper acting on a single structural laser.
+
+The `constrained_random_cooperative` generator produces 46 `asymmetric`, 3 `distributed`, and
+1 `chain` level out of 50 on the same $8 times 8$ configuration. Random layouts that happen to
+require beam-blocking do so most often through a one-way dependency; richer profiles arise only
+incidentally and the generator does not reach the `mutual` family here.
+
+The `constructive_level6_style` generator produces 34 `mutual`, 13 `asymmetric`, and 3
+`distributed` levels out of 50 on the $8 times 8$ configuration. The cluster-and-corridor
+geometry forces all agents through a shared corridor and tends to produce multiple agents
+helping each other simultaneously, much like the canonical LLE Level 6 itself (which the
+analyzer also classifies as `mutual`). The two-constructive-generator regime is therefore:
+`constructive_cooperative` favours the mutual pattern by design (92 % mutual), and
+`constructive_level6_style` favours it by geometric pressure (68 % mutual).
+
+Across the three generators, no level was classified as `fully_coupled` in this benchmark.
+That family requires a strongly connected dependency graph of size at least three, which neither
+the lane template nor the cluster template targets by construction; reliably generating
+fully-coupled instances would require either a larger laser count or the profile-targeted
+generation mode, in which the generator's acceptance filter explicitly rejects non-matching
+profiles.
+
+
+== Discussion
+
+The two benchmarks above characterise complementary aspects of the generation framework.
+
+The rejection-rate experiment measures *efficiency*. The headline finding is that the post-fix
+`constructive_cooperative` generator runs at near-zero rejection (5–6 % at $5 times 5$ and
+$8 times 8$, comparable to the solvable variant), thanks to the multi-colour structural-laser
+construction that guarantees cooperation by construction rather than by rejection sampling.
+This makes the generator practical for producing large pools at scale.
+
+The profile-distribution experiment measures *output diversity*. The headline finding is that
+the same post-fix generator now produces predominantly `mutual` levels (92 % mutual on
+$8 times 8$ with two lasers), where the pre-fix generator was confined to `asymmetric`. Together
+with the level-6-style generator, the family now spans the asymmetric / mutual / distributed
+range of the analyzer's classification.
+
+What these experiments do not establish is whether certified levels are useful for training. The
+generator framework guarantees formal properties of accepted levels, but whether those properties
+translate into better or faster learning for MARL agents compared to uncertified baselines
+remains an open empirical question, addressed in @learnability-experiment and
+@transfer-experiment.
 
 
 == Learnability of Generated Cooperative Levels <learnability-experiment>

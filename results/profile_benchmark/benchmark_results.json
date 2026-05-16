@@ -1,0 +1,98 @@
+{
+  "constrained_random_cooperative": {
+    "5x5": {
+      "accepted": 100,
+      "rejected": 5327,
+      "total_attempts": 5427,
+      "rejection_rate": 0.9815736134144094,
+      "elapsed_seconds": 75.91846650000662,
+      "profile_counts": {
+        "asymmetric": 100
+      },
+      "profile_fractions": {
+        "asymmetric": 1.0
+      }
+    },
+    "8x8": {
+      "accepted": 50,
+      "rejected": 1383,
+      "total_attempts": 1433,
+      "rejection_rate": 0.9651081646894627,
+      "elapsed_seconds": 184.54264930001227,
+      "profile_counts": {
+        "asymmetric": 46,
+        "chain": 1,
+        "distributed": 3
+      },
+      "profile_fractions": {
+        "asymmetric": 0.92,
+        "chain": 0.02,
+        "distributed": 0.06
+      }
+    }
+  },
+  "cooperative": {
+    "5x5": {
+      "accepted": 100,
+      "rejected": 23,
+      "total_attempts": 123,
+      "rejection_rate": 0.18699186991869918,
+      "elapsed_seconds": 8.900211100000888,
+      "profile_counts": {
+        "asymmetric": 100
+      },
+      "profile_fractions": {
+        "asymmetric": 1.0
+      }
+    },
+    "8x8": {
+      "accepted": 50,
+      "rejected": 7,
+      "total_attempts": 57,
+      "rejection_rate": 0.12280701754385964,
+      "elapsed_seconds": 26.804506999993464,
+      "profile_counts": {
+        "mutual": 46,
+        "asymmetric": 2,
+        "distributed": 2
+      },
+      "profile_fractions": {
+        "mutual": 0.92,
+        "asymmetric": 0.04,
+        "distributed": 0.04
+      }
+    }
+  },
+  "level6_style": {
+    "5x5": {
+      "accepted": 100,
+      "rejected": 59,
+      "total_attempts": 159,
+      "rejection_rate": 0.3710691823899371,
+      "elapsed_seconds": 8.213800400000764,
+      "profile_counts": {
+        "asymmetric": 100
+      },
+      "profile_fractions": {
+        "asymmetric": 1.0
+      }
+    },
+    "8x8": {
+      "accepted": 50,
+      "rejected": 23,
+      "total_attempts": 73,
+      "rejection_rate": 0.3150684931506849,
+      "elapsed_seconds": 26.79794220000622,
+      "profile_counts": {
+        "mutual": 34,
+        "asymmetric": 13,
+        "distributed": 3
+      },
+      "profile_fractions": {
+        "mutual": 0.68,
+        "asymmetric": 0.26,
+        "distributed": 0.06
+      }
+    }
+  }
+}

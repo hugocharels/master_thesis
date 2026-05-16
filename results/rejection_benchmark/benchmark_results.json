@@ -1,0 +1,147 @@
+{
+  "random": {
+    "3x3": {
+      "successful_trials": 200,
+      "failed_trials": 0,
+      "mean_attempts_per_level": 3.47,
+      "std_attempts_per_level": 3.0065096041755797,
+      "mean_time_per_level": 0.001189561998617137,
+      "rejection_rate": 0.7118155619596542,
+      "note": null
+    },
+    "5x5": {
+      "successful_trials": 200,
+      "failed_trials": 0,
+      "mean_attempts_per_level": 7.57,
+      "std_attempts_per_level": 7.713954887086131,
+      "mean_time_per_level": 0.011349399499304127,
+      "rejection_rate": 0.8678996036988111,
+      "note": null
+    },
+    "8x8": {
+      "successful_trials": 19,
+      "failed_trials": 1,
+      "mean_attempts_per_level": 6.2105263157894735,
+      "std_attempts_per_level": 6.0661176986205945,
+      "mean_time_per_level": 0.13227380000018074,
+      "rejection_rate": 0.8389830508474576,
+      "note": "1 trials exhausted budget and are excluded from mean_attempts"
+    }
+  },
+  "constrained_random_cooperative": {
+    "3x3": {
+      "successful_trials": 200,
+      "failed_trials": 0,
+      "mean_attempts_per_level": 79.515,
+      "std_attempts_per_level": 74.53576171878838,
+      "mean_time_per_level": 0.2010479474987369,
+      "rejection_rate": 0.9874237565239263,
+      "note": null
+    },
+    "5x5": {
+      "successful_trials": 200,
+      "failed_trials": 0,
+      "mean_attempts_per_level": 68.805,
+      "std_attempts_per_level": 61.367882275665984,
+      "mean_time_per_level": 0.7947988215002988,
+      "rejection_rate": 0.9854661725165322,
+      "note": null
+    },
+    "8x8": {
+      "successful_trials": 0,
+      "failed_trials": 20,
+      "mean_attempts_per_level": null,
+      "std_attempts_per_level": null,
+      "mean_time_per_level": null,
+      "rejection_rate": null,
+      "note": "SKIP: LLE segfault on randomly-sampled 8x8 world; benchmark crashed at trial 6/20. See git history at commit time. Excluded from plot."
+    }
+  },
+  "constructive": {
+    "3x3": {
+      "successful_trials": 200,
+      "failed_trials": 0,
+      "mean_attempts_per_level": 1.0,
+      "std_attempts_per_level": 0.0,
+      "mean_time_per_level": 0.0010171445009473246,
+      "rejection_rate": 0.0,
+      "note": null
+    },
+    "5x5": {
+      "successful_trials": 200,
+      "failed_trials": 0,
+      "mean_attempts_per_level": 1.105,
+      "std_attempts_per_level": 0.3224515467477246,
+      "mean_time_per_level": 0.008430909000016982,
+      "rejection_rate": 0.09502262443438912,
+      "note": null
+    },
+    "8x8": {
+      "successful_trials": 20,
+      "failed_trials": 0,
+      "mean_attempts_per_level": 1.05,
+      "std_attempts_per_level": 0.21794494717703372,
+      "mean_time_per_level": 0.06321442000044045,
+      "rejection_rate": 0.04761904761904766,
+      "note": null
+    }
+  },
+  "cooperative": {
+    "3x3": {
+      "successful_trials": 200,
+      "failed_trials": 0,
+      "mean_attempts_per_level": 1.0,
+      "std_attempts_per_level": 0.0,
+      "mean_time_per_level": 0.0051977190010075,
+      "rejection_rate": 0.0,
+      "note": null
+    },
+    "5x5": {
+      "successful_trials": 200,
+      "failed_trials": 0,
+      "mean_attempts_per_level": 1.065,
+      "std_attempts_per_level": 0.2660357118884606,
+      "mean_time_per_level": 0.051533365999057425,
+      "rejection_rate": 0.06103286384976521,
+      "note": null
+    },
+    "8x8": {
+      "successful_trials": 20,
+      "failed_trials": 0,
+      "mean_attempts_per_level": 1.05,
+      "std_attempts_per_level": 0.2179449471770337,
+      "mean_time_per_level": 0.7116142750048311,
+      "rejection_rate": 0.04761904761904766,
+      "note": null
+    }
+  },
+  "level6_style": {
+    "3x3": {
+      "successful_trials": 200,
+      "failed_trials": 0,
+      "mean_attempts_per_level": 78.335,
+      "std_attempts_per_level": 74.56240859172938,
+      "mean_time_per_level": 0.1269070075005584,
+      "rejection_rate": 0.9872343141635285,
+      "note": null
+    },
+    "5x5": {
+      "successful_trials": 200,
+      "failed_trials": 0,
+      "mean_attempts_per_level": 5.305,
+      "std_attempts_per_level": 4.500219439094054,
+      "mean_time_per_level": 0.08023761750053382,
+      "rejection_rate": 0.8114985862393967,
+      "note": null
+    },
+    "8x8": {
+      "successful_trials": 20,
+      "failed_trials": 0,
+      "mean_attempts_per_level": 4.2,
+      "std_attempts_per_level": 3.4871191548325386,
+      "mean_time_per_level": 0.6383815849985695,
+      "rejection_rate": 0.7619047619047619,
+      "note": null
+    }
+  }
+}

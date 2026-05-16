@@ -104,219 +104,19 @@ substantial on realistic LLE instances.
 
 What is *not* yet established empirically is the broader quality of the generator framework. The
 present experiment does not measure generator acceptance rates, diversity of accepted levels,
-distribution of cooperation profiles, or any downstream training effect on MARL agents. The
-following sections address the first two of these open questions.
+distribution of cooperation profiles, or any downstream training effect on MARL agents. Whether the
+formal cooperation guarantee translates into useful training signal for MARL agents remains an open
+empirical question, addressed in @learnability-experiment and @transfer-experiment.
 
-
-== Generator Rejection Rates <generator-rejection-rates>
-
-=== Experimental Question
-
-Acceptance rates determine the practical cost of the rejection-sampling strategy used by the
-generators. A generator with a 1 % acceptance rate requires approximately one hundred solver calls
-per usable level, which directly affects generation throughput. This experiment measures, for each
-generator and grid size, how many attempts are needed to find one accepted level and how much time
-those attempts consume.
-
-=== Protocol
-
-For each generator type and grid size combination, a fixed number of independent trials is
-executed: 200 trials for $3 times 3$ and $5 times 5$ grids, and 20 trials for the $8 times 8$
-grid (see @appendix-generator-params for full parameters). Each trial searches for one accepted
-level by calling the generator repeatedly with a budget of one attempt per call. A call either
-returns an accepted level or raises a rejection. The trial ends when one level is accepted or a
-per-trial budget is exhausted (500 attempts for small grids; 100 attempts or 30 seconds for
-$8 times 8$). Failed trials — those that exhaust the budget — are recorded separately and excluded
-from the mean; they represent the hard tail of the attempt distribution.
-
-Each single attempt samples a candidate layout, validates geometric constraints (where applicable),
-constructs an `lle.World` object, and runs the SAT solver. The attempt is accepted if the solver
-certifies the required property (solvability or cooperation), and rejected otherwise.
-
-Recording the number of attempts per accepted level is the most direct measurement of the
-generator's rejection cost: the mean number of attempts approximates the reciprocal of the
-acceptance rate.
-
-Five generators are evaluated: `constrained_random_solvable`, `constrained_random_cooperative`,
-`constructive_solvable`, `constructive_cooperative`, and `constructive_level6_style`. The plain
-random generators are excluded as they serve primarily as structural baselines; the constrained
-and constructive variants are the generators of practical interest. Three grid sizes are used:
-$3 times 3$ with 2 agents and 1 laser, $5 times 5$ with 3 agents and 2 lasers, and $8 times 8$
-with 4 agents and 3 lasers.
-
-=== Results
-
-#figure(
-  image("../../results/rejection_benchmark/rejection_rate_by_generator.pdf", width: 90%),
-  caption: [
-    Rejection rate (%) per generator and grid size, derived from the mean number of attempts
-    per accepted level across 50 trials.
-  ],
-)
-
-#figure(
-  image("../../results/rejection_benchmark/mean_attempts_per_level.pdf", width: 90%),
-  caption: [
-    Mean number of attempts needed to find one accepted level, per generator and grid size.
-    Each attempt is one independent generation call; the mean is averaged over 50 successful trials.
-  ],
-)
-
-#figure(
-  image("../../results/rejection_benchmark/time_per_accepted_level.pdf", width: 90%),
-  caption: [
-    Mean wall-clock time (seconds) to obtain one accepted level, per generator and grid size.
-    Time includes all rejected attempts that precede each accepted level.
-  ],
-)
-
-=== Interpretation
-
-The results reveal a four-way split rather than the expected two-way split between solvable and
-cooperative generators.
-
-The `constrained_random_solvable` generator has rejection rates of 68 %, 87 %, and 89 % on the
-$3 times 3$, $5 times 5$, and $8 times 8$ grids respectively, requiring a mean of 3.1, 7.6, and
-9.5 attempts per accepted level. Rejection here is driven by the fact that random layouts rarely
-admit a valid joint trajectory within the requested horizon.
-
-The `constructive_solvable` generator achieves near-zero rejection across all sizes: 0 % on
-$3 times 3$, 11 % on $5 times 5$, and 5 % on $8 times 8$, with mean attempts of 1.0, 1.1, and
-1.1. The lane-reservation strategy reliably biases layouts toward solvable configurations, making
-the acceptance check almost a formality.
-
-The `constrained_random_cooperative` generator behaves consistently with the prior expectation:
-rejection rates of 98.5 %, 98.7 %, and 97.9 % across the three grid sizes, requiring 69, 77, and
-48 mean attempts per accepted level. The high cost reflects the strict subset structure:
-cooperation-requiring layouts are a strict subset of solvable layouts, and a uniformly sampled
-candidate is unlikely to require beam-blocking.
-
-The `constructive_cooperative` generator separates from this pattern. On $3 times 3$ it shows the
-same expected high rejection (98.7 %, 76 mean attempts), because the grid is so small that even a
-deliberate dependency template rarely fits without geometric clashes. From $5 times 5$ upward the
-planted-dependency strategy pays off: rejection drops to 27 % on $5 times 5$ and 38 % on
-$8 times 8$, with mean attempts of 1.4 and 1.6 respectively. This is a substantial qualitative
-result — at sizes large enough for the lane geometry to be feasible, the constructive cooperative
-template reliably plants a same-colour blocking dependency that the SAT-based cooperation test
-accepts on the first or second attempt.
-
-The `constructive_level6_style` generator sits between the two cooperative families on this
-benchmark. It shows the same near-saturated rejection on $3 times 3$ (98.6 %, 70 mean attempts) for
-the same geometric reason, but rejection rates of 84.3 % on $5 times 5$ and 79.8 % on $8 times 8$
-(6.4 and 5.0 mean attempts respectively) — substantially higher than the lane-based
-`constructive_cooperative`, but materially lower than the random cooperative generator. The
-clustered geometry forces all agents through a shared corridor, which makes solvability and
-cooperation requirement harder to satisfy simultaneously than in the lane-based template; in
-exchange, when a level is accepted, it carries a richer cooperation profile (see
-@profile-distribution).
-
-On the $8 times 8$ grid, `constrained_random_cooperative` had 5 failed trials out of 20, where
-the per-trial budget (100 attempts or 30 seconds) was exhausted without finding an accepted level;
-`constructive_cooperative` had 0 failed trials. Failed trials are excluded from the mean-attempts
-statistic, which therefore under-estimates the true cost of `constrained_random_cooperative` on
-$8 times 8$.
-
-
-== Cooperation Profile Distribution <profile-distribution>
-
-=== Experimental Question
-
-Binary cooperation detection certifies that every accepted cooperative level requires at least one
-same-colour beam-truncation step, but it does not distinguish which structural pattern of
-inter-agent dependency the level exhibits. This experiment measures the distribution of cooperation
-profiles among accepted levels, using the cooperation profile analyzer introduced in
-@cooperation-detection.
-
-=== Protocol
-
-For each of three cooperative generators (`constrained_random_cooperative`,
-`constructive_cooperative`, and `constructive_level6_style`) and two grid sizes ($5 times 5$ with
-2 agents and 1 laser, $8 times 8$ with 3 agents and 2 lasers), 100 cooperative levels are accepted
-on the small grid and 50 on the large grid, then classified by the cooperation profile analyzer. The classifier assigns each level to one of the following profile
-families: `asymmetric`, `mutual`, `chain`, `distributed`, or `fully_coupled`. The analyzer also
-returns `cooperative` as a fallback when cooperation is required but no specific dependency structure
-is detected.
-
-=== Results
-
-#figure(
-  image("../../results/profile_benchmark/profile_distribution.pdf", width: 90%),
-  caption: [
-    Distribution of cooperation profiles among accepted cooperative levels, grouped by generator and
-    grid size. Each bar shows the fraction of accepted levels assigned to a given profile family.
-  ],
-)
-
-=== Interpretation
-
-Most generators produce a strongly asymmetric distribution. On the $5 times 5$ grid, every
-accepted level from all three generators is classified as `asymmetric`: one agent depends on
-another, but not vice versa. The $5 times 5$ configuration uses only 2 agents, so the profiles
-`chain`, `distributed`, and `fully_coupled` are *structurally impossible* by construction (they
-require at least 3 agents for chain/distributed and a non-trivial cycle of length $>= 3$ for
-`fully_coupled`). The 5 × 5 result is therefore a partition between `asymmetric` and `mutual`, and
-the absence of `mutual` levels indicates that random or constructive geometries on this grid
-rarely yield two reciprocally helping agents within the chosen horizon. On the $8 times 8$ grid
-(3 agents, 2 lasers), the random cooperative generator produces 92 % `asymmetric`, 4 %
-`distributed`, and 4 % `chain` levels (n = 50), with no `mutual` or `fully_coupled` instances
-observed. The lane-based `constructive_cooperative` generator produces 100 % `asymmetric` levels
-on both grid sizes, which reflects its planted-dependency template: it deliberately introduces
-exactly one one-way helping relation.
-
-The `constructive_level6_style` generator is the qualitative outlier. On $5 times 5$ with 2 agents
-it is also forced to 100 % `asymmetric` for the structural reason above, but on $8 times 8$ with 3
-agents it produces a much more varied distribution: 50 % `asymmetric`, 34 % `mutual`, and 16 %
-`distributed` (n = 50). The `mutual` and `distributed` fractions are by far the highest of any
-generator in this benchmark, and they reflect the geometry of the level-6-style template: when all
-agents are forced through a shared corridor, cooperation tends to involve multiple agents helping
-each other simultaneously, rather than a single one-way dependency. This is the closest match in
-the generator family to the dependency structure of the canonical LLE Level 6 (which itself is
-mutual under the analyzer's classification cascade).
-
-The concentration on `asymmetric` profiles in the other generators is consistent with the
-structural bias introduced by same-colour beam-blocking in lane-based or random layouts: the
-simplest cooperation pattern to arise is a one-way dependency, and richer profiles require either
-a more specific layout configuration or geometric pressure such as the shared-corridor constraint
-introduced by the level-6-style generator.
-
-The lane-based constructive cooperative generator achieves 0 % rejection on the $5 times 5$ grid
-(every generated candidate is accepted) and 19 % on the $8 times 8$ grid, confirming that the
-lane-reservation strategy combined with the planted dependency reliably produces cooperative levels
-for the parameter combinations used here. The level-6-style constructive generator has higher
-rejection on this benchmark — 39 % on $5 times 5$ and 44 % on $8 times 8$ — but trades that
-moderate cost for the much richer profile distribution discussed above. By contrast, the random
-cooperative generator has 98 % rejection on $5 times 5$ and 97 % on $8 times 8$, because most
-randomly sampled layouts do not spontaneously require a beam-blocking step.
-
-The profile distribution reveals a limitation of the current generation approach: although the
-larger random sample on $8 times 8$ now exposes rare `chain` and `distributed` profiles
-(2 levels each out of 50), `mutual` and `fully_coupled` still do not appear in these samples.
-Generating levels with a specific rare profile reliably therefore still requires the
-profile-targeted generation mode, in which the generator accepts only levels that match the
-requested profile family.
-
-
-== Discussion
-
-The three experiments above characterise complementary aspects of the generation framework.
-
-The rejection-rate experiment measures *efficiency*: how many solver calls are needed per accepted
-level, and which generator and grid-size combinations are most practical. This is relevant for
-large-scale generation tasks where throughput matters.
-
-The profile-distribution experiment measures *output diversity*: whether the accepted levels cover
-different cooperation structures or concentrate on a narrow profile class. This is relevant for
-curriculum design, where a varied distribution of cooperation structures is preferable to a
-homogeneous one.
-
-Together, the three experiments support the claim that the solver-in-the-loop architecture produces
-not only formally certified levels, but a characterisable and controllable distribution of certified
-levels.
-
-What these experiments do not establish is whether certified levels are useful for training. The
-generator framework guarantees formal properties of accepted levels, but whether those properties
-translate into better or faster learning for MARL agents compared to uncertified baselines remains
-an open empirical question, addressed in @learnability-experiment and @transfer-experiment.
+#block(fill: rgb("#fff4d6"), stroke: rgb("#d4a005"), radius: 4pt, inset: 10pt)[
+  *Note on regenerated benchmarks.* Earlier drafts of this chapter included two additional sections
+  — *Generator Rejection Rates* and *Cooperation Profile Distribution* — that characterised the
+  efficiency and the output diversity of every generator in the family. Both benchmarks were
+  computed against the pre-fix version of the `constructive_cooperative` generator described in
+  @generators, and are therefore stale: the new generator places multiple distinct-colour
+  structural lasers and yields a substantially different cooperation-profile distribution. Both
+  sections will be reinstated once the benchmarks are re-run against the post-fix generator.
+]
 
 
 == Learnability of Generated Cooperative Levels <learnability-experiment>
@@ -404,109 +204,16 @@ The headline aggregate per algorithm $a in cal(A)$ is the mean and standard devi
 twenty seeds; we also report a 95 % confidence interval $plus.minus 1.96 sigma / sqrt(20)$ in the
 per-seed appendix tables.
 
-=== Results — Phase 1
+=== Results
 
-@fig-learnability-p1-curves shows the learning curves and @fig-learnability-p1-bar the final
-greedy success rates. All three algorithms converge to $hat(s) = 1.000$ on both
-$cal(D)_("train")$ and $cal(D)_("test")$ for every seed (60 / 60 runs at 100 % final success;
-per-seed values in @appendix-learnability-p1-results). The standard deviation across seeds is
-exactly zero, so the per-algorithm confidence interval is degenerate. The three algorithms differ
-only in the time at which the greedy success rate first plateaus: VDN reaches $1.0$ earliest, at
-approximately $5.5 times 10^4$ environment steps, followed by IQL at approximately
-$7.0 times 10^4$, and QMIX at approximately $8.0 times 10^4$.
-
-#figure(
-  image("../../results/learnability/figures/learning_curves.pdf", width: 90%),
-  caption: [
-    Phase 1 learning curves: greedy success rate on the train pool (solid) and test pool (dashed)
-    as a function of environment steps, averaged over 20 seeds per algorithm; shaded bands are
-    $plus.minus 1$ standard deviation across seeds.
-  ],
-) <fig-learnability-p1-curves>
-
-#figure(
-  image("../../results/learnability/figures/final_bar_chart.pdf", width: 75%),
-  caption: [
-    Phase 1 final greedy success rate after 100,000 environment steps, evaluated over 200 episodes
-    per pool, per algorithm. All three algorithms reach $1.000 plus.minus 0.000$ on both pools.
-  ],
-) <fig-learnability-p1-bar>
-
-The train / test gap on this configuration is identically zero. We read this as evidence that the
-20-level cooperative pool on a 6×6 grid is small enough that any policy able to clear it
-generalises to the held-out pool of the same distribution; phase 1 does not discriminate between
-algorithms and does not exercise the cooperative generator's representational diversity.
-
-=== Results — Phase 2
-
-@fig-learnability-p2-curves and @fig-learnability-p2-bar report the same plots for the harder
-Phase 2 configuration. The per-algorithm final mean and standard deviation (over seeds 0–19, with
-QMIX additionally including seed 42 as a re-run of a Phase-2 partial; see footnote on
-@appendix-learnability-p2-results) are summarised in @tab-learnability-p2.
-
-#figure(
-  table(
-    columns: 3,
-    stroke: black,
-    inset: 8pt,
-    align: (horizon, center, center),
-    table.header([*Algorithm*], [*$hat(s)_("train")$ (mean ± std)*], [*$hat(s)_("test")$ (mean ± std)*]),
-    [QMIX], [$0.85 plus.minus 0.35$], [$0.85 plus.minus 0.35$],
-    [VDN],  [$0.60 plus.minus 0.44$], [$0.61 plus.minus 0.45$],
-    [IQL],  [$0.16 plus.minus 0.31$], [$0.16 plus.minus 0.30$],
-  ),
-  caption: [
-    Phase 2 final greedy success rate after 200,000 environment steps, evaluated over 200
-    episodes per pool. Mean and standard deviation across $n = 20$ training seeds (QMIX includes
-    one re-run, $n = 21$). Aggregates computed from the raw per-seed file
-    `results/learnability_phase2/runs/{algo}_seed{N}/final_results.json`.
-  ],
-) <tab-learnability-p2>
-
-#figure(
-  image("../../results/learnability_phase2/figures/learning_curves.pdf", width: 90%),
-  caption: [
-    Phase 2 learning curves: greedy success rate on the train pool (solid) and test pool (dashed)
-    as a function of environment steps, averaged over training seeds; shaded bands are
-    $plus.minus 1$ standard deviation across seeds.
-  ],
-) <fig-learnability-p2-curves>
-
-#figure(
-  image("../../results/learnability_phase2/figures/final_bar_chart.pdf", width: 75%),
-  caption: [
-    Phase 2 final greedy success rate after 200,000 environment steps, evaluated over 200 episodes
-    per pool, per algorithm. Error bars are $plus.minus 1$ standard deviation across seeds.
-  ],
-) <fig-learnability-p2-bar>
-
-Two observations follow. First, the train / test gap is again essentially zero across all three
-algorithms ($|hat(s)_("train") - hat(s)_("test")| <= 0.02$ for every algorithm in the
-phase-2 mean), which is the most direct evidence we have that the cooperative generator does not
-over-fit to a particular training pool: a policy that solves the 20 training levels solves the 20
-unseen test levels at the same rate. Second, the variance across seeds is large: for IQL and VDN
-the standard deviation across seeds exceeds the mean itself, reflecting the bimodal nature of the
-per-seed distribution. Inspecting the per-seed table (@appendix-learnability-p2-results), most
-seeds either converge fully ($hat(s) >= 0.95$) or fail to learn at all ($hat(s) <= 0.05$); only a
-small fraction sit at intermediate values. This bimodality concentrates the difference between
-algorithms in the *fraction of seeds that converge*, rather than in the asymptotic success rate of
-a converged seed.
-
-=== Discussion
-
-Phase 1 is undiscriminating: all three algorithms saturate the 6×6 cooperative pool quickly
-enough that the differences between IQL, VDN and QMIX are reduced to a small advantage in
-convergence time. Phase 2 separates the algorithms by credit-assignment strength, in the expected
-order: QMIX > VDN > IQL.
-
-The most informative diagnostic is the train / test gap, not the final mean. The cooperative
-generator is the only direct dependency of the training distribution in this experiment, and the
-absence of a measurable train / test gap in either phase indicates that the 20 cooperative levels
-in the training pool already span the cooperative-level distribution well enough that an unseen
-20-level sample from the same generator does not require additional adaptation. This is a
-necessary condition for the curriculum-transfer experiment in @transfer-experiment, which assumes
-that performance on a held-out generator pool is a valid proxy for the underlying cooperative
-distribution.
+#block(fill: rgb("#fff4d6"), stroke: rgb("#d4a005"), radius: 4pt, inset: 10pt)[
+  *To be regenerated.* The Phase 1 and Phase 2 training runs reported in earlier drafts were
+  performed against the pre-fix `cooperative` generator (see @generators). Following the
+  generator rewrite, both pools were regenerated and the previous training results no longer
+  apply. Re-runs of the 60 (algorithm, seed) cells per phase against the new pools are scheduled;
+  the learning-curve and final-success-rate figures, the per-algorithm mean / std table, and the
+  per-seed appendix tables will be reinstated once they complete.
+]
 
 
 == Curriculum Transfer to Level-6-Style Targets <transfer-experiment>
@@ -522,9 +229,8 @@ to be brittle for value-decomposition methods.
 
 We therefore ask whether *staged exposure* through a four-stage curriculum of generated levels
 transfers better to the Level-6-style target than three control conditions that skip the
-curriculum. The generators in the curriculum are the same ones characterised in
-@generator-rejection-rates and @profile-distribution, used here as a controlled source of
-training instances rather than as standalone artefacts.
+curriculum. The generators in the curriculum are the same ones described in @generators, used
+here as a controlled source of training instances rather than as standalone artefacts.
 
 === Curriculum Stages
 

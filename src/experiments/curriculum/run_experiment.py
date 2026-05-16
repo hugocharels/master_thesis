@@ -888,7 +888,7 @@ def main(argv: list[str] | None = None) -> int:
 
     # Build trainer + agents (ONCE, reused across all episodes/stages).
     trainer = _build_trainer(args.algo, sample_env)
-    device = torch.device("cpu")
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     trainer = trainer.to(device)
     trainer.randomize()  # one-time, replaces simple_run's call
     train_agent = trainer.make_agent().to(device)

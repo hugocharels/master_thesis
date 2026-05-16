@@ -1,0 +1,11 @@
+{
+  "algo": "VDN",
+  "seed": 15,
+  "total_steps_trained": 200000,
+  "success_rate_train": 0.91,
+  "success_rate_train_std": 0.2861817604250837,
+  "mean_return_train": 3.82,
+  "success_rate_test": 1.0,
+  "success_rate_test_std": 0.0,
+  "mean_return_test": 4.0
+}

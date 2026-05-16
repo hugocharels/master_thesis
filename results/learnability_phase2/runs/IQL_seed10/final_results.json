@@ -1,0 +1,11 @@
+{
+  "algo": "IQL",
+  "seed": 10,
+  "total_steps_trained": 200000,
+  "success_rate_train": 0.11,
+  "success_rate_train_std": 0.31288975694324034,
+  "mean_return_train": 1.24,
+  "success_rate_test": 0.06,
+  "success_rate_test_std": 0.23748684174075835,
+  "mean_return_test": 0.66
+}

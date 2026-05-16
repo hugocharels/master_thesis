@@ -66,7 +66,7 @@ from experiments.curriculum.configs import (
     RNG_SEED,
 )
 from experiments.curriculum.curriculum_scheduler import StageScheduler
-from experiments.curriculum.lle_marl_env import ThesisLLEConfig
+from experiments.curriculum.lle_marl_env import PadObservations3D, ThesisLLEConfig
 from experiments.curriculum.pool_generator import load_pool, pool_path
 
 # ---------------------------------------------------------------------------
@@ -182,35 +182,41 @@ def _load_pools_for_condition(
 
 
 def _build_sample_env_config(condition: str, pools: list[list[World]]) -> ThesisLLEConfig:
-    """Build a single ``ThesisLLEConfig`` used to size the Q-network.
+    """Build the ``ThesisLLEConfig`` used to size the Q-network.
 
-    The trainer / mixer / replay buffer must be built *once*; for that
-    we need an env to feed ``qnetworks.from_env`` and
-    ``mixers.QMix.from_env``. We pick a representative world (the first
-    of the first pool) and the corresponding ``t_max`` (the level-6
-    horizon for B3, the stage-1 horizon for CURR, the stage-4 horizon
-    for B1, and 21 for B2 since its union spans heterogeneous t_max
-    values - the per-episode env is rebuilt anyway with the correct
-    t_max).
+    The trainer / mixer / replay buffer must be built *once*. We size
+    them from a stage-4-geometry world (`World.level(6)` has the same
+    grid, agent and laser counts as stage 4 in the current design) so
+    that the Q-network's expected observation shape is the *maximum*
+    across all curriculum stages. Per-episode envs are wrapped with
+    :class:`PadObservations3D` to zero-pad smaller-stage observations
+    up to the same shape.
+
+    The ``condition`` argument is kept for symmetry with
+    :func:`_load_pools_for_condition` but is no longer needed for
+    sizing.
     """
-    if condition == "B3":
-        # Level 6 has the same geometry as stage 4.
-        t_max = CURRICULUM_STAGES[3].t_max
-        return ThesisLLEConfig.from_world(pools[0][0], t_max=t_max)
-    if condition == "B1":
-        t_max = CURRICULUM_STAGES[3].t_max
-        return ThesisLLEConfig.from_world(pools[0][0], t_max=t_max)
-    if condition == "B2":
-        # Largest stage's t_max keeps the time-limit wrapper safe for any
-        # sample env we build at runtime; the per-episode env will use the
-        # actual stage's t_max. Q-network shapes only care about
-        # observation_shape / n_actions, not t_max, so this is harmless.
-        t_max = CURRICULUM_STAGES[3].t_max
-        return ThesisLLEConfig.from_world(pools[0][0], t_max=t_max)
-    if condition == "CURR":
-        t_max = CURRICULUM_STAGES[0].t_max
-        return ThesisLLEConfig.from_world(pools[0][0], t_max=t_max)
-    raise ValueError(f"Unknown condition: {condition!r}")
+    del condition, pools  # unused: sizing is condition-independent
+    t_max = CURRICULUM_STAGES[3].t_max
+    return ThesisLLEConfig.from_world(World.level(6), t_max=t_max)
+
+
+def _target_obs_shape() -> tuple[int, int, int]:
+    """Return the obs shape that all stages must be padded up to.
+
+    Stage 4 has the largest grid (12x13) and the largest channel count
+    (3 lasers), so its layered observation is the elementwise maximum
+    across the curriculum stages.
+    """
+    cfg = ThesisLLEConfig.from_world(World.level(6), t_max=CURRICULUM_STAGES[3].t_max)
+    shape = cfg.env.observation_shape
+    return (int(shape[0]), int(shape[1]), int(shape[2]))
+
+
+def _make_padded_env(world: World, t_max: int, target_obs_shape: tuple[int, int, int]):
+    """Build a ``ThesisLLEConfig``-backed env padded to ``target_obs_shape``."""
+    cfg = ThesisLLEConfig.from_world(world, t_max=t_max)
+    return PadObservations3D(cfg.env, target_obs_shape)
 
 
 def _build_trainer(algo: str, sample_env: ThesisLLEConfig):
@@ -400,7 +406,14 @@ def _greedy_eval_episode(env, eval_agent) -> tuple[bool, float]:
     return success, total_return
 
 
-def _evaluate(eval_pool: list[World], eval_t_max: int, eval_agent, n_episodes: int, eval_rng: random.Random) -> tuple[float, float, float]:
+def _evaluate(
+    eval_pool: list[World],
+    eval_t_max: int,
+    eval_agent,
+    n_episodes: int,
+    eval_rng: random.Random,
+    target_obs_shape: tuple[int, int, int],
+) -> tuple[float, float, float]:
     """Run ``n_episodes`` greedy evals over ``eval_pool``.
 
     Returns (success_rate, success_rate_std, mean_return).
@@ -412,8 +425,7 @@ def _evaluate(eval_pool: list[World], eval_t_max: int, eval_agent, n_episodes: i
     try:
         for _ in range(n_episodes):
             world = eval_rng.choice(eval_pool)
-            cfg = ThesisLLEConfig.from_world(world, t_max=eval_t_max)
-            env = cfg.env
+            env = _make_padded_env(world, t_max=eval_t_max, target_obs_shape=target_obs_shape)
             success, total_return = _greedy_eval_episode(env, eval_agent)
             successes.append(int(success))
             returns.append(total_return)
@@ -444,6 +456,7 @@ def _train_loop(
     csv_writer_stage,
     eval_rng: random.Random,
     log_stage_transitions: bool,
+    target_obs_shape: tuple[int, int, int],
     start_step: int = 0,
     start_episode: int = 0,
     start_wall_clock_seconds: float = 0.0,
@@ -500,8 +513,7 @@ def _train_loop(
         # Sample a world for this episode and build the env.
         world = sampler.sample_world()
         t_max = sampler.current_t_max
-        env_cfg = ThesisLLEConfig.from_world(world, t_max=t_max)
-        env = env_cfg.env
+        env = _make_padded_env(world, t_max=t_max, target_obs_shape=target_obs_shape)
 
         episode, last_info, time_step = _train_one_episode(
             env=env,
@@ -530,6 +542,7 @@ def _train_loop(
                 eval_agent=eval_agent,
                 n_episodes=EVAL_EPISODES,
                 eval_rng=eval_rng,
+                target_obs_shape=target_obs_shape,
             )
             csv_writer_eval.writerow([next_eval_at, f"{sr:.6f}", f"{mr:.6f}"])
             next_eval_at += EVAL_FREQUENCY_STEPS
@@ -813,6 +826,9 @@ def main(argv: list[str] | None = None) -> int:
 
     # Load training pools and build sampler.
     pools = _load_pools_for_condition(args.condition, out_dir)
+    # Q-network is sized once on stage 4's max obs shape; per-episode envs
+    # are zero-padded up to it (see ``PadObservations3D``).
+    target_obs_shape = _target_obs_shape()
     scheduler: StageScheduler | None
     if args.condition == "CURR":
         scheduler = StageScheduler(
@@ -924,6 +940,7 @@ def main(argv: list[str] | None = None) -> int:
             csv_writer_stage=stage_writer,
             eval_rng=eval_rng,
             log_stage_transitions=(args.condition == "CURR"),
+            target_obs_shape=target_obs_shape,
             start_step=start_step,
             start_episode=start_episode,
             start_wall_clock_seconds=start_wall_clock,
@@ -938,6 +955,7 @@ def main(argv: list[str] | None = None) -> int:
         eval_agent=eval_agent,
         n_episodes=FINAL_EVAL_EPISODES,
         eval_rng=eval_rng,
+        target_obs_shape=target_obs_shape,
     )
 
     final_payload: dict = {
@@ -964,6 +982,7 @@ def main(argv: list[str] | None = None) -> int:
                 eval_agent=eval_agent,
                 n_episodes=FINAL_EVAL_EPISODES,
                 eval_rng=eval_rng,
+                target_obs_shape=target_obs_shape,
             )
             final_payload["success_rate_held_out_pool"] = held_sr
             final_payload["success_rate_held_out_pool_std"] = held_sr_std

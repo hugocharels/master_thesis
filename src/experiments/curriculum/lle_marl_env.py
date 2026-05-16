@@ -39,6 +39,8 @@ from lle.env.reward_strategy import (
     SingleObjective,
 )
 from marl.env import EnvConfig
+from marlenv.models import MARLEnv
+from marlenv.wrappers.rlenv_wrapper import RLEnvWrapper
 
 
 @dataclass
@@ -159,3 +161,64 @@ class ThesisLLEConfig(EnvConfig[lle.LLE]):
             obs_type=obs_type,
             state_type=state_type,
         )
+
+
+class PadObservations3D(RLEnvWrapper):
+    """Pad 3D ``(C, H, W)`` observations with zeros to a fixed target shape.
+
+    LLE's layered observation has shape ``(C, H, W)`` whose channel count
+    depends on the number of laser colours and whose spatial extent
+    matches the grid. The Q-network must be sized once for *all* stages,
+    so per-stage envs are wrapped to expose a single homogenised obs
+    shape. Padding is bottom-right (rows after the world's height,
+    columns after the world's width) and on the trailing channels, which
+    keeps the wrapped world's content at the origin of the padded
+    tensor.
+
+    Only the observation is padded -- LLE's state, extras and action
+    space happen to be constant across the curriculum stages in this
+    experiment (see :data:`experiments.curriculum.configs.CURRICULUM_STAGES`).
+    """
+
+    target_shape: tuple[int, int, int]
+
+    def __init__(self, env: MARLEnv, target_shape: tuple[int, int, int]) -> None:
+        if len(env.observation_shape) != 3:
+            raise ValueError(
+                f"PadObservations3D expects 3D observations, "
+                f"got shape {env.observation_shape}"
+            )
+        c, h, w = env.observation_shape
+        tc, th, tw = target_shape
+        if tc < c or th < h or tw < w:
+            raise ValueError(
+                f"target_shape {target_shape} is smaller than the wrapped "
+                f"env's observation_shape {env.observation_shape}"
+            )
+        super().__init__(env, observation_shape=target_shape)
+        self.target_shape = target_shape
+        self._pad_widths_data = (
+            (0, 0),                # n_agents axis: unchanged
+            (0, tc - c),           # channels: pad at the end
+            (0, th - h),           # height: pad at the bottom
+            (0, tw - w),           # width: pad at the right
+        )
+
+    def _pad_obs(self, obs):
+        if obs.data.shape[1:] != self.target_shape:
+            obs.data = np.pad(
+                obs.data, self._pad_widths_data, mode="constant", constant_values=0.0
+            ).astype(np.float32, copy=False)
+        return obs
+
+    def reset(self, *, seed: int | None = None):
+        obs, state = super().reset(seed=seed)
+        return self._pad_obs(obs), state
+
+    def step(self, action):
+        step = super().step(action)
+        step.obs = self._pad_obs(step.obs)
+        return step
+
+    def get_observation(self):
+        return self._pad_obs(super().get_observation())

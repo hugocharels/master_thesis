@@ -1,0 +1,18 @@
+{
+  "label": "curriculum_stage1",
+  "pool_dir": "results/curriculum_experiment/levels/stage_1_6x6_4a_0L_random",
+  "height": 6,
+  "width": 6,
+  "n_agents": 4,
+  "n_lasers": 0,
+  "t_max": 12,
+  "generator_name": "random",
+  "splits": {
+    "train": {
+      "seed": 20260614,
+      "n_levels": 50,
+      "rendered_now": 0,
+      "images_dir": "results/curriculum_experiment/levels/stage_1_6x6_4a_0L_random/train/images"
+    }
+  }
+}

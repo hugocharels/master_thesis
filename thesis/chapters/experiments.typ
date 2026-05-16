@@ -545,9 +545,9 @@ summarised in @tab-curriculum-stages and rendered as sample grids in
       [*Stage*], [*Grid*], [*Lasers*], [*$T_("max")$*],
       [*Generator (thesis name)*], [*Pool size*],
     ),
-    [1], [6×6],   [1], [12], [`constrained_random_solvable`],  [50 train],
-    [2], [8×8],   [2], [16], [`constructive_cooperative`],     [50 train],
-    [3], [10×10], [3], [18], [`constructive_cooperative`],     [50 train],
+    [1], [6×6],   [0], [12], [`constrained_random_solvable`],  [50 train],
+    [2], [8×8],   [1], [16], [`constructive_cooperative`],     [50 train],
+    [3], [10×10], [2], [18], [`constructive_cooperative`],     [50 train],
     [4], [12×13], [3], [21], [`constructive_level6_style`],    [50 train + 50 eval],
   ),
   caption: [

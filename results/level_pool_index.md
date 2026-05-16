@@ -34,42 +34,42 @@ parameters, and where to find the per-level PNG renderings.
 
 ## curriculum_stage1
 
-- pool directory: `results/curriculum_experiment/levels/stage_1_6x6_4a_1L_random`
+- pool directory: `results/curriculum_experiment/levels/stage_1_6x6_4a_0L_random`
 - grid: 6x6
 - agents: 4
-- lasers: 1
+- lasers: 0
 - horizon `t_max`: 12
 - generator: `random`
 
 | split | seed | n_levels | images |
 |-------|------|----------|--------|
-| train | 20260614 | 50 | `results/curriculum_experiment/levels/stage_1_6x6_4a_1L_random/train/images/` |
+| train | 20260614 | 50 | `results/curriculum_experiment/levels/stage_1_6x6_4a_0L_random/train/images/` |
 
 ## curriculum_stage2
 
-- pool directory: `results/curriculum_experiment/levels/stage_2_8x8_4a_2L_cooperative`
+- pool directory: `results/curriculum_experiment/levels/stage_2_8x8_4a_1L_cooperative`
 - grid: 8x8
 - agents: 4
-- lasers: 2
+- lasers: 1
 - horizon `t_max`: 16
 - generator: `cooperative`
 
 | split | seed | n_levels | images |
 |-------|------|----------|--------|
-| train | 20260714 | 50 | `results/curriculum_experiment/levels/stage_2_8x8_4a_2L_cooperative/train/images/` |
+| train | 20260714 | 50 | `results/curriculum_experiment/levels/stage_2_8x8_4a_1L_cooperative/train/images/` |
 
 ## curriculum_stage3
 
-- pool directory: `results/curriculum_experiment/levels/stage_3_10x10_4a_3L_cooperative`
+- pool directory: `results/curriculum_experiment/levels/stage_3_10x10_4a_2L_cooperative`
 - grid: 10x10
 - agents: 4
-- lasers: 3
+- lasers: 2
 - horizon `t_max`: 18
 - generator: `cooperative`
 
 | split | seed | n_levels | images |
 |-------|------|----------|--------|
-| train | 20260814 | 50 | `results/curriculum_experiment/levels/stage_3_10x10_4a_3L_cooperative/train/images/` |
+| train | 20260814 | 50 | `results/curriculum_experiment/levels/stage_3_10x10_4a_2L_cooperative/train/images/` |
 
 ## curriculum_stage4
 

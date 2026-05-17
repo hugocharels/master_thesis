@@ -68,14 +68,20 @@ RUN pip install --no-cache-dir uv
 RUN git clone --branch ${MARL_BRANCH} https://github.com/yamoling/marl.git /opt/marl \
     && cd /opt/marl && uv sync --extra modern-gpu
 
-# Replace the CPU torch wheel pulled by `uv sync` with the CUDA-12.1
-# wheel. The cu121 wheel ships its own CUDA runtime libs; only the
-# host's NVIDIA driver needs to be exposed via `docker run --gpus ...`.
-# `uv pip` is used because uv-created venvs do not ship a `pip` binary
-# by default.
+# Replace the CPU torch wheel pulled by `uv sync` with a CUDA-enabled
+# wheel that includes Pascal (sm_61) kernels. The ULB workstation
+# has GTX 1080 Ti cards (compute capability 6.1); PyTorch 2.4+ cu121
+# wheels are built only for sm_75 and newer and would fail at runtime
+# with `CUDA error: no kernel image is available for execution on the
+# device`. Torch 2.3.1 with the cu118 wheel still ships sm_61
+# kernels and runs on the cluster's driver 580 (driver supports any
+# CUDA <=13).
+#
+# `uv pip` is used because uv-created venvs do not ship a `pip`
+# binary by default.
 RUN uv pip install --no-cache-dir --python /opt/marl/.venv/bin/python \
-        --upgrade --index-url https://download.pytorch.org/whl/cu121 \
-        torch
+        --reinstall --index-url https://download.pytorch.org/whl/cu118 \
+        "torch==2.3.1"
 
 # Master-thesis-specific deps not in marl's pyproject. matplotlib,
 # pytest, ruff, laser-learning-environment are already in marl's venv.

@@ -20,18 +20,6 @@ PROJECTS_DIR="${PROJECTS_DIR:-$HOME/projects}"
 MEM_LIMIT="${MEM_LIMIT:-16g}"
 SWAP_LIMIT="${SWAP_LIMIT:-20g}"
 
-# Named Docker volume for the in-container user-site
-# (/home/$USER/.local). Persisting this across `docker run --rm`
-# means the entrypoint's editable `pip install -e /workspace/marl`
-# only runs once per host instead of every time. Docker copies the
-# image's /home/$USER/.local into the volume on first creation, so
-# the baked-in packages (torch, lle, ...) remain visible.
-#
-# Override with LOCAL_VOLUME=name to use a different volume (e.g. to
-# refresh after a Dockerfile rebuild that changed the baked deps:
-# `docker volume rm master_thesis_${USER}_userlocal` before running).
-LOCAL_VOLUME="${LOCAL_VOLUME:-master_thesis_${USER}_userlocal}"
-
 # GPU passthrough. The ULB workstation has 8 GPUs and a per-user
 # allocation table (see workstation guide); claiming all GPUs without
 # coordination is explicitly discouraged. This script therefore
@@ -87,7 +75,6 @@ docker run --rm -it \
     "${GPU_ARGS[@]}" \
     --memory="$MEM_LIMIT" \
     --memory-swap="$SWAP_LIMIT" \
-    -v "$LOCAL_VOLUME:/home/$USER/.local" \
     -v "$PROJECTS_DIR:/workspace" \
     -w /workspace/master_thesis \
     master_thesis:"$USER" \

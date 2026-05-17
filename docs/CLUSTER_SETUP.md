@@ -35,21 +35,21 @@ Then `ssh ulb` is enough. `ServerAliveInterval` keeps the tunnel alive
 so a tmux session with 12 h of training inside isn't killed by a
 silent connection drop.
 
-## 2 — Clone the two repos on the workstation
+## 2 — Clone master_thesis on the workstation
 
 ```bash
 mkdir -p ~/projects
 cd ~/projects
-git clone https://github.com/yamoling/marl.git
 git clone https://github.com/hugocharels/master_thesis.git
 ```
 
-You do **not** need to clone `lle` — the entrypoint installs it from
-PyPI inside the container. Clone it too only if you've authored
-modifications you want to test (e.g. the cooperative-generator branch):
+You do **not** need to clone `marl` or `lle` -- the Docker image bakes
+its own copy of marl (yamoling/marl@dev) and all its uv-locked
+dependencies, including lle. To target a different marl branch:
 
 ```bash
-git clone https://github.com/yamoling/lle.git    # optional
+cd ~/projects/master_thesis
+MARL_BRANCH=main bash docker/build.sh   # see build.sh forwards this build arg
 ```
 
 ## 3 — Build your Docker image (one-time)

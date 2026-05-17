@@ -1,26 +1,39 @@
 # Custom image for the master_thesis experiments.
 #
-# Why not the official ULB gpu_ubuntu1804:base?
-#   It's Python 3.6 + TF 2.3 + CUDA 10.1, much too old for our stack
-#   (Python 3.13 + PyTorch). We build on python:3.13-slim and rely on
-#   the CUDA-enabled PyTorch wheel (cu121), which ships its own CUDA
-#   runtime libraries; only the NVIDIA driver needs to be on the host
-#   and exposed to the container via `docker run --gpus all`.
+# Why uv and not pip?
+#   marl (https://github.com/yamoling/marl) declares git-sourced
+#   dependencies (smac, smacv2, pysc2) via [tool.uv.sources] in its
+#   pyproject.toml. pip ignores that section and either resolves the
+#   wrong package from PyPI (the unrelated "smac" Bayesian-optimisation
+#   tool) or no package at all. The result is that marlenv.adapters.SMAC
+#   is missing and `from marl import algos` fails at import time. uv
+#   honours [tool.uv.sources] and reads uv.lock, so we get the exact
+#   dep tree the laptop has.
 #
-# The build follows the ULB pattern (per the GPU workstation guide):
-#   - build args for your username / UID / GID so files written into
-#     mounted volumes are owned by you, not by root;
-#   - non-root container user;
-#   - shared-volume mount point at /workspace.
+# Why bake marl into the image rather than installing at entrypoint?
+#   marl's dep tree is large (fastapi, jupyterlab, neptune, pysc2, smac,
+#   torch, ...). Building it inside `docker run --rm` makes every
+#   container start cost minutes. Baking it at image build time means
+#   the cost is paid once and cached forever in Docker's layer cache.
+#
+# Why python:3.13-slim?
+#   marl's pyproject says requires-python = ">=3.12,<4"; 3.13 satisfies.
+#   The slim variant keeps the base image small; we add only what we
+#   actually need.
 FROM python:3.13-slim
 
 ARG USER_NAME=user
 ARG USER_ID=1000
 ARG GROUP_ID=1000
 
+# Pin marl to a specific branch so the build is reproducible. Override
+# with `docker build --build-arg MARL_BRANCH=...` or `--no-cache` to
+# refresh.
+ARG MARL_BRANCH=dev
+
 # System packages:
 #   git, curl, ca-certificates  - cloning, downloads
-#   build-essential, pkg-config, libssl-dev  - Rust ext build (lle from source)
+#   build-essential, pkg-config, libssl-dev  - native ext builds (sumtree, etc.)
 #   tmux, procps, less          - shell ergonomics inside an interactive container
 #   libsdl2-*, libxcb1, libgl1, libegl1, libx11-6, libxext6, libxrender1, libsm6,
 #   libice6, libxkbcommon0      - LLE links against SDL2 at import time (even when
@@ -43,55 +56,37 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 RUN groupadd -g ${GROUP_ID} ${USER_NAME} 2>/dev/null || true \
     && useradd -u ${USER_ID} -g ${GROUP_ID} -m -s /bin/bash ${USER_NAME} 2>/dev/null || true
 
-USER ${USER_NAME}
-WORKDIR /home/${USER_NAME}
+# Install uv system-wide.
+RUN pip install --no-cache-dir uv
 
-# Rust toolchain for compiling the lle C/Rust extension on the
-# (likely) chance that no Linux wheel is published for Python 3.13.
-# Installed in the user's home so it persists with the image without
-# needing root.
-RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs \
-        | sh -s -- -y --default-toolchain stable --profile minimal
-ENV PATH="/home/${USER_NAME}/.cargo/bin:/home/${USER_NAME}/.local/bin:${PATH}"
+# Clone marl from yamoling/marl@${MARL_BRANCH} and create the project
+# venv at /opt/marl/.venv from marl's uv.lock. `--extra modern-gpu`
+# pulls the modern PyTorch dep group (the resulting torch is CPU-only
+# from PyPI; we override with the CUDA wheel in the next layer).
+RUN git clone --branch ${MARL_BRANCH} https://github.com/yamoling/marl.git /opt/marl \
+    && cd /opt/marl && uv sync --frozen --extra modern-gpu
 
-# Baseline Python deps that we want baked into the image so each
-# `docker run` is fast. Heavy ones (laser-learning-environment via PyPI)
-# come pre-installed; project-specific editable installs happen at
-# entrypoint time on the mounted source.
-RUN pip install --no-cache-dir --user --upgrade pip wheel setuptools maturin
-
-# Install CUDA-enabled PyTorch (cu121 wheel). The wheel bundles its own
-# CUDA runtime libs, so the image does not need a CUDA toolkit installed
-# system-wide. At runtime, `docker run --gpus all` exposes the host's
-# NVIDIA driver to the container and torch.cuda.is_available() returns
-# True. Installed up front so the entrypoint's `pip install -e marl`
-# finds torch already present and does not pull the CPU wheel.
-RUN pip install --no-cache-dir --user \
+# Replace the CPU torch wheel pulled by `uv sync` with the CUDA-12.1
+# wheel. The cu121 wheel ships its own CUDA runtime libs; only the
+# host's NVIDIA driver needs to be exposed via `docker run --gpus ...`.
+RUN /opt/marl/.venv/bin/pip install --no-cache-dir --upgrade \
         torch --index-url https://download.pytorch.org/whl/cu121
 
-# Bake in lle (laser-learning-environment) + the master_thesis project
-# dependencies (python-sat, matplotlib, pytest) at build time so the
-# entrypoint does not have to reinstall them on every `docker run --rm`.
-# `pip install --user` writes to /home/${USER_NAME}/.local, which is
-# part of the image's filesystem layers and persists across container
-# instances. Per-run cost drops to a single editable `pip install -e
-# /workspace/marl` (~5-10 s).
-RUN pip install --no-cache-dir --user \
-        laser-learning-environment \
-        python-sat \
-        matplotlib \
-        pytest \
-        ruff
+# Master-thesis-specific deps not in marl's pyproject. matplotlib,
+# pytest, ruff, laser-learning-environment are already in marl's venv.
+RUN /opt/marl/.venv/bin/pip install --no-cache-dir python-sat ruff
 
-# Mount point for the host's projects directory. The runtime command
-# (see docker/run.sh) mounts ~/projects here, so /workspace/master_thesis
-# and /workspace/marl appear inside.
+# Make /opt/marl readable (and the .venv binaries executable) by the
+# non-root user.
+RUN chmod -R a+rX /opt/marl
+
+# Mount point for the host's projects directory. docker/run.sh mounts
+# ~/projects here so /workspace/master_thesis appears inside.
+USER ${USER_NAME}
 WORKDIR /workspace
 
-# Entrypoint pip-installs the mounted source repos in editable mode then
-# execs whatever command the user passed (default: interactive bash).
-# Copied to a user-agnostic system path because ENTRYPOINT in exec-form
-# does not expand ${USER_NAME}.
+# Copy the entrypoint to a user-agnostic system path (ENTRYPOINT in
+# exec-form does not expand ${USER_NAME}).
 USER root
 COPY entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh

@@ -58,8 +58,12 @@ WORKDIR /workspace
 
 # Entrypoint pip-installs the mounted source repos in editable mode then
 # execs whatever command the user passed (default: interactive bash).
-COPY --chown=${USER_NAME}:${USER_NAME} entrypoint.sh /home/${USER_NAME}/entrypoint.sh
-RUN chmod +x /home/${USER_NAME}/entrypoint.sh
+# Copied to a user-agnostic system path because ENTRYPOINT in exec-form
+# does not expand ${USER_NAME}.
+USER root
+COPY entrypoint.sh /usr/local/bin/entrypoint.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh
+USER ${USER_NAME}
 
-ENTRYPOINT ["/home/user/entrypoint.sh"]
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
 CMD ["bash"]

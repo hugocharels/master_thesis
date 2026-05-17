@@ -17,10 +17,8 @@ Columns:
 
 | Pool | Grid | n | uniq_ws | uniq_agents | uniq_exits | uniq_lasers | uniq_walls | uniq_beam_src | hamming_walls (mean / min / max) | hamming_norm |
 |---|---|---|---|---|---|---|---|---|---|---|
-| learnability_phase1 / train | 6x6 | 20 | 20 | 18 | 18 | 16 | 20 | 16 | 5.55 / 2 / 6 | 0.154 |
-| learnability_phase1 / test | 6x6 | 20 | 20 | 16 | 16 | 16 | 20 | 15 | 5.51 / 2 / 6 | 0.153 |
-| learnability_phase2 / train | 8x8 | 20 | 20 | 17 | 17 | 20 | 20 | 20 | 10.76 / 6 / 12 | 0.168 |
-| learnability_phase2 / test | 8x8 | 20 | 20 | 19 | 19 | 20 | 20 | 20 | 10.80 / 6 / 12 | 0.169 |
+| learnability / train | 8x8 | 20 | 20 | 17 | 17 | 20 | 20 | 20 | 10.76 / 6 / 12 | 0.168 |
+| learnability / test | 8x8 | 20 | 20 | 19 | 19 | 20 | 20 | 20 | 10.80 / 6 / 12 | 0.169 |
 | curriculum_stage1 / train | 6x6 | 50 | 50 | 50 | 50 | 1 | 50 | 1 | 5.49 / 2 / 6 | 0.152 |
 | curriculum_stage2 / train | 8x8 | 50 | 50 | 45 | 45 | 29 | 50 | 27 | 10.88 / 6 / 12 | 0.170 |
 | curriculum_stage3 / train | 10x10 | 50 | 50 | 49 | 49 | 48 | 50 | 47 | 17.94 / 10 / 20 | 0.179 |
@@ -29,10 +27,8 @@ Columns:
 
 ## Contact sheets
 
-- learnability_phase1 / train: `contact_sheets/learnability_phase1__train.png`
-- learnability_phase1 / test: `contact_sheets/learnability_phase1__test.png`
-- learnability_phase2 / train: `contact_sheets/learnability_phase2__train.png`
-- learnability_phase2 / test: `contact_sheets/learnability_phase2__test.png`
+- learnability / train: `contact_sheets/learnability__train.png`
+- learnability / test: `contact_sheets/learnability__test.png`
 - curriculum_stage1 / train: `contact_sheets/curriculum_stage1__train.png`
 - curriculum_stage2 / train: `contact_sheets/curriculum_stage2__train.png`
 - curriculum_stage3 / train: `contact_sheets/curriculum_stage3__train.png`

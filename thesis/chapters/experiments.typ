@@ -317,53 +317,45 @@ $Q$-learning (IQL), value-decomposition networks (VDN), and QMIX. They form a na
 progression in the strength of the credit-assignment assumption: from none (IQL), to additive
 team-value (VDN), to a monotonic mixing network (QMIX).
 
-The experiment proceeds in two phases of increasing difficulty. Phase 1 fixes a small two-agent
-configuration that all three algorithms are expected to solve; its purpose is to establish a
-floor and to verify that the training pipeline and the generated levels are well-formed. Phase 2
-scales up to three agents and two lasers, where credit assignment is expected to become the
-dominant difficulty.
-
 === Protocol
 
-Each phase fixes a grid geometry, an agent and laser count, a horizon $T_("max")$, and a
-generator. The two phases use the configurations summarised in @tab-learnability-phases, both
-drawn from the cooperative generator with seeded pre-flight pool generation
-(`PHASE1_GRID`, `PHASE2_GRID` in `src/experiments/learnability/configs.py`).
+The experiment fixes a single configuration that exercises the cooperation pressure end-to-end:
+an $8 times 8$ grid with three agents and two lasers, horizon $T_("max") = 16$, and the
+`cooperative` generator. The configuration is summarised in @tab-learnability-config and lives
+in the `GRID` constant of `src/experiments/learnability/configs.py`.
 
 #figure(
   table(
-    columns: 7,
+    columns: 6,
     stroke: black,
     inset: 8pt,
     align: horizon,
     table.header(
-      [*Phase*], [*Grid*], [*Agents*], [*Lasers*], [*$T_("max")$*],
+      [*Grid*], [*Agents*], [*Lasers*], [*$T_("max")$*],
       [*Generator*], [*Steps*],
     ),
-    [Phase 1], [6×6], [2], [1], [10], [`cooperative`], [100,000],
-    [Phase 2], [8×8], [3], [2], [16], [`cooperative`], [200,000],
+    [8×8], [3], [2], [16], [`cooperative`], [200,000],
   ),
   caption: [
-    Learnability-experiment configurations. The generator name refers to the registry key in
+    Learnability-experiment configuration. The generator name refers to the registry key in
     `src/generators/registry.py`, which corresponds to the descriptive name
     `constructive_cooperative` used in @generators.
   ],
-) <tab-learnability-phases>
+) <tab-learnability-config>
 
-For each phase, the pre-flight script generates two disjoint level pools from independent seeded
-streams: a training pool of $|cal(D)_("train")| = 20$ levels (split seed 20260515) and a held-out
-test pool of $|cal(D)_("test")| = 20$ levels (split seed 20260516). The same pools are reused for
-all algorithms and all training seeds within a phase, so any cross-algorithm difference is
-attributable to optimisation rather than to a pool resample. Per-level renderings of both pools
-are reproduced in the appendix (@appendix-learnability-p1, @appendix-learnability-p2).
+The pre-flight script generates two disjoint level pools from independent seeded streams: a
+training pool of $|cal(D)_("train")| = 20$ levels (split seed 20260615) and a held-out test pool
+of $|cal(D)_("test")| = 20$ levels (split seed 20260616). The same pools are reused for all
+algorithms and all training seeds, so any cross-algorithm difference is attributable to
+optimisation rather than to a pool resample. Per-level renderings of both pools are reproduced
+in the appendix (@appendix-learnability-train, @appendix-learnability-test).
 
-For each phase we train $|cal(A)| times |cal(S)| = 3 times 20 = 60$ independent agent
-instances:
+We train $|cal(A)| times |cal(S)| = 3 times 20 = 60$ independent agent instances:
 $
   cal(A) = {"IQL", "VDN", "QMIX"}, quad cal(S) = {0, 1, ..., 19}
 $
 The seed $s in cal(S)$ controls the Python, NumPy, and PyTorch random streams as well as the
-pool-sampling RNG. Hyperparameters are identical across algorithms and identical across phases
+pool-sampling RNG. Hyperparameters are identical across algorithms
 (@appendix-learnability-hyperparams): an Adam optimiser at learning rate $5 times 10^(-4)$, batch
 size 64, discount factor $gamma = 0.95$, a gradient update every 5 environment steps, gradient-norm
 clipping at 10, an $epsilon$-greedy training policy decaying linearly from 1.0 to 0.05 over the
@@ -387,12 +379,12 @@ per-seed appendix tables.
 === Results
 
 #block(fill: rgb("#fff4d6"), stroke: rgb("#d4a005"), radius: 4pt, inset: 10pt)[
-  *To be regenerated.* The Phase 1 and Phase 2 training runs reported in earlier drafts were
-  performed against the pre-fix `cooperative` generator (see @generators). Following the
-  generator rewrite, both pools were regenerated and the previous training results no longer
-  apply. Re-runs of the 60 (algorithm, seed) cells per phase against the new pools are scheduled;
-  the learning-curve and final-success-rate figures, the per-algorithm mean / std table, and the
-  per-seed appendix tables will be reinstated once they complete.
+  *To be regenerated.* The training runs reported in earlier drafts were performed against the
+  pre-fix `cooperative` generator (see @generators). Following the generator rewrite, both pools
+  were regenerated and the previous training results no longer apply. Re-runs of the 60
+  (algorithm, seed) cells against the new pools are scheduled; the learning-curve and
+  final-success-rate figures, the per-algorithm mean / std table, and the per-seed appendix
+  tables will be reinstated once they complete.
 ]
 
 
@@ -401,7 +393,7 @@ per-seed appendix tables.
 === Experimental Question
 
 The learnability experiment above demonstrates that off-the-shelf cooperative MARL can solve
-levels drawn from the `cooperative` generator at $8 times 8$ with three agents (Phase 2). The
+levels drawn from the `cooperative` generator at $8 times 8$ with three agents. The
 canonical hand-crafted target of this thesis — LLE Level 6 — is qualitatively harder: a
 $12 times 13$ corridor-like map with four agents and three lasers in which all agents must pass
 through a shared corridor. Direct training on a single level of that size and structure is known
@@ -518,7 +510,7 @@ which we will populate once the pilot's stability is confirmed.
 // Pending placeholders to fill in once the runs complete:
 //   - Insert level6_success_per_condition.pdf as figure <fig-curriculum-final>
 //   - Insert learning_curves.pdf as figure <fig-curriculum-curves>
-//   - Insert a per-condition mean ± std table analogous to tab-learnability-p2
+//   - Insert a per-condition mean ± std table (one row per B1/B2/B3/CURR)
 //   - Discuss whether CURR > B1, B2 at 750k steps (pilot conclusion)
 
 _Results of the QMIX pilot will be reported once all four condition cells have completed their

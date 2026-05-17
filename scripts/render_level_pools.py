@@ -2,8 +2,7 @@
 a per-pool ``params.json`` describing the generation parameters.
 
 Covers:
-- results/learnability/levels/             (Phase 1, .txt world strings)
-- results/learnability_phase2/levels/      (Phase 2, .txt world strings)
+- results/learnability/levels/             (.txt world strings)
 - results/curriculum_experiment/levels/    (4 curriculum stages, .json)
 
 For each pool ``<pool>/{train,test,eval}/`` it writes:
@@ -37,8 +36,7 @@ from experiments.curriculum.configs import (
     RNG_SEED as CURR_RNG_SEED,
 )
 from experiments.learnability.configs import (
-    PHASE1_GRID,
-    PHASE2_GRID,
+    GRID as LEARN_GRID,
     RNG_SEED as LEARN_RNG_SEED,
     TRAIN_POOL_SIZE,
     TEST_POOL_SIZE,
@@ -144,36 +142,18 @@ def _curriculum_pool_dir(base: Path, stage) -> Path:
 def build_specs() -> list[PoolSpec]:
     specs: list[PoolSpec] = []
 
-    # -- Learnability Phase 1 -------------------------------------------------
-    p1_base = PROJECT_ROOT / "results" / "learnability"
+    # -- Learnability -----------------------------------------------------------
+    learn_base = PROJECT_ROOT / "results" / "learnability"
     specs.append(PoolSpec(
-        label="learnability_phase1",
-        pool_dir=_phase_pool_dir(p1_base, PHASE1_GRID),
+        label="learnability",
+        pool_dir=_phase_pool_dir(learn_base, LEARN_GRID),
         file_suffix=".txt",
-        height=PHASE1_GRID.height,
-        width=PHASE1_GRID.width,
-        n_agents=PHASE1_GRID.n_agents,
-        n_lasers=PHASE1_GRID.n_lasers,
-        t_max=PHASE1_GRID.t_max,
-        generator_name=PHASE1_GRID.generator_name,
-        splits={
-            "train": {"seed": LEARN_RNG_SEED, "expected": TRAIN_POOL_SIZE},
-            "test":  {"seed": LEARN_RNG_SEED + 1, "expected": TEST_POOL_SIZE},
-        },
-    ))
-
-    # -- Learnability Phase 2 -------------------------------------------------
-    p2_base = PROJECT_ROOT / "results" / "learnability_phase2"
-    specs.append(PoolSpec(
-        label="learnability_phase2",
-        pool_dir=_phase_pool_dir(p2_base, PHASE2_GRID),
-        file_suffix=".txt",
-        height=PHASE2_GRID.height,
-        width=PHASE2_GRID.width,
-        n_agents=PHASE2_GRID.n_agents,
-        n_lasers=PHASE2_GRID.n_lasers,
-        t_max=PHASE2_GRID.t_max,
-        generator_name=PHASE2_GRID.generator_name,
+        height=LEARN_GRID.height,
+        width=LEARN_GRID.width,
+        n_agents=LEARN_GRID.n_agents,
+        n_lasers=LEARN_GRID.n_lasers,
+        t_max=LEARN_GRID.t_max,
+        generator_name=LEARN_GRID.generator_name,
         splits={
             "train": {"seed": LEARN_RNG_SEED, "expected": TRAIN_POOL_SIZE},
             "test":  {"seed": LEARN_RNG_SEED + 1, "expected": TEST_POOL_SIZE},

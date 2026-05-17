@@ -1,7 +1,6 @@
 """Static configuration for the learnability experiment.
 
-Phase 1: 6x6 grid, 2 agents, 1 laser, cooperative generator.
-Phase 2: 8x8 grid, 3 agents, 2 lasers, cooperative generator.
+Single configuration: 8x8 grid, 3 agents, 2 lasers, cooperative generator.
 Train on 20 generated levels, eval on 20 held-out generated levels.
 """
 
@@ -12,7 +11,7 @@ from dataclasses import dataclass
 
 @dataclass(frozen=True)
 class GridConfig:
-    """Grid geometry and generator for one experimental phase."""
+    """Grid geometry and generator for the learnability experiment."""
 
     height: int
     width: int
@@ -22,16 +21,7 @@ class GridConfig:
     generator_name: str
 
 
-PHASE1_GRID = GridConfig(
-    height=6,
-    width=6,
-    n_agents=2,
-    n_lasers=1,
-    t_max=10,
-    generator_name="cooperative",
-)
-
-PHASE2_GRID = GridConfig(
+GRID = GridConfig(
     height=8,
     width=8,
     n_agents=3,
@@ -40,9 +30,7 @@ PHASE2_GRID = GridConfig(
     generator_name="cooperative",
 )
 
-PHASES: dict[int, GridConfig] = {1: PHASE1_GRID, 2: PHASE2_GRID}
-
-RNG_SEED: int = 20260515
+RNG_SEED: int = 20260615
 TRAIN_POOL_SIZE: int = 20
 TEST_POOL_SIZE: int = 20
 

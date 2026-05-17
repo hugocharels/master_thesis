@@ -25,7 +25,7 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
 
-from experiments.learnability.configs import ALGORITHMS, PHASES
+from experiments.learnability.configs import ALGORITHMS
 
 # Match marl UI style
 plt.rcParams.update({
@@ -200,25 +200,16 @@ def _build_parser() -> argparse.ArgumentParser:
         description="Aggregate learnability runs into figures.",
     )
     parser.add_argument(
-        "--phase", type=int, default=2, choices=list(PHASES.keys()),
-        help="Experiment phase to plot (1=6x6, 2=8x8). Default: 2.",
+        "--runs-dir", type=Path, default=Path("results/learnability/runs"),
+        help="Run directory. Default: results/learnability/runs.",
     )
     parser.add_argument(
-        "--runs-dir", type=Path, default=None,
-        help="Override the runs directory. Defaults to "
-             "results/learnability_phase{phase}/runs.",
-    )
-    parser.add_argument(
-        "--out-dir", type=Path, default=None,
-        help="Override the figures directory. Defaults to "
-             "results/learnability_phase{phase}/figures.",
+        "--out-dir", type=Path, default=Path("results/learnability/figures"),
+        help="Figure directory. Default: results/learnability/figures.",
     )
     return parser
 
 
 if __name__ == "__main__":
     args = _build_parser().parse_args()
-    base = Path(f"results/learnability_phase{args.phase}")
-    runs_dir = args.runs_dir or base / "runs"
-    out_dir = args.out_dir or base / "figures"
-    generate_all_figures(runs_dir, out_dir)
+    generate_all_figures(args.runs_dir, args.out_dir)

@@ -2,7 +2,6 @@
 
 For each pool under
     results/learnability/levels/
-    results/learnability_phase2/levels/
     results/curriculum_experiment/levels/
 this script:
 
@@ -42,7 +41,7 @@ CONTACT_ROOT = AUDIT_ROOT / "contact_sheets"
 
 @dataclass(frozen=True)
 class PoolSplit:
-    label: str            # e.g. "learnability_phase1 / train"
+    label: str            # e.g. "learnability / train"
     split_dir: Path       # contains level_NNN.{txt,json} + images/
     file_suffix: str      # ".txt" or ".json"
     grid: tuple[int, int]
@@ -51,15 +50,11 @@ class PoolSplit:
 def discover_pools() -> list[PoolSplit]:
     pools: list[PoolSplit] = []
 
-    learn_roots = [
-        ("learnability_phase1", PROJECT_ROOT / "results/learnability/levels/6x6_2a_1L_cooperative", ".txt", (6, 6)),
-        ("learnability_phase2", PROJECT_ROOT / "results/learnability_phase2/levels/8x8_3a_2L_cooperative", ".txt", (8, 8)),
-    ]
-    for label, pool_dir, suffix, grid in learn_roots:
-        for split in ("train", "test"):
-            split_dir = pool_dir / split
-            if split_dir.is_dir():
-                pools.append(PoolSplit(f"{label} / {split}", split_dir, suffix, grid))
+    learn_root = PROJECT_ROOT / "results/learnability/levels/8x8_3a_2L_cooperative"
+    for split in ("train", "test"):
+        split_dir = learn_root / split
+        if split_dir.is_dir():
+            pools.append(PoolSplit(f"learnability / {split}", split_dir, ".txt", (8, 8)))
 
     curr_root = PROJECT_ROOT / "results/curriculum_experiment/levels"
     if curr_root.is_dir():

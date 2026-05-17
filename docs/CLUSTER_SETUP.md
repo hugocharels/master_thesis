@@ -139,15 +139,15 @@ every 100 k steps to
 `results/curriculum_experiment/runs/{COND}_QMIX_seed{N}/checkpoints/`
 so killed cells resume on relaunch.
 
-### 6b — Learnability Phase 2 (8×8 / 3 agents / 2 lasers)
+### 6b — Learnability (8×8 / 3 agents / 2 lasers)
 
 ```bash
-tmux new -s learn-p2
-bash docker/run.sh -- bash scripts/launch_learnability_phase2.sh
+tmux new -s learn
+bash docker/run.sh -- bash scripts/launch_learnability.sh
 ```
 
-~12 h. Phase 1 is skippable — curriculum stage 1 already covers small-
-grid navigation.
+~12 h. Trains IQL / VDN / QMIX × 20 seeds × 200 k steps on the
+8×8 cooperative pool.
 
 ### 6c — B3-long stretch baseline (optional, valuable)
 
@@ -172,10 +172,10 @@ bash docker/run.sh -- bash scripts/launch_curriculum_full.sh
 
 ```bash
 bash docker/run.sh -- python -m experiments.curriculum.plot_results
-bash docker/run.sh -- python -m experiments.learnability.plot_results --phase 2
+bash docker/run.sh -- python -m experiments.learnability.plot_results
 ```
 
-PDFs land under `results/{curriculum_experiment,learnability_phase2}/figures/`.
+PDFs land under `results/{curriculum_experiment,learnability}/figures/`.
 
 ## 8 — Pull results back to your laptop
 
@@ -196,7 +196,7 @@ typst compile --root . thesis/main.typ
 
 1. Replace the "To be regenerated" callout in
    `thesis/chapters/experiments.typ <learnability-experiment>` with
-   Phase 2 figures + per-algorithm mean ± std table.
+   the new figures + per-algorithm mean ± std table.
 2. Replace the `// TODO: results` block in
    `thesis/chapters/experiments.typ <transfer-experiment>` with the
    curriculum-pilot (or full-sweep) figures and a per-condition table.

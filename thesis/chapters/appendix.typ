@@ -58,9 +58,9 @@ The learnability experiment (@learnability-experiment) and the curriculum-transf
 (@transfer-experiment) share the same trainer construction in
 `src/experiments/learnability/run_experiment.py` and
 `src/experiments/curriculum/run_experiment.py`. The hyperparameters listed in
-@tab-learnability-hyperparams are identical across the three algorithms (IQL, VDN, QMIX) and
-across both phases of the learnability experiment, as well as across the four conditions
-(B1, B2, B3, CURR) of the curriculum-transfer experiment.
+@tab-learnability-hyperparams are identical across the three algorithms (IQL, VDN, QMIX) of
+the learnability experiment, as well as across the four conditions (B1, B2, B3, CURR) of the
+curriculum-transfer experiment.
 
 #figure(
   table(
@@ -111,44 +111,9 @@ every individual level. Diversity columns are defined as follows:
   (or N/A when the pool is non-cooperative by construction).
 
 
-== Learnability Phase 1 — Training Pool <appendix-learnability-p1>
+== Learnability — Training Pool <appendix-learnability-train>
 
-Cooperative pool used as $cal(D)_("train")$ for Phase 1 of @learnability-experiment.
-
-#figure(
-  table(
-    columns: 2,
-    stroke: black,
-    inset: 8pt,
-    align: (left, left),
-    table.header([*Field*], [*Value*]),
-    [Pool path],          [`results/learnability/levels/6x6_2a_1L_cooperative/train`],
-    [Grid],               [6 × 6],
-    [Agents],             [2],
-    [Lasers],             [1],
-    [$T_("max")$],        [10],
-    [Generator],          [`cooperative` (registry key; `constructive_cooperative` in @generators)],
-    [Pool seed],          [20260515],
-    [Number of levels],   [20],
-    [Unique wall masks],  [20 / 20],
-    [Unique agent tuples], [12 / 20],
-    [Unique laser sets],  [10 / 20],
-    [Mean pairwise wall-Hamming distance (normalised)], [0.154],
-    [Cooperative under Theorem 4.9], [20 / 20],
-    [Profile distribution], [20 asymmetric],
-  ),
-  caption: [Parameters and diversity statistics of the Phase 1 training pool.],
-)
-
-#figure(
-  pool_grid("../../results/learnability/levels/6x6_2a_1L_cooperative/train/images", 20),
-  caption: [All 20 levels of the Phase 1 training pool, in pool order.],
-) <fig-pool-learnability-p1-train>
-
-
-== Learnability Phase 1 — Test Pool <appendix-learnability-p1-test>
-
-Held-out cooperative pool used as $cal(D)_("test")$ for Phase 1 of @learnability-experiment.
+Cooperative pool used as $cal(D)_("train")$ for @learnability-experiment.
 
 #figure(
   table(
@@ -157,47 +122,12 @@ Held-out cooperative pool used as $cal(D)_("test")$ for Phase 1 of @learnability
     inset: 8pt,
     align: (left, left),
     table.header([*Field*], [*Value*]),
-    [Pool path],          [`results/learnability/levels/6x6_2a_1L_cooperative/test`],
-    [Grid],               [6 × 6],
-    [Agents],             [2],
-    [Lasers],             [1],
-    [$T_("max")$],        [10],
-    [Generator],          [`cooperative`],
-    [Pool seed],          [20260516],
-    [Number of levels],   [20],
-    [Unique wall masks],  [20 / 20],
-    [Unique agent tuples], [8 / 20],
-    [Unique laser sets],  [12 / 20],
-    [Mean pairwise wall-Hamming distance (normalised)], [0.153],
-    [Cooperative under Theorem 4.9], [20 / 20],
-    [Profile distribution], [20 asymmetric],
-  ),
-  caption: [Parameters and diversity statistics of the Phase 1 test pool.],
-)
-
-#figure(
-  pool_grid("../../results/learnability/levels/6x6_2a_1L_cooperative/test/images", 20),
-  caption: [All 20 levels of the Phase 1 test pool, in pool order.],
-) <fig-pool-learnability-p1-test>
-
-
-== Learnability Phase 2 — Training Pool <appendix-learnability-p2>
-
-Cooperative pool used as $cal(D)_("train")$ for Phase 2 of @learnability-experiment.
-
-#figure(
-  table(
-    columns: 2,
-    stroke: black,
-    inset: 8pt,
-    align: (left, left),
-    table.header([*Field*], [*Value*]),
-    [Pool path],          [`results/learnability_phase2/levels/8x8_3a_2L_cooperative/train`],
+    [Pool path],          [`results/learnability/levels/8x8_3a_2L_cooperative/train`],
     [Grid],               [8 × 8],
     [Agents],             [3],
     [Lasers],             [2],
     [$T_("max")$],        [16],
-    [Generator],          [`cooperative`],
+    [Generator],          [`cooperative` (registry key; `constructive_cooperative` in @generators)],
     [Pool seed],          [20260615],
     [Number of levels],   [20],
     [Unique wall masks],  [20 / 20],
@@ -207,18 +137,18 @@ Cooperative pool used as $cal(D)_("train")$ for Phase 2 of @learnability-experim
     [Cooperative under Theorem 4.9], [20 / 20],
     [Profile distribution], [17 mutual, 3 asymmetric],
   ),
-  caption: [Parameters and diversity statistics of the Phase 2 training pool.],
+  caption: [Parameters and diversity statistics of the learnability training pool.],
 )
 
 #figure(
-  pool_grid("../../results/learnability_phase2/levels/8x8_3a_2L_cooperative/train/images", 20),
-  caption: [All 20 levels of the Phase 2 training pool, in pool order.],
-) <fig-pool-learnability-p2-train>
+  pool_grid("../../results/learnability/levels/8x8_3a_2L_cooperative/train/images", 20),
+  caption: [All 20 levels of the learnability training pool, in pool order.],
+) <fig-pool-learnability-train>
 
 
-== Learnability Phase 2 — Test Pool <appendix-learnability-p2-test>
+== Learnability — Test Pool <appendix-learnability-test>
 
-Held-out cooperative pool used as $cal(D)_("test")$ for Phase 2 of @learnability-experiment.
+Held-out cooperative pool used as $cal(D)_("test")$ for @learnability-experiment.
 
 #figure(
   table(
@@ -227,7 +157,7 @@ Held-out cooperative pool used as $cal(D)_("test")$ for Phase 2 of @learnability
     inset: 8pt,
     align: (left, left),
     table.header([*Field*], [*Value*]),
-    [Pool path],          [`results/learnability_phase2/levels/8x8_3a_2L_cooperative/test`],
+    [Pool path],          [`results/learnability/levels/8x8_3a_2L_cooperative/test`],
     [Grid],               [8 × 8],
     [Agents],             [3],
     [Lasers],             [2],
@@ -242,13 +172,13 @@ Held-out cooperative pool used as $cal(D)_("test")$ for Phase 2 of @learnability
     [Cooperative under Theorem 4.9], [20 / 20],
     [Profile distribution], [18 mutual, 1 asymmetric, 1 distributed],
   ),
-  caption: [Parameters and diversity statistics of the Phase 2 test pool.],
+  caption: [Parameters and diversity statistics of the learnability test pool.],
 )
 
 #figure(
-  pool_grid("../../results/learnability_phase2/levels/8x8_3a_2L_cooperative/test/images", 20),
-  caption: [All 20 levels of the Phase 2 test pool, in pool order.],
-) <fig-pool-learnability-p2-test>
+  pool_grid("../../results/learnability/levels/8x8_3a_2L_cooperative/test/images", 20),
+  caption: [All 20 levels of the learnability test pool, in pool order.],
+) <fig-pool-learnability-test>
 
 
 == Curriculum Stage 1 — Training Pool <appendix-curriculum-s1>

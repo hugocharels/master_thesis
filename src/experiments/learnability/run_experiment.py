@@ -34,7 +34,7 @@ from experiments.learnability.configs import (
     EVAL_EPISODES,
     EVAL_FREQUENCY_STEPS,
     FINAL_EVAL_EPISODES,
-    PHASES,
+    GRID,
     TOTAL_STEPS,
 )
 from experiments.learnability.pool_generator import load_pool, pool_dir
@@ -52,8 +52,6 @@ def build_parser() -> argparse.ArgumentParser:
         prog="run_experiment",
         description="Train one (algo, seed) cell of the learnability experiment.",
     )
-    parser.add_argument("--phase", type=int, default=1, choices=list(PHASES.keys()),
-                        help="Experiment phase (1=6x6, 2=8x8).")
     parser.add_argument("--algo", required=True, choices=ALGORITHMS)
     parser.add_argument("--seed", required=True, type=int)
     parser.add_argument("--steps", type=int, default=TOTAL_STEPS)
@@ -195,8 +193,8 @@ def main() -> None:
     algo: str = args.algo
     seed: int = args.seed
     total_steps: int = args.steps
-    config = PHASES[args.phase]
-    out_dir: Path = args.out_dir or Path(f"results/learnability_phase{args.phase}")
+    config = GRID
+    out_dir: Path = args.out_dir or DEFAULT_OUT_DIR
 
     # Seed everything
     random.seed(seed)

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Launch all 60 learnability Phase 1 runs (3 algos x 20 seeds x 100k steps)
+# Launch all 60 learnability runs (3 algos x 20 seeds x 200k steps).
 # Skips runs that already have final_results.json.
 
 set -e
@@ -7,7 +7,7 @@ set -e
 PY="${MARL_VENV:-C:/Users/hugoc/Projects/marl/.venv/Scripts/python.exe}"
 export PYTHONPATH=src
 OUT_DIR="results/learnability"
-STEPS=100000
+STEPS=200000
 MAX_PARALLEL=5
 
 ALGOS=("IQL" "VDN" "QMIX")
@@ -31,8 +31,7 @@ for algo in "${ALGOS[@]}"; do
 
     echo "[${count}/${total}] Launching ${algo}_seed${seed}..."
     "$PY" -m experiments.learnability.run_experiment \
-      --algo "$algo" --seed "$seed" --steps "$STEPS" \
-      --out-dir "$OUT_DIR" &
+      --algo "$algo" --seed "$seed" --steps "$STEPS" &
     pids+=($!)
 
     # Wait if we've hit the parallel limit

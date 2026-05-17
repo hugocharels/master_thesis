@@ -10,8 +10,8 @@
 #
 # Override the defaults via env vars before invocation:
 #
+#     GPU_DEVICES=5 bash docker/run.sh -- bash scripts/launch_learnability.sh
 #     PROJECTS_DIR=/data/hugoc/projects MEM_LIMIT=32g bash docker/run.sh
-#     bash docker/run.sh -- bash scripts/launch_curriculum_pilot.sh
 #     bash docker/run.sh -- python -m pytest src/tests/
 
 set -e
@@ -20,14 +20,32 @@ PROJECTS_DIR="${PROJECTS_DIR:-$HOME/projects}"
 MEM_LIMIT="${MEM_LIMIT:-16g}"
 SWAP_LIMIT="${SWAP_LIMIT:-20g}"
 
-# Expose host GPUs when the NVIDIA driver is present. The trainer
-# (src/experiments/{learnability,curriculum}/run_experiment.py) calls
-# `torch.cuda.is_available()` and falls back to CPU silently, so
-# missing this flag leads to a slow run with no error. Detection is
-# driver-file based so the script also works on CPU-only hosts.
+# GPU passthrough. The ULB workstation has 8 GPUs and a per-user
+# allocation table (see workstation guide); claiming all GPUs without
+# coordination is explicitly discouraged. This script therefore
+# REQUIRES the GPU_DEVICES env var on hosts with an NVIDIA driver.
+# Accepted values:
+#     GPU_DEVICES=5         expose only physical GPU 5
+#     GPU_DEVICES=5,6       expose GPUs 5 and 6
+#     GPU_DEVICES=all       expose every GPU (discouraged; emergency only)
+#     GPU_DEVICES=none      force CPU mode even though a GPU is present
 GPU_ARG=""
 if [ -f /proc/driver/nvidia/version ] || [ -e /dev/nvidia0 ]; then
-    GPU_ARG="--gpus all"
+    if [ -z "${GPU_DEVICES:-}" ]; then
+        echo "ERROR: an NVIDIA driver is present but GPU_DEVICES is unset." >&2
+        echo >&2
+        echo "Pick a GPU first. Run 'nvidia-smi' to see which GPUs are free," >&2
+        echo "then invoke this script with an explicit assignment:" >&2
+        echo "    GPU_DEVICES=5 bash docker/run.sh -- ..." >&2
+        echo "Use GPU_DEVICES=none to force CPU mode." >&2
+        exit 1
+    elif [ "$GPU_DEVICES" = "all" ]; then
+        GPU_ARG='--gpus all'
+    elif [ "$GPU_DEVICES" = "none" ]; then
+        GPU_ARG=""
+    else
+        GPU_ARG="--gpus device=$GPU_DEVICES"
+    fi
 fi
 
 if [ ! -d "$PROJECTS_DIR" ]; then

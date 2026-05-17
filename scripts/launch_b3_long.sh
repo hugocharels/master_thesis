@@ -22,10 +22,14 @@ OUT_DIR="results/curriculum_experiment_b3_long"
 ALGO="QMIX"
 SEEDS=$(seq 0 2)          # 3 seeds, enough to see if it ever converges
 STEP_BUDGETS=(3000000 4500000)
-MAX_PARALLEL=2
+MAX_PARALLEL=${MAX_PARALLEL:-2}
+
+# Round-robin across the GPUs exposed via `docker run --gpus device=...`.
+NUM_GPUS=$(nvidia-smi -L 2>/dev/null | wc -l || echo 0)
 
 pids=()
 count=0
+launched=0
 skipped=0
 total=$((${#STEP_BUDGETS[@]} * 3))
 
@@ -47,8 +51,12 @@ for steps in "${STEP_BUDGETS[@]}"; do
     out_dir_for_run="${OUT_DIR}/budget_${steps}"
     mkdir -p "$out_dir_for_run"
 
-    echo "[${count}/${total}] Launching B3_${ALGO}_seed${seed} (${steps} steps)"
-    "$PY" -m experiments.curriculum.run_experiment \
+    gpu_index=""
+    [ "$NUM_GPUS" -gt 0 ] && gpu_index=$(( launched % NUM_GPUS ))
+    launched=$((launched + 1))
+
+    echo "[${count}/${total}] Launching B3_${ALGO}_seed${seed} (${steps} steps)${gpu_index:+ on cuda:$gpu_index}"
+    CUDA_VISIBLE_DEVICES="$gpu_index" "$PY" -m experiments.curriculum.run_experiment \
       --condition B3 --algo "$ALGO" --seed "$seed" --steps "$steps" \
       --out-dir "$out_dir_for_run" &
     pids+=($!)

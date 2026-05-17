@@ -8,13 +8,20 @@ PY="${MARL_VENV:-C:/Users/hugoc/Projects/marl/.venv/Scripts/python.exe}"
 export PYTHONPATH=src
 OUT_DIR="results/learnability"
 STEPS=200000
-MAX_PARALLEL=5
+MAX_PARALLEL=${MAX_PARALLEL:-5}
+
+# Round-robin training subprocesses across the GPUs exposed to this
+# container via `docker run --gpus device=...`. nvidia-smi -L lists
+# only those (renumbered 0..N-1). NUM_GPUS=0 -> no env var set ->
+# torch falls back to CPU (matches the run_experiment.py contract).
+NUM_GPUS=$(nvidia-smi -L 2>/dev/null | wc -l || echo 0)
 
 ALGOS=("IQL" "VDN" "QMIX")
 SEEDS=$(seq 0 19)
 
 pids=()
 count=0
+launched=0
 skipped=0
 total=60
 
@@ -29,8 +36,12 @@ for algo in "${ALGOS[@]}"; do
       continue
     fi
 
-    echo "[${count}/${total}] Launching ${algo}_seed${seed}..."
-    "$PY" -m experiments.learnability.run_experiment \
+    gpu_index=""
+    [ "$NUM_GPUS" -gt 0 ] && gpu_index=$(( launched % NUM_GPUS ))
+    launched=$((launched + 1))
+
+    echo "[${count}/${total}] Launching ${algo}_seed${seed}${gpu_index:+ on cuda:$gpu_index}"
+    CUDA_VISIBLE_DEVICES="$gpu_index" "$PY" -m experiments.learnability.run_experiment \
       --algo "$algo" --seed "$seed" --steps "$STEPS" &
     pids+=($!)
 

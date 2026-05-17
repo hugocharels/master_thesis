@@ -15,7 +15,12 @@ export PYTHONPATH=src
 
 OUT_DIR="results/curriculum_experiment"
 STEPS=750000              # PILOT_RUN_TOTAL_STEPS in configs.py
-MAX_PARALLEL=4            # tune to fit cluster node / local CPU
+MAX_PARALLEL=${MAX_PARALLEL:-4}
+
+# Round-robin across the GPUs exposed via `docker run --gpus device=...`.
+# nvidia-smi -L lists only those (renumbered 0..N-1). NUM_GPUS=0 -> no
+# env var set -> torch falls back to CPU.
+NUM_GPUS=$(nvidia-smi -L 2>/dev/null | wc -l || echo 0)
 
 CONDITIONS=("B1" "B2" "B3" "CURR")
 ALGOS=("QMIX")
@@ -23,6 +28,7 @@ SEEDS=$(seq 0 3)          # 4 seeds for the pilot
 
 pids=()
 count=0
+launched=0
 skipped=0
 total=$((${#CONDITIONS[@]} * ${#ALGOS[@]} * 4))
 
@@ -38,8 +44,12 @@ for cond in "${CONDITIONS[@]}"; do
         continue
       fi
 
-      echo "[${count}/${total}] Launching ${cond}_${algo}_seed${seed} (${STEPS} steps)"
-      "$PY" -m experiments.curriculum.run_experiment \
+      gpu_index=""
+      [ "$NUM_GPUS" -gt 0 ] && gpu_index=$(( launched % NUM_GPUS ))
+      launched=$((launched + 1))
+
+      echo "[${count}/${total}] Launching ${cond}_${algo}_seed${seed} (${STEPS} steps)${gpu_index:+ on cuda:$gpu_index}"
+      CUDA_VISIBLE_DEVICES="$gpu_index" "$PY" -m experiments.curriculum.run_experiment \
         --condition "$cond" --algo "$algo" --seed "$seed" --steps "$STEPS" \
         --out-dir "$OUT_DIR" &
       pids+=($!)

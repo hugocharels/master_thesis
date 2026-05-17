@@ -10,6 +10,7 @@ serif font, CI95 bands at alpha=0.2, tight margins, "Time step" x-axis.
 
 from __future__ import annotations
 
+import argparse
 import csv
 import json
 import re
@@ -24,7 +25,7 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
 
-from experiments.learnability.configs import ALGORITHMS
+from experiments.learnability.configs import ALGORITHMS, PHASES
 
 # Match marl UI style
 plt.rcParams.update({
@@ -119,7 +120,7 @@ def plot_learning_curves(runs_dir: Path, out_path: Path) -> None:
                 ax.fill_between(steps_ref, low, high, color=color, alpha=0.2)
 
         ax.set_xlabel("Time step")
-        ax.set_ylabel("exit_rate" if split == "test" else "exit_rate")
+        ax.set_ylabel("exit_rate")
         ax.set_title(f"Success rate ({split} set)")
         ax.set_ylim(-0.05, 1.05)
         ax.margins(x=0.01, y=0.01)
@@ -193,8 +194,31 @@ def generate_all_figures(runs_dir: Path, out_dir: Path) -> None:
     plot_final_bar_chart(runs_dir, out_dir / "final_bar_chart.pdf")
 
 
-if __name__ == "__main__":
-    generate_all_figures(
-        Path("results/learnability/runs"),
-        Path("results/learnability/figures"),
+def _build_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(
+        prog="plot_results",
+        description="Aggregate learnability runs into figures.",
     )
+    parser.add_argument(
+        "--phase", type=int, default=2, choices=list(PHASES.keys()),
+        help="Experiment phase to plot (1=6x6, 2=8x8). Default: 2.",
+    )
+    parser.add_argument(
+        "--runs-dir", type=Path, default=None,
+        help="Override the runs directory. Defaults to "
+             "results/learnability_phase{phase}/runs.",
+    )
+    parser.add_argument(
+        "--out-dir", type=Path, default=None,
+        help="Override the figures directory. Defaults to "
+             "results/learnability_phase{phase}/figures.",
+    )
+    return parser
+
+
+if __name__ == "__main__":
+    args = _build_parser().parse_args()
+    base = Path(f"results/learnability_phase{args.phase}")
+    runs_dir = args.runs_dir or base / "runs"
+    out_dir = args.out_dir or base / "figures"
+    generate_all_figures(runs_dir, out_dir)

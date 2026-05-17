@@ -21,10 +21,18 @@ ARG GROUP_ID=1000
 #   git, curl, ca-certificates  - cloning, downloads
 #   build-essential, pkg-config, libssl-dev  - Rust ext build (lle from source)
 #   tmux, procps, less          - shell ergonomics inside an interactive container
+#   libsdl2-*, libxcb1, libgl1, libegl1, libx11-6, libxext6, libxrender1, libsm6,
+#   libice6, libxkbcommon0      - LLE links against SDL2 at import time (even when
+#                                 not rendering), which transitively requires X11
+#                                 client libs; matplotlib's Agg backend doesn't
+#                                 need these but `import lle` does.
 RUN apt-get update && apt-get install -y --no-install-recommends \
         git curl ca-certificates \
         build-essential pkg-config libssl-dev \
         tmux procps less \
+        libsdl2-2.0-0 libsdl2-image-2.0-0 libsdl2-ttf-2.0-0 \
+        libxcb1 libx11-6 libxext6 libxrender1 libsm6 libice6 \
+        libxkbcommon0 libgl1 libegl1 \
     && rm -rf /var/lib/apt/lists/*
 
 # Create the non-root user matching the host's UID/GID. The conditional

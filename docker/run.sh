@@ -29,7 +29,7 @@ SWAP_LIMIT="${SWAP_LIMIT:-20g}"
 #     GPU_DEVICES=5,6       expose GPUs 5 and 6
 #     GPU_DEVICES=all       expose every GPU (discouraged; emergency only)
 #     GPU_DEVICES=none      force CPU mode even though a GPU is present
-GPU_ARG=""
+GPU_ARGS=()
 if [ -f /proc/driver/nvidia/version ] || [ -e /dev/nvidia0 ]; then
     if [ -z "${GPU_DEVICES:-}" ]; then
         echo "ERROR: an NVIDIA driver is present but GPU_DEVICES is unset." >&2
@@ -37,14 +37,20 @@ if [ -f /proc/driver/nvidia/version ] || [ -e /dev/nvidia0 ]; then
         echo "Pick a GPU first. Run 'nvidia-smi' to see which GPUs are free," >&2
         echo "then invoke this script with an explicit assignment:" >&2
         echo "    GPU_DEVICES=5 bash docker/run.sh -- ..." >&2
+        echo "    GPU_DEVICES=2,4,7 bash docker/run.sh -- ..." >&2
         echo "Use GPU_DEVICES=none to force CPU mode." >&2
         exit 1
     elif [ "$GPU_DEVICES" = "all" ]; then
-        GPU_ARG='--gpus all'
+        GPU_ARGS=(--gpus all)
     elif [ "$GPU_DEVICES" = "none" ]; then
-        GPU_ARG=""
+        GPU_ARGS=()
     else
-        GPU_ARG="--gpus device=$GPU_DEVICES"
+        # docker's --gpus flag accepts a comma-separated device list, but
+        # the value must be passed as `"device=0,1,2"` with literal double
+        # quotes around the value (the quotes go to docker, NOT consumed
+        # by the shell). Using an array preserves the literal quotes when
+        # the array is expanded with "${GPU_ARGS[@]}".
+        GPU_ARGS=(--gpus "\"device=$GPU_DEVICES\"")
     fi
 fi
 
@@ -66,7 +72,7 @@ fi
 # GPU passthrough is enabled when /proc/driver/nvidia/version exists.
 # The trainer uses cuda when torch.cuda.is_available(), CPU otherwise.
 docker run --rm -it \
-    $GPU_ARG \
+    "${GPU_ARGS[@]}" \
     --memory="$MEM_LIMIT" \
     --memory-swap="$SWAP_LIMIT" \
     -v "$PROJECTS_DIR:/workspace" \

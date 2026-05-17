@@ -56,7 +56,10 @@ def test_grid_dimensions_match_thesis_design():
 
 
 def test_laser_counts_grow_then_plateau():
-    assert tuple(s.n_lasers for s in CURRICULUM_STAGES) == (1, 2, 3, 3)
+    # Stage 1 is a pure-navigation warmup (no laser, no cooperation
+    # pressure); stages 2 and 3 ramp the laser count up; stage 4
+    # matches the LLE Level 6 target geometry.
+    assert tuple(s.n_lasers for s in CURRICULUM_STAGES) == (0, 1, 2, 3)
 
 
 def test_t_max_per_stage_matches_thesis_design():
@@ -88,13 +91,20 @@ def test_only_stage_four_has_a_held_out_eval_pool():
 
 
 def test_step_caps_match_thesis_design():
-    for stage in CURRICULUM_STAGES:
-        assert stage.per_stage_step_cap_full == 375_000
-        assert stage.per_stage_step_cap_pilot == 187_500
+    # Asymmetric per-stage caps: early stages (warmup, single laser)
+    # get less budget than the level-6-style target. Pilot caps are
+    # exactly half of the full caps.
+    expected_full = (200_000, 250_000, 300_000, 750_000)
+    expected_pilot = (100_000, 125_000, 150_000, 375_000)
+    actual_full = tuple(s.per_stage_step_cap_full for s in CURRICULUM_STAGES)
+    actual_pilot = tuple(s.per_stage_step_cap_pilot for s in CURRICULUM_STAGES)
+    assert actual_full == expected_full
+    assert actual_pilot == expected_pilot
 
 
 def test_full_pilot_caps_sum_to_total_budget():
-    # 4 stages * 375_000 = 1_500_000 == FULL_RUN_TOTAL_STEPS
+    # 200k + 250k + 300k + 750k = 1_500_000 == FULL_RUN_TOTAL_STEPS,
+    # halved for the pilot.
     assert sum(s.per_stage_step_cap_full for s in CURRICULUM_STAGES) == FULL_RUN_TOTAL_STEPS
     assert sum(s.per_stage_step_cap_pilot for s in CURRICULUM_STAGES) == PILOT_RUN_TOTAL_STEPS
 

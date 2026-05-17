@@ -28,12 +28,11 @@ from experiments.curriculum.pool_generator import (
 
 # ---- Test fixtures ---------------------------------------------------------
 #
-# We use stage 1 (6x6, 4 agents, 1 laser, ``random`` generator) for almost
-# every test because it is the cheapest stage in the curriculum: random
-# generation on a 6x6 grid with one laser is essentially first-attempt
-# accept after geometric validation. We override n_lasers down to 1 (it
-# already is in the design) and override max_attempts in build_pool() to
-# keep the failure mode loud and fast.
+# We use stage 1 (6x6, 4 agents, 0 lasers, ``random`` generator) for
+# almost every test because it is the cheapest stage in the curriculum:
+# random generation on a 6x6 grid with no lasers is essentially first-
+# attempt accept after geometric validation. (Stage 1 is the pure-
+# navigation warmup; cooperation pressure starts at stage 2.)
 SMALL_STAGE: StageConfig = CURRICULUM_STAGES[0]
 TINY_N_LEVELS = 2
 
@@ -46,12 +45,14 @@ HELDOUT_SPLIT = "eval"  # noqa: S105 - this is a directory name, not code execut
 
 def test_pool_path_includes_stage_id_and_dimensions(tmp_path: Path):
     p = pool_path(tmp_path, SMALL_STAGE, TRAIN_SPLIT)
-    # The folder name must encode the discriminating fields.
+    # The folder name must encode the discriminating fields. Stage 1
+    # has 0 lasers (pure-navigation warmup), so the laser-count token
+    # is "0L".
     folder_name = p.parent.name
     assert "stage_1" in folder_name
     assert "6x6" in folder_name
     assert "4a" in folder_name
-    assert "1L" in folder_name
+    assert "0L" in folder_name
     assert "random" in folder_name
 
 

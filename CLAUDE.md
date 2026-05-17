@@ -40,7 +40,10 @@ src/
 
 ## Python Version
 
-Python 3.13 is required (`requires-python = "=3.13"` in `pyproject.toml`).
+Python 3.12 or later (`requires-python = ">=3.12"` in `pyproject.toml`).
+The ULB GPU workstation pins 3.12 inside the Docker image so we can
+use a torch 2.3.x wheel that still ships sm_61 (Pascal / GTX 1080 Ti)
+kernels.
 
 ## Development Commands
 

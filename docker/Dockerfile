@@ -16,11 +16,14 @@
 #   container start cost minutes. Baking it at image build time means
 #   the cost is paid once and cached forever in Docker's layer cache.
 #
-# Why python:3.13-slim?
-#   marl's pyproject says requires-python = ">=3.12,<4"; 3.13 satisfies.
-#   The slim variant keeps the base image small; we add only what we
-#   actually need.
-FROM python:3.13-slim
+# Why python:3.12-slim and not 3.13?
+#   The cluster has GTX 1080 Ti (compute capability sm_61, Pascal).
+#   PyTorch dropped Pascal kernels in 2.4+. The last torch release
+#   with sm_61 support is 2.3.1, which is only published for Python
+#   3.8 - 3.12 (no cp313 wheels). So we pin Python to 3.12. Both
+#   marl (requires-python = ">=3.12,<4") and master_thesis are
+#   compatible with 3.12.
+FROM python:3.12-slim
 
 ARG USER_NAME=user
 ARG USER_ID=1000

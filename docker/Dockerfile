@@ -82,9 +82,12 @@ RUN uv pip install --no-cache-dir --python /opt/marl/.venv/bin/python \
 RUN uv pip install --no-cache-dir --python /opt/marl/.venv/bin/python \
         python-sat ruff
 
-# Make /opt/marl readable (and the .venv binaries executable) by the
-# non-root user.
-RUN chmod -R a+rX /opt/marl
+# /opt/marl is owned by root (since the build runs as root) but the
+# default umask (022) makes its files world-readable and dirs world-
+# traversable, so the non-root user at runtime can use the venv.
+# We do NOT `chmod -R` here: chmod on overlayfs triggers a copy-up
+# per inode, which for a multi-GB venv with 100K+ files takes 15+
+# minutes even when no permission bits change.
 
 # Mount point for the host's projects directory. docker/run.sh mounts
 # ~/projects here so /workspace/master_thesis appears inside.

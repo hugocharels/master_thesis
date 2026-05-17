@@ -60,11 +60,13 @@ RUN groupadd -g ${GROUP_ID} ${USER_NAME} 2>/dev/null || true \
 RUN pip install --no-cache-dir uv
 
 # Clone marl from yamoling/marl@${MARL_BRANCH} and create the project
-# venv at /opt/marl/.venv from marl's uv.lock. `--extra modern-gpu`
-# pulls the modern PyTorch dep group (the resulting torch is CPU-only
-# from PyPI; we override with the CUDA wheel in the next layer).
+# venv at /opt/marl/.venv. uv resolves the dep tree from marl's
+# pyproject.toml (no --frozen because yamoling/marl does not commit
+# uv.lock to the repo). `--extra modern-gpu` pulls the modern PyTorch
+# dep group; the resulting torch is the CPU wheel from PyPI, which we
+# override with the CUDA wheel in the next layer.
 RUN git clone --branch ${MARL_BRANCH} https://github.com/yamoling/marl.git /opt/marl \
-    && cd /opt/marl && uv sync --frozen --extra modern-gpu
+    && cd /opt/marl && uv sync --extra modern-gpu
 
 # Replace the CPU torch wheel pulled by `uv sync` with the CUDA-12.1
 # wheel. The cu121 wheel ships its own CUDA runtime libs; only the

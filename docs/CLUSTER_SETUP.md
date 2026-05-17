@@ -4,10 +4,11 @@ How to set up and run the curriculum-transfer experiments on the
 **ULB MLG GPU workstation** (`10.149.16.180` / `ulb-gpu.info.ulb.ac.be`).
 
 > Follows the ULB workflow: zero installs on the host, everything
-> runs inside a per-user Docker container. The trainer is CPU-only
-> (`torch.device("cpu")` in `run_experiment.py`), so we do NOT need
-> a GPU — we use plain `docker` rather than `nvidia-docker` and skip
-> the GPU-allocation table in the workstation guide.
+> runs inside a per-user Docker container. The trainer uses
+> `torch.device("cuda" if torch.cuda.is_available() else "cpu")`,
+> so `docker/run.sh` passes `--gpus all` when the host has the NVIDIA
+> driver and the trainer trains on GPU. Falls back to CPU silently
+> on CPU-only hosts.
 
 ## 1 — Connect via SSH
 
@@ -85,6 +86,15 @@ You land in `/workspace/master_thesis/` with `python` pointing at
 ```bash
 python -m pytest src/tests/ -p no:warnings --ignore=src/tests/experiments -q
 # expect: 175 passed
+```
+
+Confirm the GPU is visible inside the container before launching a long
+job (an empty `--gpus` is silently a no-op and the trainer would fall
+back to CPU):
+
+```bash
+python -c "import torch; print('cuda:', torch.cuda.is_available(), torch.cuda.get_device_name(0) if torch.cuda.is_available() else '')"
+# expect: cuda: True <gpu name>
 ```
 
 For a non-interactive run, append `--` and the command:
@@ -218,11 +228,13 @@ the spirit of the ULB convention: per-user image (`master_thesis:$USER`)
 built with your UID/GID, shared volume mount at `/workspace`, no
 host-level installs.
 
-GPU support is not added — we use plain `docker run`, not
-`nvidia-docker`. Justification: `run_experiment.py` hardcodes
-`device = torch.device("cpu")` because marl's models are small and
-SAT-solver calls dominate the per-step cost; GPU offers no speed-up
-for our workload.
+GPU support: the image installs the CUDA-12.1 PyTorch wheel (the wheel
+ships its own CUDA runtime libraries; the image does not need a CUDA
+toolkit installed system-wide). `docker/run.sh` auto-detects the host's
+NVIDIA driver via `/proc/driver/nvidia/version` and passes `--gpus all`
+when present, exposing the GPU to the container. The trainer
+(`run_experiment.py`) then trains on GPU; on CPU-only hosts the same
+script transparently falls back to CPU.
 
 ## 11 — Troubleshooting
 

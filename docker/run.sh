@@ -20,6 +20,16 @@ PROJECTS_DIR="${PROJECTS_DIR:-$HOME/projects}"
 MEM_LIMIT="${MEM_LIMIT:-16g}"
 SWAP_LIMIT="${SWAP_LIMIT:-20g}"
 
+# Expose host GPUs when the NVIDIA driver is present. The trainer
+# (src/experiments/{learnability,curriculum}/run_experiment.py) calls
+# `torch.cuda.is_available()` and falls back to CPU silently, so
+# missing this flag leads to a slow run with no error. Detection is
+# driver-file based so the script also works on CPU-only hosts.
+GPU_ARG=""
+if [ -f /proc/driver/nvidia/version ] || [ -e /dev/nvidia0 ]; then
+    GPU_ARG="--gpus all"
+fi
+
 if [ ! -d "$PROJECTS_DIR" ]; then
     echo "ERROR: PROJECTS_DIR=$PROJECTS_DIR does not exist." >&2
     echo "Clone the repos first, e.g.:" >&2
@@ -35,8 +45,10 @@ if [ "${1:-}" = "--" ]; then
     shift
 fi
 
-# Use docker (not nvidia-docker) - the trainer is CPU-only, GPU not needed.
+# GPU passthrough is enabled when /proc/driver/nvidia/version exists.
+# The trainer uses cuda when torch.cuda.is_available(), CPU otherwise.
 docker run --rm -it \
+    $GPU_ARG \
     --memory="$MEM_LIMIT" \
     --memory-swap="$SWAP_LIMIT" \
     -v "$PROJECTS_DIR:/workspace" \

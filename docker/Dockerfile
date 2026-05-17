@@ -2,9 +2,10 @@
 #
 # Why not the official ULB gpu_ubuntu1804:base?
 #   It's Python 3.6 + TF 2.3 + CUDA 10.1, much too old for our stack
-#   (Python 3.13 + PyTorch). Since our trainer is CPU-only
-#   (`torch.device("cpu")` is hardcoded in run_experiment.py), we don't
-#   need CUDA, so we build on a slim Python 3.13 base instead.
+#   (Python 3.13 + PyTorch). We build on python:3.13-slim and rely on
+#   the CUDA-enabled PyTorch wheel (cu121), which ships its own CUDA
+#   runtime libraries; only the NVIDIA driver needs to be on the host
+#   and exposed to the container via `docker run --gpus all`.
 #
 # The build follows the ULB pattern (per the GPU workstation guide):
 #   - build args for your username / UID / GID so files written into
@@ -54,10 +55,19 @@ RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs \
 ENV PATH="/home/${USER_NAME}/.cargo/bin:/home/${USER_NAME}/.local/bin:${PATH}"
 
 # Baseline Python deps that we want baked into the image so each
-# `docker run` is fast. Heavy ones (laser-learning-environment, torch via
-# marl) come pre-installed; project-specific editable installs happen at
+# `docker run` is fast. Heavy ones (laser-learning-environment via PyPI)
+# come pre-installed; project-specific editable installs happen at
 # entrypoint time on the mounted source.
 RUN pip install --no-cache-dir --user --upgrade pip wheel setuptools maturin
+
+# Install CUDA-enabled PyTorch (cu121 wheel). The wheel bundles its own
+# CUDA runtime libs, so the image does not need a CUDA toolkit installed
+# system-wide. At runtime, `docker run --gpus all` exposes the host's
+# NVIDIA driver to the container and torch.cuda.is_available() returns
+# True. Installed up front so the entrypoint's `pip install -e marl`
+# finds torch already present and does not pull the CPU wheel.
+RUN pip install --no-cache-dir --user \
+        torch --index-url https://download.pytorch.org/whl/cu121
 
 # Mount point for the host's projects directory. The runtime command
 # (see docker/run.sh) mounts ~/projects here, so /workspace/master_thesis

@@ -110,6 +110,17 @@ THESIS_GENERATOR_NAMES: dict[str, str] = {
 # -- The four-stage curriculum (thesis design) --------------------------------
 
 CURRICULUM_STAGES: tuple[StageConfig, ...] = (
+    # Per-stage step caps are intentionally asymmetric: early-stage
+    # navigation / single-laser tasks need less training than the
+    # level-6-style target stage. The totals sum to FULL_RUN_TOTAL_STEPS
+    # (1,500,000) and PILOT_RUN_TOTAL_STEPS (750,000) below.
+    #
+    #   Stage 1 (warmup):       200k full /  100k pilot
+    #   Stage 2 (1 laser):      250k full /  125k pilot
+    #   Stage 3 (2 lasers):     300k full /  150k pilot
+    #   Stage 4 (level6 style): 750k full /  375k pilot
+    #
+    # Sums:                   1,500k full / 750k pilot.
     StageConfig(
         stage_id=1,
         height=6,
@@ -124,8 +135,8 @@ CURRICULUM_STAGES: tuple[StageConfig, ...] = (
         generator_name="random",
         pool_size=50,
         eval_pool_size=0,
-        per_stage_step_cap_full=375_000,
-        per_stage_step_cap_pilot=187_500,
+        per_stage_step_cap_full=200_000,
+        per_stage_step_cap_pilot=100_000,
     ),
     StageConfig(
         stage_id=2,
@@ -138,8 +149,8 @@ CURRICULUM_STAGES: tuple[StageConfig, ...] = (
         generator_name="cooperative",
         pool_size=50,
         eval_pool_size=0,
-        per_stage_step_cap_full=375_000,
-        per_stage_step_cap_pilot=187_500,
+        per_stage_step_cap_full=250_000,
+        per_stage_step_cap_pilot=125_000,
     ),
     StageConfig(
         stage_id=3,
@@ -151,8 +162,8 @@ CURRICULUM_STAGES: tuple[StageConfig, ...] = (
         generator_name="cooperative",
         pool_size=50,
         eval_pool_size=0,
-        per_stage_step_cap_full=375_000,
-        per_stage_step_cap_pilot=187_500,
+        per_stage_step_cap_full=300_000,
+        per_stage_step_cap_pilot=150_000,
     ),
     StageConfig(
         stage_id=4,
@@ -165,8 +176,8 @@ CURRICULUM_STAGES: tuple[StageConfig, ...] = (
         generator_name="level6_style",
         pool_size=50,
         eval_pool_size=50,
-        per_stage_step_cap_full=375_000,
-        per_stage_step_cap_pilot=187_500,
+        per_stage_step_cap_full=750_000,
+        per_stage_step_cap_pilot=375_000,
     ),
 )
 

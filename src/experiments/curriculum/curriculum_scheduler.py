@@ -113,7 +113,7 @@ class StageScheduler(Generic[W]):
         stages: Sequence[StageConfig],
         pools: list[list[W]],
         rng_seed: int,
-        per_stage_step_cap: int,
+        per_stage_step_cap: int | Sequence[int],
         success_threshold: float = 0.80,
         success_window: int = 100,
     ) -> None:
@@ -123,10 +123,24 @@ class StageScheduler(Generic[W]):
             raise ValueError(
                 f"len(pools)={len(pools)} must match len(stages)={len(stages)}"
             )
-        if per_stage_step_cap <= 0:
-            raise ValueError(
-                f"per_stage_step_cap must be positive, got {per_stage_step_cap}"
-            )
+        # Normalise per_stage_step_cap to a per-stage list. An int means
+        # "same cap for every stage" (legacy behaviour); a sequence must
+        # match len(stages) (one cap per stage, supporting asymmetric
+        # budgets).
+        if isinstance(per_stage_step_cap, int):
+            caps = [per_stage_step_cap] * len(stages)
+        else:
+            caps = list(per_stage_step_cap)
+            if len(caps) != len(stages):
+                raise ValueError(
+                    f"per_stage_step_cap sequence length {len(caps)} "
+                    f"must match len(stages)={len(stages)}"
+                )
+        for i, c in enumerate(caps):
+            if c <= 0:
+                raise ValueError(
+                    f"per_stage_step_cap[{i}] must be positive, got {c}"
+                )
         if success_window <= 0:
             raise ValueError(
                 f"success_window must be positive, got {success_window}"
@@ -138,7 +152,7 @@ class StageScheduler(Generic[W]):
 
         self._stages: tuple[StageConfig, ...] = tuple(stages)
         self._pools: tuple[tuple[W, ...], ...] = tuple(tuple(p) for p in pools)
-        self._per_stage_step_cap = per_stage_step_cap
+        self._per_stage_step_caps: tuple[int, ...] = tuple(caps)
         self._success_threshold = success_threshold
         self._success_window = success_window
 
@@ -216,7 +230,7 @@ class StageScheduler(Generic[W]):
             len(self._recent_successes) >= self._success_window
             and self._mean_recent() >= self._success_threshold
         )
-        cap_trigger = self._stage_steps >= self._per_stage_step_cap
+        cap_trigger = self._stage_steps >= self._per_stage_step_caps[self._stage_idx]
 
         if not (success_trigger or cap_trigger):
             return False

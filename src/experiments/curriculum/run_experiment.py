@@ -236,20 +236,22 @@ def _make_padded_env(
     return PadObservations3D(cfg.env, target_obs_shape, target_state_shape)
 
 
-def _build_trainer(algo: str, sample_env: ThesisLLEConfig):
+def _build_trainer(algo: str, sample_env: ThesisLLEConfig, total_steps: int):
     """Build a trainer with the given algorithm using ``sample_env`` for sizing.
 
-    All three algorithms share the same Q-network factory call (per
-    ``marl-api.md`` section 2.5, ``independent=True`` is recommended for
-    IQL and VDN; for QMix we use the shared default to match the
-    canonical example).
+    The ``EpsilonGreedy`` schedule scales with ``total_steps`` via
+    :func:`_epsilon_decay_steps`, so a 1.5 M-step run gets a 450 k-step
+    exploration phase instead of the legacy 100 k. This keeps
+    exploration meaningful across the curriculum's later stages rather
+    than concentrating it in the first 7 % of training.
     """
+    eps_decay_steps = _epsilon_decay_steps(total_steps)
     if algo == "QMIX":
         qnet = qnetworks.from_env(sample_env)
         return algos.QMix(
             qnet,
             mixer=mixers.QMix.from_env(sample_env),
-            train_policy=EpsilonGreedy.linear(1.0, 0.05, 100_000),
+            train_policy=EpsilonGreedy.linear(1.0, 0.05, eps_decay_steps),
             test_policy=ArgMax(),
             lr=5e-4,
             batch_size=64,
@@ -261,7 +263,7 @@ def _build_trainer(algo: str, sample_env: ThesisLLEConfig):
         qnet = qnetworks.from_env(sample_env, independent=True)
         return algos.VDN(
             qnet,
-            train_policy=EpsilonGreedy.linear(1.0, 0.05, 100_000),
+            train_policy=EpsilonGreedy.linear(1.0, 0.05, eps_decay_steps),
             test_policy=ArgMax(),
             lr=5e-4,
             batch_size=64,
@@ -274,7 +276,7 @@ def _build_trainer(algo: str, sample_env: ThesisLLEConfig):
         return algos.DQN(
             qnet,
             mixer=None,
-            train_policy=EpsilonGreedy.linear(1.0, 0.05, 100_000),
+            train_policy=EpsilonGreedy.linear(1.0, 0.05, eps_decay_steps),
             test_policy=ArgMax(),
             lr=5e-4,
             batch_size=64,
@@ -812,17 +814,30 @@ def _load_checkpoint(
 # ---------------------------------------------------------------------------
 
 
-def _per_stage_step_cap(total_steps: int) -> int:
-    """Pilot vs. full per-stage cap selection (CURR only).
+def _per_stage_step_caps(total_steps: int) -> list[int]:
+    """Per-stage caps for the curriculum scheduler (CURR only).
 
-    The plan says: if ``total_steps == PILOT_RUN_TOTAL_STEPS`` use
-    pilot caps, otherwise full caps. We take the cap from stage 1 (all
-    stages share the same cap value in :data:`CURRICULUM_STAGES`).
+    Returns one cap per :data:`CURRICULUM_STAGES` entry. If
+    ``total_steps == PILOT_RUN_TOTAL_STEPS`` the pilot caps are used,
+    otherwise the full caps. The per-stage values are documented inline
+    in :data:`CURRICULUM_STAGES`; they sum to
+    :data:`FULL_RUN_TOTAL_STEPS` and :data:`PILOT_RUN_TOTAL_STEPS`.
     """
-    stage = CURRICULUM_STAGES[0]
     if total_steps == PILOT_RUN_TOTAL_STEPS:
-        return stage.per_stage_step_cap_pilot
-    return stage.per_stage_step_cap_full
+        return [s.per_stage_step_cap_pilot for s in CURRICULUM_STAGES]
+    return [s.per_stage_step_cap_full for s in CURRICULUM_STAGES]
+
+
+def _epsilon_decay_steps(total_steps: int) -> int:
+    """How many env steps to spend annealing epsilon from 1.0 to 0.05.
+
+    Scales with the total budget (30 %) but never less than 100,000 so
+    short runs still have a meaningful exploration phase. For
+    ``total_steps = 1_500_000`` (full) this returns 450,000; for
+    ``total_steps = 750_000`` (pilot) it returns 225,000; for shorter
+    debugging runs it returns 100,000.
+    """
+    return max(100_000, int(0.30 * total_steps))
 
 
 def _make_run_dir(out_dir: Path, condition: str, algo: str, seed: int) -> Path:
@@ -867,7 +882,7 @@ def main(argv: list[str] | None = None) -> int:
             stages=CURRICULUM_STAGES,
             pools=pools,
             rng_seed=args.seed + RNG_SEED,
-            per_stage_step_cap=_per_stage_step_cap(args.steps),
+            per_stage_step_cap=_per_stage_step_caps(args.steps),
             success_threshold=ADVANCEMENT_SUCCESS_THRESHOLD,
             success_window=ADVANCEMENT_WINDOW_EPISODES,
         )
@@ -887,7 +902,7 @@ def main(argv: list[str] | None = None) -> int:
         sample_env = _build_sample_env_config(args.condition, pools)
 
     # Build trainer + agents (ONCE, reused across all episodes/stages).
-    trainer = _build_trainer(args.algo, sample_env)
+    trainer = _build_trainer(args.algo, sample_env, args.steps)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     trainer = trainer.to(device)
     trainer.randomize()  # one-time, replaces simple_run's call

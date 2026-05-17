@@ -4,7 +4,7 @@
 
 set -e
 
-PY="C:/Users/hugo/Documents/marl/.venv/Scripts/python.exe"
+PY="${MARL_VENV:-C:/Users/hugoc/Projects/marl/.venv/Scripts/python.exe}"
 export PYTHONPATH=src
 OUT_DIR="results/learnability_phase2"
 STEPS=200000
@@ -30,7 +30,7 @@ for algo in "${ALGOS[@]}"; do
     fi
 
     echo "[${count}/${total}] Launching ${algo}_seed${seed}..."
-    cmd //c "$PY" -m experiments.learnability.run_experiment \
+    "$PY" -m experiments.learnability.run_experiment \
       --phase 2 --algo "$algo" --seed "$seed" --steps "$STEPS" &
     pids+=($!)
 

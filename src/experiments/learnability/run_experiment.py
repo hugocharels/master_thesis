@@ -66,13 +66,23 @@ def build_parser() -> argparse.ArgumentParser:
 # ---------------------------------------------------------------------------
 
 
-def _build_trainer(algo: str, sample_env: ThesisLLEConfig):
+def _epsilon_decay_steps(total_steps: int) -> int:
+    """Scale the epsilon-greedy anneal length with the total budget.
+
+    Returns ``max(100_000, int(0.3 * total_steps))`` so short runs
+    keep their legacy 100 k anneal and longer runs get a proportional
+    exploration phase instead of going greedy after 7 % of training.
+    """
+    return max(100_000, int(0.30 * total_steps))
+
+
+def _build_trainer(algo: str, sample_env: ThesisLLEConfig, total_steps: int):
     if algo == "QMIX":
         qnet = qnetworks.from_env(sample_env)
         return algos.QMix(
             qnet,
             mixer=mixers.QMix.from_env(sample_env),
-            train_policy=EpsilonGreedy.linear(1.0, 0.05, 100_000),
+            train_policy=EpsilonGreedy.linear(1.0, 0.05, _epsilon_decay_steps(total_steps)),
             test_policy=ArgMax(),
             lr=5e-4,
             batch_size=64,
@@ -84,7 +94,7 @@ def _build_trainer(algo: str, sample_env: ThesisLLEConfig):
         qnet = qnetworks.from_env(sample_env, independent=True)
         return algos.VDN(
             qnet,
-            train_policy=EpsilonGreedy.linear(1.0, 0.05, 100_000),
+            train_policy=EpsilonGreedy.linear(1.0, 0.05, _epsilon_decay_steps(total_steps)),
             test_policy=ArgMax(),
             lr=5e-4,
             batch_size=64,
@@ -97,7 +107,7 @@ def _build_trainer(algo: str, sample_env: ThesisLLEConfig):
         return algos.DQN(
             qnet,
             mixer=None,
-            train_policy=EpsilonGreedy.linear(1.0, 0.05, 100_000),
+            train_policy=EpsilonGreedy.linear(1.0, 0.05, _epsilon_decay_steps(total_steps)),
             test_policy=ArgMax(),
             lr=5e-4,
             batch_size=64,
@@ -202,7 +212,7 @@ def main() -> None:
     sample_env = ThesisLLEConfig.from_world(train_pool[0], t_max=config.t_max)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"Using device: {device}", file=sys.stderr)
-    trainer = _build_trainer(algo, sample_env)
+    trainer = _build_trainer(algo, sample_env, total_steps)
     trainer = trainer.to(device)
     trainer.randomize()
     agent = trainer.make_agent().to(device)

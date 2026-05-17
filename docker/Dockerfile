@@ -71,12 +71,16 @@ RUN git clone --branch ${MARL_BRANCH} https://github.com/yamoling/marl.git /opt/
 # Replace the CPU torch wheel pulled by `uv sync` with the CUDA-12.1
 # wheel. The cu121 wheel ships its own CUDA runtime libs; only the
 # host's NVIDIA driver needs to be exposed via `docker run --gpus ...`.
-RUN /opt/marl/.venv/bin/pip install --no-cache-dir --upgrade \
-        torch --index-url https://download.pytorch.org/whl/cu121
+# `uv pip` is used because uv-created venvs do not ship a `pip` binary
+# by default.
+RUN uv pip install --no-cache-dir --python /opt/marl/.venv/bin/python \
+        --upgrade --index-url https://download.pytorch.org/whl/cu121 \
+        torch
 
 # Master-thesis-specific deps not in marl's pyproject. matplotlib,
 # pytest, ruff, laser-learning-environment are already in marl's venv.
-RUN /opt/marl/.venv/bin/pip install --no-cache-dir python-sat ruff
+RUN uv pip install --no-cache-dir --python /opt/marl/.venv/bin/python \
+        python-sat ruff
 
 # Make /opt/marl readable (and the .venv binaries executable) by the
 # non-root user.

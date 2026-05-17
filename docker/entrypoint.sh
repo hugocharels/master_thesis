@@ -1,26 +1,35 @@
 #!/usr/bin/env bash
 # Container entrypoint:
-# 1. pip-install the mounted source repos in editable mode (so host-side
-#    code edits take effect immediately without rebuilding the image),
-# 2. set PYTHONPATH so master_thesis modules import,
+# 1. set PYTHONPATH so master_thesis modules import (no pip install
+#    needed for the in-repo packages),
+# 2. install marl in editable mode if not already present (the only
+#    runtime install left; lle + the project deps are baked into the
+#    image at build time),
 # 3. exec the user's command (default: interactive bash).
 
 set -e
 
-# Install lle from source if mounted; otherwise from PyPI.
+# Make experiment code importable without an explicit master_thesis
+# install. Set this first so `import generators` succeeds and the
+# rest of the entrypoint can rely on it.
+export PYTHONPATH="/workspace/master_thesis/src:${PYTHONPATH:-}"
+export MARL_VENV="$(which python)"
+
+# lle is baked into the image (PyPI wheel installed at build time).
+# This block only triggers when the user explicitly mounts a source
+# checkout at /workspace/lle and the baked wheel was not yet imported
+# (e.g., the user is testing a custom lle branch).
 if [ -d /workspace/lle ] && [ -f /workspace/lle/pyproject.toml ]; then
     if ! python -c "import lle" 2>/dev/null; then
         echo "[entrypoint] Building lle from source (mounted) ..."
         cd /workspace/lle && maturin develop --release --quiet && cd -
     fi
-else
-    if ! python -c "import lle" 2>/dev/null; then
-        echo "[entrypoint] Installing lle from PyPI ..."
-        pip install --user --quiet laser-learning-environment
-    fi
 fi
 
-# Install marl from source (must be mounted - not on PyPI).
+# marl is not on PyPI - install editable from the mounted source.
+# This is the only runtime install left (~5-10 s) because pip's user
+# site-packages at /home/$USER/.local is in the container's writable
+# layer, which is discarded by `docker run --rm`.
 if [ -d /workspace/marl ] && [ -f /workspace/marl/pyproject.toml ]; then
     if ! python -c "import marl" 2>/dev/null; then
         echo "[entrypoint] Installing marl (editable, mounted) ..."
@@ -30,18 +39,6 @@ else
     echo "[entrypoint] WARNING: /workspace/marl not found - mount it as a volume." >&2
 fi
 
-# Install master_thesis from source (must be mounted - not on PyPI).
-if [ -d /workspace/master_thesis ] && [ -f /workspace/master_thesis/pyproject.toml ]; then
-    if ! python -c "import generators" 2>/dev/null; then
-        echo "[entrypoint] Installing master_thesis deps ..."
-        pip install --user --quiet -e /workspace/master_thesis
-    fi
-else
-    echo "[entrypoint] WARNING: /workspace/master_thesis not found - mount it as a volume." >&2
-fi
-
-# Make experiment code importable without explicit installs.
-export PYTHONPATH="/workspace/master_thesis/src:${PYTHONPATH:-}"
-export MARL_VENV="$(which python)"
+# master_thesis: importable via PYTHONPATH set above, no pip install.
 
 exec "$@"

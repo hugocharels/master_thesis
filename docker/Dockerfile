@@ -69,6 +69,20 @@ RUN pip install --no-cache-dir --user --upgrade pip wheel setuptools maturin
 RUN pip install --no-cache-dir --user \
         torch --index-url https://download.pytorch.org/whl/cu121
 
+# Bake in lle (laser-learning-environment) + the master_thesis project
+# dependencies (python-sat, matplotlib, pytest) at build time so the
+# entrypoint does not have to reinstall them on every `docker run --rm`.
+# `pip install --user` writes to /home/${USER_NAME}/.local, which is
+# part of the image's filesystem layers and persists across container
+# instances. Per-run cost drops to a single editable `pip install -e
+# /workspace/marl` (~5-10 s).
+RUN pip install --no-cache-dir --user \
+        laser-learning-environment \
+        python-sat \
+        matplotlib \
+        pytest \
+        ruff
+
 # Mount point for the host's projects directory. The runtime command
 # (see docker/run.sh) mounts ~/projects here, so /workspace/master_thesis
 # and /workspace/marl appear inside.

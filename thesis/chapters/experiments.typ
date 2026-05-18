@@ -319,10 +319,14 @@ team-value (VDN), to a monotonic mixing network (QMIX).
 
 === Protocol
 
-The experiment fixes a single configuration that exercises the cooperation pressure end-to-end:
-an $8 times 8$ grid with three agents and two lasers, horizon $T_("max") = 16$, and the
-`cooperative` generator. The configuration is summarised in @tab-learnability-config and lives
-in the `GRID` constant of `src/experiments/learnability/configs.py`.
+The experiment fixes a single small-grid configuration that exercises the cooperation pressure
+end-to-end while remaining within reach of a 200,000-step budget: a $5 times 5$ grid with two
+agents and one laser, horizon $T_("max") = 10$, and the `cooperative` generator. The
+configuration is summarised in @tab-learnability-config and lives in the `GRID` constant of
+`src/experiments/learnability/configs.py`. An earlier $8 times 8$, three-agent, two-laser
+configuration produced $0%$ success across all sixty (algorithm, seed) cells, leaving open
+whether the algorithms are fundamentally unable or whether the task simply exceeds the budget.
+The $5 times 5$ rerun isolates the former question.
 
 #figure(
   table(
@@ -334,7 +338,7 @@ in the `GRID` constant of `src/experiments/learnability/configs.py`.
       [*Grid*], [*Agents*], [*Lasers*], [*$T_("max")$*],
       [*Generator*], [*Steps*],
     ),
-    [8×8], [3], [2], [16], [`cooperative`], [200,000],
+    [5×5], [2], [1], [10], [`cooperative`], [200,000],
   ),
   caption: [
     Learnability-experiment configuration. The generator name refers to the registry key in
@@ -378,14 +382,62 @@ per-seed appendix tables.
 
 === Results
 
-#block(fill: rgb("#fff4d6"), stroke: rgb("#d4a005"), radius: 4pt, inset: 10pt)[
-  *To be regenerated.* The training runs reported in earlier drafts were performed against the
-  pre-fix `cooperative` generator (see @generators). Following the generator rewrite, both pools
-  were regenerated and the previous training results no longer apply. Re-runs of the 60
-  (algorithm, seed) cells against the new pools are scheduled; the learning-curve and
-  final-success-rate figures, the per-algorithm mean / std table, and the per-seed appendix
-  tables will be reinstated once they complete.
-]
+@fig-learnability-curves reports the train- and test-pool success rates as a function of
+environment steps, averaged over the twenty seeds with a 95 % confidence band. All three
+algorithms reach a non-trivial success rate on the training pool well before the 200,000-step
+budget is exhausted, confirming that the $5 times 5$ cooperative task is learnable in
+principle. The held-out test pool is markedly harder for every algorithm: the test curves
+plateau below the corresponding training curves, with a gap of roughly 0.4 to 0.5 in absolute
+success rate at the end of training.
+
+#figure(
+  image("../../results/learnability_5x5/figures/learning_curves.pdf", width: 100%),
+  caption: [
+    Mean success rate (greedy exit rate) on the training and held-out test pools as a function
+    of environment steps, for IQL, VDN, and QMIX. Shaded bands are 95 % confidence intervals
+    over the twenty training seeds, clipped to the per-step minimum and maximum.
+  ],
+) <fig-learnability-curves>
+
+@fig-learnability-final shows the per-algorithm final success rates from the longer
+200-episode evaluation. The per-algorithm aggregates are summarised in
+@tab-learnability-final: VDN achieves the strongest training-pool success
+($0.70 plus.minus 0.05$), followed by IQL ($0.60 plus.minus 0.03$) and QMIX
+($0.59 plus.minus 0.03$); on the held-out pool the ranking flips slightly, with IQL at
+$0.23 plus.minus 0.03$, QMIX at $0.20 plus.minus 0.03$, and VDN at $0.18 plus.minus 0.03$.
+The cross-algorithm spread is small relative to the train/test gap, so the dominant signal in
+this configuration is generalisation, not credit assignment: every algorithm overfits the
+twenty training levels rather than abstracting the cooperation pattern across the pool.
+
+#figure(
+  image("../../results/learnability_5x5/figures/final_bar_chart.pdf", width: 75%),
+  caption: [
+    Final-evaluation success rate per algorithm (200 episodes per pool), train versus test.
+    Error bars are 95 % confidence intervals over the twenty training seeds.
+  ],
+) <fig-learnability-final>
+
+#figure(
+  table(
+    columns: 5,
+    stroke: black,
+    inset: 8pt,
+    align: horizon,
+    table.header(
+      [*Algorithm*], [*$n$*],
+      [*Train mean $plus.minus$ CI95*], [*Test mean $plus.minus$ CI95*],
+      [*Train $-$ test gap*],
+    ),
+    [IQL],  [20], [$0.60 plus.minus 0.03$], [$0.23 plus.minus 0.03$], [$0.37$],
+    [VDN],  [20], [$0.70 plus.minus 0.05$], [$0.18 plus.minus 0.03$], [$0.52$],
+    [QMIX], [20], [$0.59 plus.minus 0.03$], [$0.20 plus.minus 0.03$], [$0.40$],
+  ),
+  caption: [
+    Per-algorithm final success rates on the $5 times 5$ cooperative pools, aggregated over
+    twenty training seeds. The 200-episode greedy evaluation is summarised as a mean and a
+    95 % confidence interval ($plus.minus 1.96 sigma / sqrt(20)$).
+  ],
+) <tab-learnability-final>
 
 
 == Curriculum Transfer to Level-6-Style Targets <transfer-experiment>

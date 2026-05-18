@@ -122,28 +122,23 @@ Cooperative pool used as $cal(D)_("train")$ for @learnability-experiment.
     inset: 8pt,
     align: (left, left),
     table.header([*Field*], [*Value*]),
-    [Pool path],          [`results/learnability/levels/8x8_3a_2L_cooperative/train`],
-    [Grid],               [8 × 8],
-    [Agents],             [3],
-    [Lasers],             [2],
-    [$T_("max")$],        [16],
+    [Pool path],          [`results/learnability_5x5/levels/5x5_2a_1L_cooperative/train`],
+    [Grid],               [5 × 5],
+    [Agents],             [2],
+    [Lasers],             [1],
+    [$T_("max")$],        [10],
     [Generator],          [`cooperative` (registry key; `constructive_cooperative` in @generators)],
-    [Pool seed],          [20260615],
+    [Pool seed],          [20260618],
     [Number of levels],   [20],
-    [Unique wall masks],  [20 / 20],
-    [Unique agent tuples], [17 / 20],
-    [Unique laser sets],  [20 / 20],
-    [Mean pairwise wall-Hamming distance (normalised)], [0.168],
-    [Cooperative under Theorem 4.9], [20 / 20],
-    [Profile distribution], [17 mutual, 3 asymmetric],
   ),
-  caption: [Parameters and diversity statistics of the learnability training pool.],
+  caption: [Parameters of the learnability training pool.],
 )
 
-#figure(
-  pool_grid("../../results/learnability/levels/8x8_3a_2L_cooperative/train/images", 20),
-  caption: [All 20 levels of the learnability training pool, in pool order.],
-) <fig-pool-learnability-train>
+// TODO: regenerate pool grid images for the 5x5 pool, then re-enable this figure.
+// #figure(
+//   pool_grid("../../results/learnability_5x5/levels/5x5_2a_1L_cooperative/train/images", 20),
+//   caption: [All 20 levels of the learnability training pool, in pool order.],
+// ) <fig-pool-learnability-train>
 
 
 == Learnability — Test Pool <appendix-learnability-test>
@@ -157,28 +152,23 @@ Held-out cooperative pool used as $cal(D)_("test")$ for @learnability-experiment
     inset: 8pt,
     align: (left, left),
     table.header([*Field*], [*Value*]),
-    [Pool path],          [`results/learnability/levels/8x8_3a_2L_cooperative/test`],
-    [Grid],               [8 × 8],
-    [Agents],             [3],
-    [Lasers],             [2],
-    [$T_("max")$],        [16],
+    [Pool path],          [`results/learnability_5x5/levels/5x5_2a_1L_cooperative/test`],
+    [Grid],               [5 × 5],
+    [Agents],             [2],
+    [Lasers],             [1],
+    [$T_("max")$],        [10],
     [Generator],          [`cooperative`],
-    [Pool seed],          [20260616],
+    [Pool seed],          [20260618],
     [Number of levels],   [20],
-    [Unique wall masks],  [20 / 20],
-    [Unique agent tuples], [19 / 20],
-    [Unique laser sets],  [20 / 20],
-    [Mean pairwise wall-Hamming distance (normalised)], [0.169],
-    [Cooperative under Theorem 4.9], [20 / 20],
-    [Profile distribution], [18 mutual, 1 asymmetric, 1 distributed],
   ),
-  caption: [Parameters and diversity statistics of the learnability test pool.],
+  caption: [Parameters of the learnability test pool.],
 )
 
-#figure(
-  pool_grid("../../results/learnability/levels/8x8_3a_2L_cooperative/test/images", 20),
-  caption: [All 20 levels of the learnability test pool, in pool order.],
-) <fig-pool-learnability-test>
+// TODO: regenerate pool grid images for the 5x5 pool, then re-enable this figure.
+// #figure(
+//   pool_grid("../../results/learnability_5x5/levels/5x5_2a_1L_cooperative/test/images", 20),
+//   caption: [All 20 levels of the learnability test pool, in pool order.],
+// ) <fig-pool-learnability-test>
 
 
 == Curriculum Stage 1 — Training Pool <appendix-curriculum-s1>

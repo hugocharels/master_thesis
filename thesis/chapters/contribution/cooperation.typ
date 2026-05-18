@@ -181,6 +181,11 @@ The decision procedure produces one of eight labels:
 - *fully coupled*: every agent belongs to a single strongly connected component of the
   dependency graph.
 
+Every label is constructible within LLE's $1 <= n_a <= 4$ regime: `mutual` and `fully coupled`
+need at least two agents; `chain` and `distributed` need at least three; the remaining labels
+are reachable from two agents upward. The taxonomy therefore does not require any structural
+configuration that LLE cannot host.
+
 The remainder of this section makes each underlying object precise and gives one geometric example
 per family.
 
@@ -269,11 +274,11 @@ exits do not cross any beam at all (@fig-profile-independent).
 ) <fig-profile-independent>
 
 *Cooperative (no observed helper).* Binary cooperation holds — strict-SAT is UNSAT — yet the
-extracted plan contains no helper event. This is unusual in practice; it arises when the SAT
-solver returns a model in which beam truncation is realised through a timing arrangement that
-the event extractor does not register as a clean helper-beneficiary pair. The label `cooperative`
-is the residual classification used when the dependency graph is empty but cooperation is
-required.
+extracted plan contains no helper event. This label is a *defensive fallback*: the helper-event
+extractor only records an event when a helper sits on its own beam path with a foreign-colour
+agent strictly downstream at the same time step, and a few edge cases (e.g. a helper truncating
+at the last cell of its own beam path) escape that criterion. We have not observed this
+fallback fire on any LLE level encountered in this thesis; the label is listed for completeness.
 
 *Asymmetric.* The dependency graph has at least one edge $(c, c') in E$, no mutual pair, no
 chain extending beyond a single edge, no shared beneficiary, and the agents do not all belong

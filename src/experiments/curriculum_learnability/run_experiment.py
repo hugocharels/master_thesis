@@ -94,13 +94,14 @@ def build_parser() -> argparse.ArgumentParser:
 def _load_stage_pools(out_dir: Path) -> list[list[World]]:
     """Return one training pool per stage (in order).
 
-    - Stages 1 and 2 are loaded from ``out_dir/levels/`` (json, written
-      by curriculum_learnability._preflight).
-    - Stage 3 reuses the 8x8/3a/2L cooperative train pool produced by
-      the earlier learnability run.
+    - Early stages (everything except the last) are loaded from
+      ``out_dir/levels/`` (json, written by
+      curriculum_learnability._preflight).
+    - The final / target stage reuses the 8x8/3a/2L cooperative train
+      pool produced by the earlier learnability run.
     """
     pools: list[list[World]] = []
-    for stage in LEARNABILITY_TARGET_STAGES[:2]:
+    for stage in LEARNABILITY_TARGET_STAGES[:-1]:
         pools.append(load_pool_json(curr_pool_path(out_dir, stage, "train")))
     pools.append(load_pool_txt(TARGET_POOL_DIR / "train"))
     return pools

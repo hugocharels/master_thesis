@@ -24,8 +24,10 @@ BASE_DIR = Path("results") / "curriculum_learnability"
 
 
 def main() -> None:
-    # Stages 1 and 2 only -- stage 3 reuses the learnability pool.
-    for stage in LEARNABILITY_TARGET_STAGES[:2]:
+    # Generate every stage except the last (the target stage reuses
+    # the learnability experiment's 8x8 pool, so no preflight is needed
+    # for it).
+    for stage in LEARNABILITY_TARGET_STAGES[:-1]:
         train_seed = RNG_SEED + stage.stage_id * 100
         train_dir = pool_path(BASE_DIR, stage, "train")
         print(
@@ -39,7 +41,7 @@ def main() -> None:
         print(f"  done")
 
     print(
-        f"\nStage 3 reuses results/learnability/levels/"
+        f"\nFinal stage reuses results/learnability/levels/"
         f"8x8_3a_2L_cooperative/{{train,test}} (no preflight needed).\n"
         f"Done."
     )

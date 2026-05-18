@@ -39,6 +39,7 @@ sys.path.insert(0, str(PROJECT_ROOT / "src"))
 
 from solver import CooperationLevel
 from solver.profile.analyzer import CooperationProfileAnalyzer
+from solver.world_solver import WorldSolver
 
 
 @dataclass(frozen=True)
@@ -134,6 +135,41 @@ LEVELS: dict[str, Entry] = {
 }
 
 
+# --------------------------------------------------------------------------
+# Horizon-dependence demo. One hand-written world, analyzed at several
+# T_max values to illustrate that the cooperation classification depends
+# on the chosen horizon. The script reports, for each T_max:
+#   - whether the standard solver is SAT or UNSAT at that horizon
+#     (UNSAT = level rejected as unsolvable; cooperation not even tested),
+#   - and if SAT, the profile label returned by the analyzer.
+# A single PNG is rendered to results/cooperation_examples/<name>.png.
+# --------------------------------------------------------------------------
+
+
+@dataclass(frozen=True)
+class HorizonEntry:
+    t_max_values: tuple[int, ...]
+    world: str
+
+
+HORIZON_EXAMPLES: dict[str, HorizonEntry] = {
+    # TODO: fill in a small (4x4 is fine) world that switches classification
+    # between low / medium / high T_max — typically:
+    #   - low  T_max -> standard-SAT UNSAT (level looks unsolvable)
+    #   - mid  T_max -> cooperative (intended classification)
+    #   - high T_max -> independent (detour bypass: strict-SAT becomes SAT)
+    "horizon_demo": HorizonEntry(
+        t_max_values=(2, 3, 11),
+        world="""
+            . .   S0 S1
+            . L0E .  .
+            . .   .  .
+            . .   X  X
+        """,
+    ),
+}
+
+
 def _normalize(world_str: str) -> str:
     lines = []
     for raw in world_str.splitlines():
@@ -167,6 +203,45 @@ def _verify(world_str: str, target: str, t_max: int):
     return True, result.profile, sorted(result.dependency_edges), "ok"
 
 
+def _horizon_sweep(world_str: str, t_max_values: tuple[int, ...]):
+    """Return list of (t_max, status, profile_or_none, edges_or_none, reason)."""
+    rows = []
+    for t_max in t_max_values:
+        try:
+            world = World(world_str)
+        except Exception as exc:  # noqa: BLE001
+            rows.append((t_max, "PARSE_ERR", None, None, str(exc)))
+            continue
+        world.reset()
+        # Check standard-SAT first; UNSAT means the level is rejected as
+        # unsolvable at this horizon and the cooperation question never
+        # gets asked.
+        try:
+            sat, _ = WorldSolver(world, T_MAX=t_max).solve()
+        except Exception as exc:  # noqa: BLE001
+            rows.append((t_max, "SOLVER_ERR", None, None, str(exc)))
+            continue
+        if not sat:
+            rows.append((t_max, "STD-UNSAT", None, None, "rejected as unsolvable"))
+            continue
+        world.reset()
+        try:
+            result = CooperationProfileAnalyzer(world, T_MAX=t_max).analyze()
+        except Exception as exc:  # noqa: BLE001
+            rows.append((t_max, "ANALYZER_ERR", None, None, str(exc)))
+            continue
+        rows.append(
+            (
+                t_max,
+                "OK",
+                result.profile.value,
+                sorted(result.dependency_edges),
+                "",
+            )
+        )
+    return rows
+
+
 def main() -> int:
     out_dir = PROJECT_ROOT / "results" / "cooperation_examples"
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -196,6 +271,35 @@ def main() -> int:
             fails += 1
             continue
         print(f"[{name:14s}] OK   profile={profile.value:14s} {edges_str}  {png_str}")
+
+    # ------------------------------------------------------------------
+    # Horizon-dependence sweeps. Each entry runs the analyzer on one
+    # world at several T_max values to show the classification flip.
+    # ------------------------------------------------------------------
+    for name, entry in HORIZON_EXAMPLES.items():
+        if not entry.world or not entry.world.strip():
+            print(f"[{name:14s}] SKIP (no world string)")
+            continue
+        world_str = _normalize(entry.world)
+        try:
+            world = World(world_str)
+            world.reset()
+            out_path = out_dir / f"{name}.png"
+            plt.imsave(out_path, world.get_image())
+            png_str = f"-> {out_path.relative_to(PROJECT_ROOT)}"
+        except Exception as exc:  # noqa: BLE001
+            png_str = f"(no png, parse failure: {exc})"
+        print(f"[{name:14s}] horizon sweep  {png_str}")
+        for t_max, status, profile, edges, reason in _horizon_sweep(
+            world_str,
+            entry.t_max_values,
+        ):
+            if status == "OK":
+                edges_str = "" if edges is None else f"edges={edges}"
+                print(f"    T_max={t_max:3d}  -> {profile:14s} {edges_str}")
+            else:
+                print(f"    T_max={t_max:3d}  -> {status} ({reason})")
+
     return 0 if fails == 0 else 1
 
 

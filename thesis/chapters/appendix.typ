@@ -134,11 +134,10 @@ Cooperative pool used as $cal(D)_("train")$ for @learnability-experiment.
   caption: [Parameters of the learnability training pool.],
 )
 
-// TODO: regenerate pool grid images for the 5x5 pool, then re-enable this figure.
-// #figure(
-//   pool_grid("../../results/learnability_5x5/levels/5x5_2a_1L_cooperative/train/images", 20),
-//   caption: [All 20 levels of the learnability training pool, in pool order.],
-// ) <fig-pool-learnability-train>
+#figure(
+  pool_grid("../../results/learnability_5x5/levels/5x5_2a_1L_cooperative/train/images", 20),
+  caption: [All 20 levels of the learnability training pool, in pool order.],
+) <fig-pool-learnability-train>
 
 
 == Learnability — Test Pool <appendix-learnability-test>
@@ -164,11 +163,10 @@ Held-out cooperative pool used as $cal(D)_("test")$ for @learnability-experiment
   caption: [Parameters of the learnability test pool.],
 )
 
-// TODO: regenerate pool grid images for the 5x5 pool, then re-enable this figure.
-// #figure(
-//   pool_grid("../../results/learnability_5x5/levels/5x5_2a_1L_cooperative/test/images", 20),
-//   caption: [All 20 levels of the learnability test pool, in pool order.],
-// ) <fig-pool-learnability-test>
+#figure(
+  pool_grid("../../results/learnability_5x5/levels/5x5_2a_1L_cooperative/test/images", 20),
+  caption: [All 20 levels of the learnability test pool, in pool order.],
+) <fig-pool-learnability-test>
 
 
 == Curriculum Stage 1 — Training Pool <appendix-curriculum-s1>

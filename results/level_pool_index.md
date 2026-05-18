@@ -6,17 +6,17 @@ parameters, and where to find the per-level PNG renderings.
 
 ## learnability
 
-- pool directory: `results/learnability/levels/8x8_3a_2L_cooperative`
-- grid: 8x8
-- agents: 3
-- lasers: 2
-- horizon `t_max`: 16
+- pool directory: `results/learnability_5x5/levels/5x5_2a_1L_cooperative`
+- grid: 5x5
+- agents: 2
+- lasers: 1
+- horizon `t_max`: 10
 - generator: `cooperative`
 
 | split | seed | n_levels | images |
 |-------|------|----------|--------|
-| train | 20260615 | 20 | `results/learnability/levels/8x8_3a_2L_cooperative/train/images/` |
-| test | 20260616 | 20 | `results/learnability/levels/8x8_3a_2L_cooperative/test/images/` |
+| train | 20260618 | 20 | `results/learnability_5x5/levels/5x5_2a_1L_cooperative/train/images/` |
+| test | 20260619 | 20 | `results/learnability_5x5/levels/5x5_2a_1L_cooperative/test/images/` |
 
 ## curriculum_stage1
 

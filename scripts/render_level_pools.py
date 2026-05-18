@@ -2,7 +2,7 @@
 a per-pool ``params.json`` describing the generation parameters.
 
 Covers:
-- results/learnability/levels/             (.txt world strings)
+- results/learnability_5x5/levels/         (.txt world strings)
 - results/curriculum_experiment/levels/    (4 curriculum stages, .json)
 
 For each pool ``<pool>/{train,test,eval}/`` it writes:
@@ -143,7 +143,7 @@ def build_specs() -> list[PoolSpec]:
     specs: list[PoolSpec] = []
 
     # -- Learnability -----------------------------------------------------------
-    learn_base = PROJECT_ROOT / "results" / "learnability"
+    learn_base = PROJECT_ROOT / "results" / "learnability_5x5"
     specs.append(PoolSpec(
         label="learnability",
         pool_dir=_phase_pool_dir(learn_base, LEARN_GRID),

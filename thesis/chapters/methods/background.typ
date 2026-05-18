@@ -3,7 +3,7 @@
 The Laser Learning Environment (LLE) @LLE is a grid-based cooperative multi-agent benchmark
 designed to study coordination-critical tasks. A level consists of a rectangular grid containing
 walls, coloured laser sources, agent start positions, and exit tiles. Each agent is assigned a
-colour and must reach its designated exit tile.
+colour and must reach an exit tile.
 
 The central mechanic is the laser beam. Each source emits a directional beam that propagates
 cell by cell until it reaches a wall or the grid boundary. An agent whose colour matches the
@@ -21,15 +21,20 @@ successfully.
 #figure(
   image("../../../assets/lvl6-annotated.png", width: 70%),
   caption: [
-    An annotated LLE level. Coloured agents must reach their matching exit tiles. Laser beams
-    block movement for non-immune agents; an immune agent can truncate its own beam by occupying
-    a cell along its path, opening a route for a teammate.
+    LLE Level 6, the canonical hard target used throughout this thesis. Agents must reach the
+    exit tiles. Laser beams block movement for non-immune agents, but an immune agent can
+    truncate its own beam by occupying a cell along its path, opening a route for a teammate.
   ],
 )
 
-A complete description of the benchmark, its difficulty properties, and its relation to existing
-MARL methods was given in @related-work. The present chapter focuses on the formal model used to
-reason about solvability and cooperation within a bounded time horizon.
+LLE additionally supports collectible gems and void tiles. Neither is used in this thesis: gems
+and the incentive-scoring layer they enable are out of scope, and the formal model developed
+below does not introduce a void-tile type. Levels that contain void tiles can still be handled
+by treating each void tile as a wall, since both are impassable to agents.
+
+We positioned LLE within the cooperative-MARL benchmark landscape in @related-work; the present
+chapter makes the mechanics precise through a formal model suitable for reasoning about
+solvability and cooperation within a bounded time horizon.
 
 
 == Boolean Satisfiability <sat-background>
@@ -65,4 +70,5 @@ In this thesis, propositional variables are introduced to represent agent positi
 states, and laser activity at each time step. The constraints of the bounded-horizon solvability
 problem are then encoded as CNF clauses, and a SAT solver is used as a decision oracle. The
 solver used throughout is Minisat22, a descendant of the MiniSat solver of Eén and Sörensson
-@EenSorensson2003, accessed through the PySAT interface @Ignatiev2018.
+@EenSorensson2003, accessed through the PySAT interface @Ignatiev2018. The full encoding —
+variables, clauses, and the correctness argument — is developed in @sat-reduction.

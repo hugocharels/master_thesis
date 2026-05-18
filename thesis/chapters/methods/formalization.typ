@@ -2,27 +2,21 @@
 
 == Problem Formalization <formalization>
 
-We now define the semantic objects and decision problems used throughout the thesis. Two properties
-are central. *Solvability* asks whether there exists a valid joint trajectory that brings all
-agents to their exits within a bounded horizon. *Cooperation requirement* asks whether every such
-trajectory must rely on the same-colour beam-truncation mechanism. Both are formally decidable,
-and both are certified by the solver for every accepted level.
-
-This section operates at the level of the game semantics; the SAT encoding of these objects
-follows in @sat-reduction.
-
-The LLE environment supports between 1 and 4 agents. Accordingly, throughout this thesis we assume
-that $1 <= n_a <= 4$. This bound is an artifact of the LLE engine, not a limitation of the SAT
-encoding developed in @sat-reduction; the encoding itself remains correct for any finite $n_a$.
+We now define the semantic objects and decision problems used throughout the thesis. Two
+properties are central: *solvability* — whether there exists a valid joint trajectory bringing
+all agents to exits within a bounded horizon — and the *cooperation requirement* — whether
+every such trajectory must rely on the same-colour beam-truncation mechanism. Both are formally
+decidable and certified by the solver for every accepted level; the SAT encoding itself is
+developed in @sat-reduction. Throughout, we assume $1 <= n_a <= 4$ in line with the LLE engine;
+this bound is an engine artefact, not a limitation of the encoding, which remains correct for
+any finite $n_a$.
 
 #formalbox([Definition 3.1 (LLE Level)], [
   An LLE level is a tuple $L = (H, W, C, s, cal(W), cal(S), cal(E))$ where:
 
   - $H, W in NN^+$ are the height and width of the grid.
-  - $P = {(x, y) | 0 <= x < W, 0 <= y < H}$ is the set of all grid positions. We use the
-    image-coordinates convention: $x$ is the column index and $y$ is the row index, so that
-    moving north decreases $y$ and moving east increases $x$. The implementation uses the
-    transposed naming $(i, j) = (y, x)$ but the SAT semantics are identical.
+  - $P = {(x, y) | 0 <= x < W, 0 <= y < H}$ is the set of all grid positions, with $x$ the
+    column index and $y$ the row index (image-coordinates convention).
   - $C = {0, 1, ..., n_a - 1}$ is the set of agent colours, with $1 <= n_a <= 4$.
   - $s : C -> P$ assigns an initial position to each agent, and $s$ is injective.
   - $D = {N, S, E, W}$ is the set of laser directions.
@@ -77,7 +71,10 @@ for the set of colours that actually have a source.
   - *No collision:* $p_t(c_1) eq.not p_t(c_2)$ for all $t$ and all distinct $c_1, c_2 in C$.
   - *Conservative hand-off rule:* For all $t < T_("max")$ and all distinct $c_1, c_2 in C$,
     agents may not enter a cell occupied by another agent at the previous time step; that is,
-    $p_(t+1)(c_1) eq.not p_t(c_2)$ and $p_t(c_1) eq.not p_(t+1)(c_2)$.
+    $p_(t+1)(c_1) eq.not p_t(c_2)$ and $p_t(c_1) eq.not p_(t+1)(c_2)$. This follows the LLE
+    engine convention: agents act simultaneously without coordinating their moves, so an agent
+    cannot enter a cell that another agent only vacates in the same step — it must wait one
+    step. The same rule rules out direct swaps.
   - *Laser safety:* No agent $c_1$ occupies a cell at time $t$ where a laser of colour
     $c_2 in C_("src")$, with $c_2 eq.not c_1$, is active under the standard beam semantics of
     #fref(<def-3-2>, [Definition 3.2]).
@@ -94,21 +91,18 @@ for the set of colours that actually have a source.
     {p_(T_("max"))(c) | c in C} = cal(E)
   $
 
-  A level is *solvable* without qualification if it is solvable for some finite horizon.
+  A level is *solvable* without qualification if it is solvable for some $T_("max") in NN$.
 ]) <def-3-4>
 
 The restriction to a bounded horizon is natural for the SAT encoding. In the model studied here,
-beam activity at time $t$ is a deterministic function of the joint position map $p_t$. Hence the
-full state is determined by the joint agent positions. If a trajectory repeats the same joint
-position twice, the intervening segment forms a loop and can be removed without affecting
-reachability of later states. Therefore, if a level is solvable at all, it is solvable within a
-finite horizon bounded by the number of collision-free joint configurations.
-
-*Scope note.* All formal guarantees in this thesis are stated relative to a fixed finite horizon
-$T_("max")$. The solver decides whether a level is solvable within that horizon, not whether it
-is solvable under an unbounded notion of play. In practice, $T_("max")$ is set to a value known
-to be sufficient for the instances of interest; the choice of horizon is a parameter of the
-generation process, not a formal limitation of the approach.
+beam activity at time $t$ is a deterministic function of the joint position map $p_t$, so the
+full game state is determined by the joint agent positions. Any valid trajectory that visits the
+same joint position map twice can have the intervening segment excised without affecting
+reachability of later states. Hence, if a level is solvable at all, it admits a valid trajectory
+whose length is at most the number of collision-free joint position maps, which is bounded by
+$|P|^(n_a)$. A sufficient $T_("max")$ therefore always exists. In practice $T_("max")$ is
+chosen by the generation process, and all formal guarantees in this thesis are stated relative
+to that choice.
 
 #formalbox([Definition 3.5 (Bounded-Horizon LLE Solvability Problem)], [
   The *bounded-horizon LLE solvability problem* is the following decision problem.

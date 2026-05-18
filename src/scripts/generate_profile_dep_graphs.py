@@ -17,10 +17,10 @@ import networkx as nx
 OUTPUT_DIR = Path(__file__).resolve().parents[2] / "results" / "cooperation_examples"
 
 AGENT_COLOURS = {
-    0: "#d62728",
-    1: "#1f77b4",
-    2: "#2ca02c",
-    3: "#9467bd",
+    0: "#d62728",  # red
+    1: "#2ca02c",  # green
+    2: "#1f77b4",  # blue
+    3: "#9467bd",  # purple
 }
 
 PROFILES: dict[str, dict] = {
@@ -46,7 +46,7 @@ def render(name: str, nodes: list[int], edges: list[tuple[int, int]]) -> None:
 
     fig, ax = plt.subplots(figsize=(3, 3))
     if len(nodes) == 2:
-        pos = {nodes[0]: (-1.0, 0.0), nodes[1]: (1.0, 0.0)}
+        pos = {nodes[0]: (-0.7, 0.0), nodes[1]: (0.7, 0.0)}
     else:
         pos = nx.circular_layout(graph)
 
@@ -80,13 +80,13 @@ def render(name: str, nodes: list[int], edges: list[tuple[int, int]]) -> None:
         ax=ax,
     )
 
+    ax.set_xlim(-1.5, 1.5)
+    ax.set_ylim(-1.5, 1.5)
     ax.set_aspect("equal")
-    ax.margins(0.25)
     ax.axis("off")
-    fig.tight_layout()
 
     out = OUTPUT_DIR / f"dep_{name}.png"
-    fig.savefig(out, dpi=220, bbox_inches="tight", transparent=True)
+    fig.savefig(out, dpi=220, transparent=True)
     plt.close(fig)
     print(f"wrote {out}")
 

@@ -276,11 +276,12 @@ returns `independent`. *Example.* A grid with two agents whose direct paths to t
 exits do not cross any beam at all (@fig-profile-independent).
 
 #figure(
-  stack(
-    dir: ltr,
-    spacing: 2em,
+  grid(
+    columns: (auto, auto),
+    column-gutter: 1.5em,
+    align: center + horizon,
     image("../../../results/cooperation_examples/independent.png", height: 4cm),
-    image("../../../results/cooperation_examples/dep_independent.png", height: 4cm),
+    image("../../../results/cooperation_examples/dep_independent.png", width: 3.5cm),
   ),
   caption: [
     `independent`: two agents with disjoint direct paths to two exits. No laser is present,
@@ -312,11 +313,12 @@ is no blue beam. The dependency graph has the single edge $0 arrow 1$
 (@fig-profile-asymmetric).
 
 #figure(
-  stack(
-    dir: ltr,
-    spacing: 2em,
+  grid(
+    columns: (auto, auto),
+    column-gutter: 1.5em,
+    align: center + horizon,
     image("../../../results/cooperation_examples/asymmetric.png", height: 4cm),
-    image("../../../results/cooperation_examples/dep_asymmetric.png", height: 4cm),
+    image("../../../results/cooperation_examples/dep_asymmetric.png", width: 3.5cm),
   ),
   caption: [
     `asymmetric`: one red laser splits the grid horizontally. The red agent (top-left) crosses
@@ -333,11 +335,12 @@ point in the plan (@fig-profile-mutual). Both edges are present, and a level is 
 agents do not all belong to a single strongly connected component.
 
 #figure(
-  stack(
-    dir: ltr,
-    spacing: 2em,
+  grid(
+    columns: (auto, auto),
+    column-gutter: 1.5em,
+    align: center + horizon,
     image("../../../results/cooperation_examples/mutual.png", height: 4cm),
-    image("../../../results/cooperation_examples/dep_mutual.png", height: 4cm),
+    image("../../../results/cooperation_examples/dep_mutual.png", width: 3.5cm),
   ),
   caption: [
     `mutual`: two stacked beams of distinct colours. Each agent is immune to its own beam
@@ -354,11 +357,12 @@ the blue beam, and neither agent $2$ nor agent $0$ has any further helping role
 (@fig-profile-chain). The graph is $0 arrow 1 arrow 2$.
 
 #figure(
-  stack(
-    dir: ltr,
-    spacing: 2em,
+  grid(
+    columns: (auto, auto),
+    column-gutter: 1.5em,
+    align: center + horizon,
     image("../../../results/cooperation_examples/chain.png", height: 4cm),
-    image("../../../results/cooperation_examples/dep_chain.png", height: 4cm),
+    image("../../../results/cooperation_examples/dep_chain.png", width: 3.5cm),
   ),
   caption: [
     `chain`: three agents and two beams. Walls confine each agent to a separate region so
@@ -375,11 +379,12 @@ The edges are ${(0, 1), (0, 2), (1, 2)}$, so agent $2$ has in-degree two and the
 reciprocal edge $(1, 0)$ is absent.)
 
 #figure(
-  stack(
-    dir: ltr,
-    spacing: 2em,
+  grid(
+    columns: (auto, auto),
+    column-gutter: 1.5em,
+    align: center + horizon,
     image("../../../results/cooperation_examples/distributed.png", height: 4cm),
-    image("../../../results/cooperation_examples/dep_distributed.png", height: 4cm),
+    image("../../../results/cooperation_examples/dep_distributed.png", width: 3.5cm),
   ),
   caption: [
     `distributed`: agent $2$ must traverse both the red and the blue beam to reach its exit,
@@ -394,11 +399,12 @@ yielding a directed cycle on all three agents and a strongly connected component
 (@fig-profile-fully-coupled). This is the strictest profile and is rare on small grids.
 
 #figure(
-  stack(
-    dir: ltr,
-    spacing: 2em,
+  grid(
+    columns: (auto, auto),
+    column-gutter: 1.5em,
+    align: center + horizon,
     image("../../../results/cooperation_examples/fully_coupled.png", height: 4cm),
-    image("../../../results/cooperation_examples/dep_fully_coupled.png", height: 4cm),
+    image("../../../results/cooperation_examples/dep_fully_coupled.png", width: 3.5cm),
   ),
   caption: [
     `fully_coupled`: three agents and three beams stacked, so every agent must shield, and be

@@ -76,6 +76,7 @@ fi
 # The trainer uses cuda when torch.cuda.is_available(), CPU otherwise.
 docker run --rm -it \
     "${GPU_ARGS[@]}" \
+    -e MAX_PARALLEL \
     --memory="$MEM_LIMIT" \
     --memory-swap="$SWAP_LIMIT" \
     -v "$PROJECTS_DIR:/workspace" \

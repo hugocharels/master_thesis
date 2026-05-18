@@ -11,27 +11,12 @@ only if it exposes a meaningful coordination challenge while remaining actually 
 Unsolvable levels provide no valid signal, and levels that admit independent solutions fail to test
 the cooperative mechanism they are meant to study.
 
-In this thesis we work with the Laser Learning Environment (LLE), a 2D grid-based cooperative
-MARL benchmark in which agents of distinct colours must shield one another from same-coloured
-laser beams to reach their exits. The hand-crafted Level 6 of LLE (@fig-intro-level6) is the
-canonical hard target used throughout the thesis: four agents start clustered together, three
-coloured lasers cut across a corridor that every agent must traverse, and only same-colour
-truncation lets the team progress. LLE is the concrete environment used throughout. We
-conjecture that the methodology developed here — coupling procedural generation with a formal
-verification oracle — generalises to any MARL setting whose target structural properties are
-expressible as decision problems, but we evaluate it on LLE only and leave broader transfer to
-future work.
-
-#figure(
-  image("../../assets/lvl6-annotated.png", width: 70%),
-  caption: [
-    LLE Level 6, the canonical hard target used throughout this thesis. Four agents (red, blue,
-    green, yellow) start in the top-left cluster; their exits sit in the bottom-right cluster.
-    Three coloured laser beams cross the corridor. An agent is immune to its own beam but lethal
-    to other-colour agents, so progress requires each laser-coloured agent to step into its own
-    beam at the right moment to shield the others.
-  ],
-) <fig-intro-level6>
+We instantiate this work on the Laser Learning Environment (LLE), a cooperative MARL benchmark
+whose mechanics are formalised in @lle-background; its hand-crafted Level 6 serves as the
+canonical hard target throughout the thesis. We conjecture that the methodology developed
+here — coupling procedural generation with a formal verification oracle — generalises to any
+MARL setting whose target structural properties are expressible as decision problems, but we
+evaluate it on LLE only and leave broader transfer to future work.
 
 
 == Motivation
@@ -54,14 +39,14 @@ generator is therefore a candidate building block for *curriculum learning*: rat
 directly on a hard hand-crafted target, an agent can be trained on a sequence of progressively
 harder generated levels.
 
-The thesis delivers four artefacts: a bounded-horizon SAT encoding of LLE solvability with a
-correctness proof and complexity placement; a strict-semantics counterfactual that turns the
-informal "cooperation required" intuition into a decidable property, refined into a five-label
-profile taxonomy; a solver-in-the-loop generator family that accepts only certified levels and
-exposes the structural axes above as user-facing parameters; and an empirical evaluation
-covering SAT-encoding cost, generator acceptance rates and profile distributions, learnability
-of generated cooperative levels for off-the-shelf MARL, and a curriculum-transfer pilot toward
-LLE Level 6.
+The thesis delivers three contributions and an empirical study. The contributions are a
+bounded-horizon SAT encoding of LLE solvability with a correctness proof and complexity
+placement; a strict-semantics counterfactual that turns the informal "cooperation required"
+intuition into a decidable property, refined into a five-label profile taxonomy; and a
+solver-in-the-loop generator family that accepts only certified levels and exposes the
+structural axes above as user-facing parameters. The empirical study covers SAT-encoding
+cost, generator acceptance rates and profile distributions, learnability of generated
+cooperative levels for off-the-shelf MARL, and a curriculum-transfer pilot toward LLE Level 6.
 
 
 == Research Questions and Scope
@@ -80,8 +65,9 @@ More precisely, the work is organised around six research questions:
 - *RQ4:* Can we control the cooperation structure of generated levels by targeting specific
   profiles such as asymmetric, mutual, chain, distributed, or fully coupled dependencies?
 - *RQ5:* Can MARL agents trained exclusively on procedurally generated cooperative levels
-  reach a non-trivial greedy success rate on a held-out pool of generated levels at a fixed
-  training budget, and how does that performance vary across IQL, VDN, and QMIX?
+  reach a greedy success rate significantly above a random-policy baseline on a held-out pool
+  of generated levels at a fixed training budget, and how does that performance vary across
+  IQL, VDN, and QMIX?
 - *RQ6:* Does a four-stage curriculum of generated levels of growing geometric and cooperative
   complexity yield a higher greedy success rate on hand-crafted LLE Level 6 than a baseline
   trained directly on Level 6 (or on the union of all stage pools) at the same total training
@@ -90,8 +76,10 @@ More precisely, the work is organised around six research questions:
 The thesis instantiates this framework on LLE, focusing on a restricted but explicit subset of
 its mechanics. The formal model covers agent movement, inter-agent blocking interactions, and a
 bounded-horizon solvability criterion. LLE additionally supports collectible gems and an
-incentive-scoring layer on top of plain exit-reaching; both are outside the scope of the formal
-guarantees developed here and are deferred to future work.
+incentive-scoring layer on top of plain exit-reaching, as well as void tiles distinct from
+walls; gems and the incentive layer are outside the scope of this thesis, and void tiles are
+treated as walls (impassable to agents) rather than as a separate tile type. These restrictions
+are deferred to future work.
 
 
 == Thesis Structure

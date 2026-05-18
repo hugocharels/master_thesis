@@ -52,14 +52,18 @@ from experiments.curriculum_learnability.configs import (
     PILOT_RUN_TOTAL_STEPS,
     RNG_SEED,
 )
-from experiments.learnability.configs import GRID as LEARN_GRID
-from experiments.learnability.pool_generator import (
-    load_pool as load_pool_txt,
-    pool_dir as learn_pool_dir,
-)
+from experiments.learnability.pool_generator import load_pool as load_pool_txt
 
 DEFAULT_OUT_DIR = Path("results") / "curriculum_learnability"
-LEARNABILITY_BASE = Path("results") / "learnability"
+
+# Stage 3 (TARGET) reuses the 8x8/3a/2L cooperative pool produced by
+# the earlier learnability run -- those .txt files are still on disk
+# under results/learnability/levels/8x8_3a_2L_cooperative/ regardless
+# of whether the active learnability.GRID has since been changed to
+# debug at a smaller scale.
+TARGET_POOL_DIR = (
+    Path("results") / "learnability" / "levels" / "8x8_3a_2L_cooperative"
+)
 
 
 # ---------------------------------------------------------------------------
@@ -92,22 +96,19 @@ def _load_stage_pools(out_dir: Path) -> list[list[World]]:
 
     - Stages 1 and 2 are loaded from ``out_dir/levels/`` (json, written
       by curriculum_learnability._preflight).
-    - Stage 3 reuses the learnability train pool (txt files) so this
-      experiment shares the same target task as the direct-training
-      learnability experiment.
+    - Stage 3 reuses the 8x8/3a/2L cooperative train pool produced by
+      the earlier learnability run.
     """
     pools: list[list[World]] = []
     for stage in LEARNABILITY_TARGET_STAGES[:2]:
         pools.append(load_pool_json(curr_pool_path(out_dir, stage, "train")))
-    learn_train_dir = learn_pool_dir(LEARNABILITY_BASE, LEARN_GRID, "train")
-    pools.append(load_pool_txt(learn_train_dir))
+    pools.append(load_pool_txt(TARGET_POOL_DIR / "train"))
     return pools
 
 
 def _load_test_pool() -> list[World]:
-    """Held-out test pool == learnability's test pool (apples-to-apples)."""
-    learn_test_dir = learn_pool_dir(LEARNABILITY_BASE, LEARN_GRID, "test")
-    return load_pool_txt(learn_test_dir)
+    """Held-out test pool == the 8x8/3a/2L cooperative test pool."""
+    return load_pool_txt(TARGET_POOL_DIR / "test")
 
 
 # ---------------------------------------------------------------------------

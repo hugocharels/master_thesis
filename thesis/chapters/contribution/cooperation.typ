@@ -8,7 +8,8 @@ unchanged.
 
 Accordingly, the strict SAT encoding keeps the standard laser-safety clauses and replaces only the
 same-colour beam-propagation rule. For every source $(c, d, p_s) in cal(S)$, every admissible
-propagation edge from $(x, y)$ to $(x', y')$, and every time step $t in T$, the strict encoding
+propagation edge from $(x, y)$ to $(x', y')$ — in the sense of @sat-reduction: successor inside
+the grid, not a wall, and not a source cell — and every time step $t in T$, the strict encoding
 uses
 
 $
@@ -55,13 +56,15 @@ step.
 
   $(arrow.l)$ Assume that $Phi(L, T_("max"))$ is satisfiable and
   $Phi_("strict")(L, T_("max"))$ is unsatisfiable. The first condition implies that $L$ is solvable
-  under the standard semantics. Suppose that some successful standard trajectory used no
-  same-colour beam-truncation step. Then the same joint positions would also satisfy the strict
-  beam semantics, because the only semantic difference between the two models concerns exactly that
-  truncation mechanism. This would yield a satisfying assignment for
-  $Phi_("strict")(L, T_("max"))$, contradicting unsatisfiability. Hence every successful standard
-  trajectory must use at least one same-colour beam-truncation step, so $L$ requires cooperation
-  with horizon $T_("max")$. $square.stroked$
+  under the standard semantics. Suppose, for contradiction, that some successful standard
+  trajectory uses no same-colour beam-truncation step — that is, no agent $c$ ever stands on a
+  cell traversed by its own beam. Under that hypothesis the two semantics produce identical beam
+  states for this trajectory: the standard rule truncates the beam of colour $c$ only at a cell
+  occupied by agent $c$, and by assumption no such occupancy occurs, so each beam reaches the
+  same wall or grid boundary as it would under the strict rule. The same variable assignment
+  therefore satisfies $Phi_("strict")(L, T_("max"))$, contradicting unsatisfiability. Hence every
+  successful standard trajectory must use at least one same-colour beam-truncation step, so $L$
+  requires cooperation with horizon $T_("max")$. $square.stroked$
 ])
 
 
@@ -143,8 +146,9 @@ The cooperation detector runs two SAT calls on the same level:
 
 + Run $"Solver"(L, T_("max"))$. If the result is UNSAT, the level is unsolvable for that horizon,
   so it is rejected before cooperation is considered.
-+ Run $"StrictSolver"(L, T_("max"))$. If the result is UNSAT, the level requires cooperation for
-  the same horizon.
++ Otherwise, run $"StrictSolver"(L, T_("max"))$. If this call is UNSAT, the level requires
+  cooperation for the same horizon; if it is SAT, a strict trajectory exists, so the level is
+  solvable without any same-colour beam-truncation step and is therefore non-cooperative.
 
 Both calls share the same bounded horizon and differ only in the beam-propagation clauses. For
 benchmark levels, the horizon can be chosen from known solution lengths; for generated levels, it
@@ -184,20 +188,21 @@ per family.
 
 Some profile decisions require asking whether a single agent is *individually* indispensable as a
 helper. To support this, the SAT encoding offers a *selective-strict* laser mode, parameterised
-by a set of colours $S subset.eq C_("src")$:
+by a set of colours $K subset.eq C_("src")$ — chosen distinct from the source-set symbol
+$cal(S)$ to avoid confusion:
 
-- for every source $(c, d, p_s) in cal(S)$ with $c in S$, the beam-propagation clauses use the
+- for every source $(c, d, p_s) in cal(S)$ with $c in K$, the beam-propagation clauses use the
   strict equivalence of @sat-reduction;
-- for every source $(c, d, p_s) in cal(S)$ with $c in.not S$, the standard equivalence is used.
+- for every source $(c, d, p_s) in cal(S)$ with $c in.not K$, the standard equivalence is used.
 
-When $S = nothing$, the encoding coincides with the standard semantics; when $S = C_("src")$, it
+When $K = nothing$, the encoding coincides with the standard semantics; when $K = C_("src")$, it
 coincides with the strict semantics of #fref(<def-3-6>, [Definition 3.6]). Intermediate choices forbid same-colour
-truncation for the colours in $S$ while leaving the remaining beams untouched. The implementation
+truncation for the colours in $K$ while leaving the remaining beams untouched. The implementation
 uses
 ```python
-WorldSolver(world, laser_mode=LaserMode.SELECTIVE_STRICT, strict_colors=S)
+WorldSolver(world, laser_mode=LaserMode.SELECTIVE_STRICT, strict_colors=K)
 ```
-for an arbitrary colour set $S$. Selective-strict is the SAT lever that lets us single out one
+for an arbitrary colour set $K$. Selective-strict is the SAT lever that lets us single out one
 helper at a time without affecting the other beams.
 
 === Helper Events from a SAT Model
@@ -219,7 +224,7 @@ helper-event sets.
 === Necessary Helpers
 
 The *necessary-helper set* is, by contrast, a property of the level itself. For every colour
-$c in C_("src")$ the analyzer runs one selective-strict SAT call with $S = {c}$. If the call
+$c in C_("src")$ the analyzer runs one selective-strict SAT call with $K = {c}$. If the call
 returns UNSAT, the colour $c$ is added to the set. Operationally, $c$ is necessary when the level
 cannot be solved as soon as $c$ alone is barred from helping with its own beam, even though every
 other agent retains that ability.

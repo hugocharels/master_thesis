@@ -138,8 +138,7 @@ within-pool diversity.
 
 The constructive cooperative generator inherits the lane machinery of the constructive solvable
 generator and replaces its laser-placement step with one that plants a deliberate cooperation
-dependency for every laser, not just one. The geometry is built in the following sequence
-(see `src/generators/cooperative.py`).
+dependency for every laser, not just one. The geometry is built in the following sequence.
 
 + *Orientation.* One of the two orientations (horizontal lanes / vertical lanes) is chosen
   uniformly at random per call, subject to feasibility constraints on the grid dimensions.

@@ -322,8 +322,7 @@ team-value (VDN), to a monotonic mixing network (QMIX).
 The experiment fixes a single small-grid configuration that exercises the cooperation pressure
 end-to-end while remaining within reach of a 200,000-step budget: a $5 times 5$ grid with two
 agents and one laser, horizon $T_("max") = 10$, and the `cooperative` generator. The
-configuration is summarised in @tab-learnability-config and lives in the `GRID` constant of
-`src/experiments/learnability/configs.py`. An earlier $8 times 8$, three-agent, two-laser
+configuration is summarised in @tab-learnability-config. An earlier $8 times 8$, three-agent, two-laser
 configuration produced $0%$ success across all sixty (algorithm, seed) cells, leaving open
 whether the algorithms are fundamentally unable or whether the task simply exceeds the budget.
 The $5 times 5$ rerun isolates the former question.
@@ -341,9 +340,9 @@ The $5 times 5$ rerun isolates the former question.
     [5×5], [2], [1], [10], [`cooperative`], [200,000],
   ),
   caption: [
-    Learnability-experiment configuration. The generator name refers to the registry key in
-    `src/generators/registry.py`, which corresponds to the descriptive name
-    `constructive_cooperative` used in @generators.
+    Learnability-experiment configuration. The generator name refers to the registry key
+    `cooperative`, which corresponds to the descriptive name `constructive_cooperative` used
+    in @generators.
   ],
 ) <tab-learnability-config>
 
@@ -458,11 +457,10 @@ here as a controlled source of training instances rather than as standalone arte
 
 === Curriculum Stages
 
-The curriculum is defined by the four `StageConfig` entries of
-`src/experiments/curriculum/configs.py`. Every stage uses four agents (so that all stages share
-the same observation and action spaces, and the trained $Q$-networks remain compatible across
-stage transitions) but varies grid size, laser count, horizon, and generator. The stages are
-summarised in @tab-curriculum-stages and rendered as sample grids in
+The curriculum is defined by four stages. Every stage uses four agents (so that all stages
+share the same observation and action spaces, and the trained $Q$-networks remain compatible
+across stage transitions) but varies grid size, laser count, horizon, and generator. The
+stages are summarised in @tab-curriculum-stages and rendered as sample grids in
 @appendix-curriculum-s1–@appendix-curriculum-s4.
 
 #figure(
@@ -482,15 +480,14 @@ summarised in @tab-curriculum-stages and rendered as sample grids in
   ),
   caption: [
     Curriculum stages used by the CURR condition. Generator names are the descriptive
-    thesis-side names from `THESIS_GENERATOR_NAMES`; the corresponding runtime registry keys are
-    `random`, `cooperative`, `cooperative`, `level6_style`. All stages use 4 agents.
+    thesis-side names; the corresponding registry keys are `random`, `cooperative`,
+    `cooperative`, `level6_style`. All stages use 4 agents.
   ],
 ) <tab-curriculum-stages>
 
 Stages 1–3 each provide a 50-level training pool; stage 4 additionally provides a 50-level
 held-out evaluation pool that is never seen during training. Pool seeds are derived
-deterministically from `RNG_SEED = 20260514` and are documented in the per-pool `params.json` files
-under `results/curriculum_experiment/levels/`.
+deterministically from a single master seed and are documented per pool in the appendix.
 
 === Conditions
 
@@ -508,25 +505,21 @@ and the active $T_("max")$ change.
 - *B3 (oracle baseline).* Train exclusively on the hand-crafted Level 6, sampling that single
   level at every episode. This is the "no procedural generation at all" control.
 - *CURR (curriculum).* Train on the four stages in order, advancing from stage $k$ to
-  stage $k+1$ as soon as the rolling success rate over the last
-  `ADVANCEMENT_WINDOW_EPISODES = 100` training episodes reaches
-  `ADVANCEMENT_SUCCESS_THRESHOLD = 0.80`. If the threshold is not met within the per-stage
-  step cap (`per_stage_step_cap_*`, 375,000 steps per stage for the full budget; halved for the
-  pilot), the scheduler advances anyway to prevent lock-up on a hard stage.
+  stage $k+1$ as soon as the rolling greedy success rate over the last 100 training episodes
+  reaches 0.80. If the threshold is not met within the per-stage step cap (375,000 steps per
+  stage for the full budget, halved for the pilot), the scheduler advances anyway to prevent
+  lock-up on a hard stage.
 
-The four conditions share the same total training budget. For the full experiment that budget is
-`FULL_RUN_TOTAL_STEPS = 1,500,000` environment steps; for the pilot reported here it is
-`PILOT_RUN_TOTAL_STEPS = 750,000` environment steps.
+The four conditions share the same total training budget: 1,500,000 environment steps for the
+full experiment and 750,000 for the pilot reported here.
 
 === Evaluation
 
 The headline metric is the greedy success rate on the hand-crafted Level 6, denoted
-$hat(s)_("level6")$, estimated from `FINAL_EVAL_EPISODES = 200` independent episodes after the
-last training step (epsilon = 0). Periodic evaluations of `EVAL_EPISODES = 50` episodes are
-logged every `EVAL_FREQUENCY_STEPS = 20,000` environment steps in `level6_eval.csv`. For the B1
-condition we additionally report the greedy success rate on the 50-level stage-4 held-out pool
-(`success_rate_held_out_pool` in `final_results.json`), which probes whether B1 over-fits to its
-own 50-level training pool.
+$hat(s)_("level6")$, estimated from 200 independent episodes after the last training step
+($epsilon = 0$). Periodic evaluations of 50 episodes are logged every 20,000 environment steps.
+For the B1 condition we additionally report the greedy success rate on the 50-level stage-4
+held-out pool, which probes whether B1 over-fits to its own 50-level training pool.
 
 A positive transfer result is: $hat(s)_("level6")("CURR") > hat(s)_("level6")("B1")$ and
 $> hat(s)_("level6")("B2")$ at the same total step budget. A weaker but still informative
@@ -535,8 +528,8 @@ result is: CURR reaches its asymptote in fewer environment steps than the baseli
 === Pilot Setup
 
 At the time of writing, only the *pilot* run is in progress: two seeds of QMIX per condition
-($|cal(S)_("pilot")| = 2$, $|cal(A)_("pilot")| = {"QMIX"}$) at the
-`PILOT_RUN_TOTAL_STEPS = 750,000` budget. The pilot's purpose is to verify that the curriculum
+($|cal(S)_("pilot")| = 2$, $|cal(A)_("pilot")| = {"QMIX"}$) at the 750,000-step pilot budget.
+The pilot's purpose is to verify that the curriculum
 scheduler, the per-stage advancement criterion, and the eval cadence behave as specified before
 committing the full ($1.5 times 10^6$ steps) $times$ ($3$ algos) $times$ (multiple seeds) run.
 The full design space is the cartesian product

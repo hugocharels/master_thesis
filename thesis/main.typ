@@ -136,12 +136,16 @@
 #include "chapters/conclusion.typ"
 
 #[
+  // Restart the chapter counter so that the first appendix section is "A".
+  // The `Appendix` heading inside appendix.typ uses `numbering: none` but
+  // still advances the depth-1 counter, taking it from 0 to 1, which makes
+  // the first depth-2 heading land at (1, 1) -> "A.1".
+  #counter(heading).update(0)
   #set heading(numbering: (..nums) => {
     let n = nums.pos()
     let letters = ("A", "B", "C", "D", "E", "F", "G", "H")
-    let letter = letters.at(n.at(0) - 5, default: "?")
-    if n.len() == 1 { letter }
-    else { letter + "." + n.slice(1).map(str).join(".") }
+    let letter = letters.at(n.at(0) - 1, default: "?")
+    if n.len() == 1 { letter } else { letter + "." + n.slice(1).map(str).join(".") }
   })
   #include "chapters/appendix.typ"
 ]

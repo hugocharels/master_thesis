@@ -100,9 +100,11 @@ LEVELS: dict[str, Entry] = {
         target="chain",
         t_max=20,
         world="""
-            @   S0  .  S1  .
-            L0E .   .   .  .
-            @   X   @   .  S2
+            @   S0  L2S  S1  .
+            L0E .   .   .  @
+            @   X   @   .  .
+            @   @   L1E .  .
+            @   @   @   .  S2
             @   L1E .   .  .
             @   @   X   X  .
         """,

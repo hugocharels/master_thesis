@@ -14,29 +14,32 @@ All generators follow a common architecture built around three principles:
   name-keyed registry, so a new generator can be added without modifying core code.
 
 Each generator repeatedly performs the same loop: sample or construct a candidate layout,
-reject it if it violates generator-specific structural constraints, build an `lle.World`, and
-run the appropriate SAT-based acceptance test. Solvability mode uses a single satisfiability
-call; cooperation mode adds the strict-beam counterfactual test from @cooperation-detection
-and, optionally, the cooperation-profile filter introduced in @cooperation-profiles. The choice
-between these modes is a parameter rather than a separate generator class — *what* the
-generator constructs and *which property* it certifies are independent axes.
+reject it if it violates generator-specific structural constraints, build the corresponding LLE
+world instance, and run the appropriate SAT-based acceptance test. A single standard SAT call
+certifies solvability. When the user additionally requires cooperation, the generator also runs
+the strict-beam counterfactual test from @cooperation-detection; when a specific cooperation
+profile is requested, the profile analyzer of @cooperation-profiles acts as a soft filter on
+top. The cooperation requirement and the profile filter are parameters rather than separate
+generator classes — *what* the generator constructs and *which extra properties* are checked
+are independent axes.
 
 
 == Generation Targets
 
 Viewed through the solvability and cooperation definitions of @formalization, the generator
-family targets the three level categories shown in @fig-generator-categories. *Solvability*
-mode accepts levels in categories (b) and (c); *cooperation* mode accepts only levels in
-category (c); unsolvable levels in category (a) are always rejected.
+family targets the three level categories shown in @fig-generator-categories. Every accepted
+level is solvable — categories (b) or (c); unsolvable levels in category (a) are always
+rejected. When the user additionally requires cooperation, levels in (b) are rejected as well,
+so only category (c) survives.
 
 #figure(
   grid(
     columns: 3,
     gutter: 10pt,
     align: center,
-    [*(a)* Unsolvable \ _rejected by all generators_],
-    [*(b)* Solvable, no cooperation \ _accepted only in solvability mode_],
-    [*(c)* Solvable and cooperative \ _target of cooperation mode_],
+    [*(a)* Unsolvable],
+    [*(b)* Solvable, no cooperation],
+    [*(c)* Solvable and cooperative],
 
     image("../../../assets/unsolvable_map_example.png", width: 100%),
     image("../../../assets/bad_map_example.png", width: 100%),
@@ -48,22 +51,22 @@ category (c); unsolvable levels in category (a) are always rejected.
 
 == Cooperation Profile Targeting <profile-targeting>
 
-Every generator in this chapter can be parameterised along the cooperation axis introduced in
-@cooperation-profiles. Three operating modes are exposed:
+Every generator in this chapter certifies *solvability* for every accepted level — that is
+the role of the SAT oracle and it is always on. On top of that always-on guarantee, the user
+can stack two additional acceptance requirements drawn from @cooperation-profiles:
 
-- *Solvable only.* One SAT call. The accepted set is the union of categories (b) and (c)
-  above. The cooperation profile is not inspected.
-- *Cooperative.* Standard SAT and strict UNSAT. The accepted set is exactly category (c). Any
-  cooperation profile is admissible.
-- *Cooperative with profile filter.* Standard SAT and strict UNSAT, *and* the profile analyzer
-  returns one of the requested labels (e.g. `mutual`, `chain`, `distributed`). The accepted
-  set is the corresponding sub-class of category (c).
+- *Cooperation* (optional). The candidate must additionally satisfy the strict-UNSAT
+  counterfactual of #fref(<thm-5-1>, [Theorem 5.1]), so every accepted level provably requires
+  the same-colour beam-truncation mechanism. Without this flag the cooperation profile is not
+  inspected.
+- *Profile filter* (optional, requires cooperation). The candidate must additionally match
+  one of the requested cooperation-profile labels (e.g. `mutual`, `chain`, `distributed`).
+  The accepted set is the corresponding sub-class of category (c) above.
 
-The first two modes share the binary guarantee certified by #fref(<thm-5-1>, [Theorem 5.1]);
-the third adds the profile classification of @cooperation-profiles as a soft filter on top.
-All other generator parameters — grid size, number of agents $n_a$, number of lasers $n_l$,
-wall budget, horizon $T_("max")$ — are independent knobs and can be combined freely with any
-of the three cooperation modes.
+Solvability is therefore the floor; cooperation and profile filtering are layered on top. All
+other generator parameters — grid size, number of agents $n_a$, number of lasers $n_l$, wall
+budget, horizon $T_("max")$ — are independent knobs and can be combined freely with any
+choice on the cooperation axis.
 
 
 == Random Generator
@@ -71,8 +74,8 @@ of the three cooperation modes.
 The random generator samples every layout component uniformly: agent start positions, exits,
 wall positions, and laser source positions are drawn pairwise-distinct from the grid, and each
 laser source is given a random direction. The resulting candidate is submitted to the SAT
-oracle in whichever mode (solvable, cooperative, or profile-filtered cooperative) was
-requested. When a lower bound $T_("min")$ is provided, the generator also requires the
+oracle under whichever acceptance setting (solvability only, plus cooperation, or plus
+cooperation with profile filter) was requested. When a lower bound $T_("min")$ is provided, the generator also requires the
 candidate to be unsatisfiable for $T_("min") - 1$, selecting levels that fall inside a
 difficulty window.
 
@@ -105,9 +108,9 @@ a grid of $H$ rows and $W$ columns with $n_a$ agents, it picks a random orientat
 a set of $n_a$ distinct *lane indices* without replacement on the orientation axis (rows for
 the horizontal orientation, columns for the vertical one), places one agent start at one end
 of each lane and the corresponding exit at the other end, and reserves every cell of every
-lane as non-buildable. Lane indices are sampled *without* the contiguity constraint used in
-earlier prototypes, so the lane band can be split anywhere on the orientation axis — this is
-the main source of within-pool diversity.
+lane as non-buildable. Lane indices are sampled *without* a contiguity constraint, so the
+lane band can be split anywhere on the orientation axis — this is the main source of
+within-pool diversity.
 
 When the generator is run in cooperative mode, the laser-placement step plants a deliberate
 cooperation dependency for every requested laser, rather than relying on the solver to
@@ -128,8 +131,9 @@ on disjoint columns, so no two laser sources or beam segments coincide.
 The full unblocked beam segment of every laser, from source to grid edge, is added to the
 reserved cell set before walls are placed; without this step a wall could land between two
 non-adjacent lanes and silently break the cooperation requirement. The remaining free cells
-are then shuffled uniformly and the first `num_walls` of them are placed as walls — shuffling
-rather than taking a row-major prefix is what gives within-pool wall-mask diversity. The
+are then shuffled uniformly and the first $n_w$ of them are placed as walls, where $n_w$ is
+the requested wall budget — shuffling rather than taking a row-major prefix is what gives
+within-pool wall-mask diversity. The
 finished candidate is verified by the SAT oracle exactly as in the random and constrained
 random generators.
 
@@ -165,20 +169,15 @@ profile labels can be requested when the parameter combination supports them.
 
 #figure(
   table(
-    columns: 3,
+    columns: 2,
     stroke: black,
     inset: 8pt,
     align: horizon,
-    table.header([*Generator*], [*Construction Bias*], [*Cooperation Modes Available*]),
-    [Random], [Uniform random sampling], [Solvable / Cooperative / Profile-filtered],
-    [Constrained Random], [Random + geometric rejection], [Solvable / Cooperative / Profile-filtered],
-    [Constructive], [Reserved agent lanes + planted dependency], [Solvable / Cooperative / Profile-filtered],
-    [Level-6-Style], [Clustered starts/exits + corridor lasers], [Cooperative (`mutual` default)],
+    table.header([*Generator*], [*Construction Bias*]),
+    [Random], [Uniform random sampling],
+    [Constrained Random], [Random + geometric rejection],
+    [Constructive], [Reserved agent lanes + planted dependency],
+    [Level-6-Style], [Clustered starts/exits + corridor lasers],
   ),
-  caption: [
-    Overview of the four generator families. Cooperation mode is a parameter, not a separate
-    class: each family can be run in solvable, cooperative, or profile-filtered cooperative
-    mode (except for the level-6-style variant, which is designed for cooperative output and
-    targets the `mutual` profile by default).
-  ],
+  caption: [Generator families and their construction bias before the SAT oracle is consulted.],
 )

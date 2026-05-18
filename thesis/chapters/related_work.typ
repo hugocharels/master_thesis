@@ -90,6 +90,15 @@ that success genuinely depends on cooperation. For that reason, the present thes
 constraint-aware view of PCG: generation is coupled to a formal decision procedure, and the solver
 acts as an acceptance oracle rather than as a post-hoc descriptive tool.
 
+PCG has been increasingly developed *for* reinforcement learning, where the role of the generated
+content is not to entertain a human player but to provide training material for a learning agent.
+#cite(<RisiTogelius2020>, form: "prose") survey this line and argue that PCG is a natural lever for
+moving beyond fixed-benchmark RL toward generalisation across infinite environment families. Within
+that line, PCGRL @Khalifa2020PCGRL inverts the relationship between PCG and RL: rather than using
+PCG to feed RL agents, it trains an RL agent to *act as* the level designer. The thesis here runs
+in the opposite direction — a fixed solver-in-the-loop generator produces certified levels that
+feed RL training — and PCGRL is therefore a useful contrast rather than a comparable system.
+
 
 == Curriculum Learning and Generated Environments
 
@@ -185,6 +194,24 @@ to define cooperation. The MAPF literature therefore supplies a methodological t
 drop-in solution.
 
 
+== Formal Methods Coupled to Reinforcement Learning
+
+A separate line of work uses formal methods as an explicit component of the reinforcement
+learning loop rather than as a post-hoc analysis. The canonical example is *shielded RL*
+@Alshiekh2018Shielding, where a formally synthesised reactive shield filters the agent's
+candidate actions at runtime so that no policy update can ever violate a stated temporal-logic
+specification. The shield is computed once from the specification and the environment model, then
+inserted between the agent and the environment as a hard constraint.
+
+The connection to this thesis is methodological rather than direct. Shielded RL inserts a formal
+acceptance oracle on the *action* side of the loop, at runtime; we insert one on the *training-
+material* side, at generation time. Both follow the same recipe — encode a target property in a
+decidable formalism, run a solver, and reject anything that fails — but they apply it to opposite
+ends of the agent-environment interface. Shielded RL therefore does not provide a drop-in
+technique, but it does demonstrate that "formal-methods filter on top of an RL system" is a
+working pattern.
+
+
 == Positioning of the Thesis
 
 Taken together, the MARL benchmarking literature, the PCG and curriculum-learning literature,
@@ -208,6 +235,13 @@ work.
 - The environment-design line of work @Wang2019POET @Dennis2020PAIRED treats curriculum
   generation as an adaptive co-evolution problem but assumes a parameterised environment family
   without formal per-instance acceptance guarantees on solvability or cooperation.
+- The PCG-for-RL line @RisiTogelius2020 @Khalifa2020PCGRL frames procedural generation as a
+  tool for RL generalisation and even casts the generator itself as an RL agent, but does not
+  embed a decision procedure that proves generated instances satisfy a target structural
+  property.
+- The shielded-RL line @Alshiekh2018Shielding shows that formal methods integrate cleanly with
+  RL when used as a runtime *action* filter, but does not address the upstream question of
+  whether the *training material* itself satisfies the specification.
 
 This thesis sits at the intersection of those lines of work. It transfers the compilation-based SAT
 mindset from MAPF into the LLE setting, formalises bounded-horizon solvability for an LLE-specific

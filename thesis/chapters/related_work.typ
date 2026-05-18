@@ -14,29 +14,40 @@ therefore not MARL in general, but the design of instances in which inter-agent 
 structurally present and formally decidable.
 
 The general framework for sequential multi-agent decision-making originates in stochastic games
-@Shapley1953, generalised to the Markov game model that has become the standard formalism for MARL
-@Littman1994. The single-agent reinforcement-learning machinery on which cooperative MARL builds is
-covered comprehensively in @SuttonBarto2018. In cooperative MARL specifically, value-decomposition
-methods such as VDN @Sunehag2018 and QMIX @Rashid2018 factor a shared team value into per-agent
-components to enable decentralised execution; closely related approaches include the centralized-critic
-actor-critic of MADDPG @Lowe2017MADDPG, the counterfactual-baseline policy gradient COMA
-@Foerster2018COMA, and MAVEN @Mahajan2019MAVEN, which extends QMIX with latent-variable exploration
-to overcome its monotonicity limitations on coordination tasks. These methods perform well when
-individual contributions are roughly additive, but they struggle precisely on the
-coordination-critical, low-reward bottlenecks that LLE is designed to expose @LLE. The empirical
-chapter of this thesis (@experiments) accordingly uses three points on this algorithm spectrum —
-independent $Q$-learning (IQL, no credit-assignment baseline), VDN (additive decomposition), and
-QMIX (monotonic mixing) — to train on generated cooperative levels and on the curriculum-transfer
-target.
+@Shapley1953, generalised to the Markov game model that has become the standard formalism for
+MARL @Littman1994. The single-agent reinforcement-learning machinery on which cooperative MARL
+builds is covered comprehensively in @SuttonBarto2018.
+
+Two algorithm families dominate the cooperative MARL literature. *Value-decomposition* methods
+factor a shared team value into per-agent components to enable decentralised execution: VDN
+@Sunehag2018 uses an additive decomposition, and QMIX @Rashid2018 generalises this to a
+state-dependent monotonic mixing network. *Centralised-critic actor-critic* methods take a
+different route, training a joint critic that conditions on full state at training time while
+each agent retains a local actor at execution time: MADDPG @Lowe2017MADDPG is the canonical
+deterministic-policy instance, COMA @Foerster2018COMA refines the credit-assignment signal with
+a counterfactual baseline, and MAVEN @Mahajan2019MAVEN extends QMIX with latent-variable
+exploration to escape the monotonicity bottleneck on coordination-critical tasks.
+
+Both families perform well when individual contributions are roughly additive, and both struggle
+on the coordination-critical, low-reward bottlenecks that LLE is designed to expose @LLE. The
+empirical chapter of this thesis (@experiments) accordingly uses three points along the
+value-decomposition spectrum — independent $Q$-learning (IQL, no credit assignment), VDN
+(additive), and QMIX (monotonic mixing) — to train on generated cooperative levels and on the
+curriculum-transfer target.
 
 
 == The Laser Learning Environment
 
 The Laser Learning Environment (LLE) was introduced precisely to study coordination-critical
-multi-agent tasks @LLE. The paper identifies three properties that make the benchmark difficult for
-value-based MARL methods: *perfect coordination*, *interdependence*, and *zero-incentive dynamics*.
-Together, these properties create bottlenecks in which one agent must perform a locally unrewarded
-action that enables another agent to progress.
+multi-agent tasks @LLE. It sits alongside other cooperative-MARL benchmarks such as SMAC
+@Samvelyan2019SMAC (StarCraft micro-management with partially observable team play) and
+Overcooked @Carroll2019Overcooked (a constrained cooperative kitchen with temporal
+synchronisation), but differs in that its hardness comes from explicit *inter-agent blocking*
+rather than from partial observability or large action spaces. The LLE paper identifies three
+properties that make the benchmark difficult for value-based MARL methods: *perfect
+coordination*, *interdependence*, and *zero-incentive dynamics*. Together, these properties
+create bottlenecks in which one agent must perform a locally unrewarded action that enables
+another agent to progress.
 
 This benchmark framing is directly relevant to the present work. The thesis does not attempt to
 improve MARL training algorithms on LLE. Instead, it addresses an upstream question left open by
@@ -51,13 +62,15 @@ created by coloured lasers and same-colour blocking.
 
 == Dependency Structures in Cooperative MARL
 
-The cooperation criterion of #fref(<thm-4-9>, [Theorem 4.9]) returns a binary verdict, but cooperative behaviour can
-be richer: in a level with several agents and several lasers, helping relations can form a
+The same-colour beam-truncation mechanism on which LLE relies admits a "cooperation required /
+not required" verdict per level, but cooperative behaviour at finer granularity can vary
+considerably: in a level with several agents and several lasers, helping relations can form a
 one-way edge, a mutual pair, a directed chain, a shared-beneficiary fan-in, or a fully connected
-graph. In @cooperation-detection we extract this dependency graph from a SAT model and classify it under one
-of five labels — *asymmetric*, *mutual*, *chain*, *distributed*, *fully coupled*. This taxonomy
-is, to our knowledge, new for laser-blocking dependencies in LLE; the prior MARL literature
-considers related but distinct structural notions.
+graph. The cooperation profile analyzer of @cooperation-detection extracts this dependency
+graph from a SAT model of a solution and classifies it under one of five labels — *asymmetric*,
+*mutual*, *chain*, *distributed*, *fully coupled*. To our knowledge, this is the first such
+taxonomy specific to laser-blocking dependencies in LLE; the prior MARL literature considers
+related but distinct structural notions.
 
 The closest precedent is the *coordination graph* introduced by #cite(<Guestrin2002CoordinatedRL>, form: "prose"),
 which decomposes a joint $Q$-function over agent subsets connected by hyper-edges. Coordination
@@ -84,20 +97,22 @@ machine-learned generators trained on existing levels, but typically provides no
 on the produced output. The difficulty for the present problem is not merely to produce varied
 levels, but to produce levels that satisfy logically defined properties.
 
-This distinction matters. A constructive or search-based generator may bias generation toward
-interesting layouts, but without a verifier it cannot certify that a sampled level is solvable or
-that success genuinely depends on cooperation. For that reason, the present thesis adopts a
-constraint-aware view of PCG: generation is coupled to a formal decision procedure, and the solver
-acts as an acceptance oracle rather than as a post-hoc descriptive tool.
+PCG has been increasingly developed *for* reinforcement learning, where the role of the
+generated content is not to entertain a human player but to provide training material for a
+learning agent. #cite(<RisiTogelius2020>, form: "prose") survey this line and argue that PCG is
+a natural lever for moving beyond fixed-benchmark RL toward generalisation across infinite
+environment families. Within that line, PCGRL @Khalifa2020PCGRL inverts the relationship between
+PCG and RL: rather than using PCG to feed RL agents, it trains an RL agent to *act as* the level
+designer. The thesis here runs in the opposite direction — a fixed solver-in-the-loop generator
+produces certified levels that feed RL training — and PCGRL is therefore a useful contrast
+rather than a comparable system.
 
-PCG has been increasingly developed *for* reinforcement learning, where the role of the generated
-content is not to entertain a human player but to provide training material for a learning agent.
-#cite(<RisiTogelius2020>, form: "prose") survey this line and argue that PCG is a natural lever for
-moving beyond fixed-benchmark RL toward generalisation across infinite environment families. Within
-that line, PCGRL @Khalifa2020PCGRL inverts the relationship between PCG and RL: rather than using
-PCG to feed RL agents, it trains an RL agent to *act as* the level designer. The thesis here runs
-in the opposite direction — a fixed solver-in-the-loop generator produces certified levels that
-feed RL training — and PCGRL is therefore a useful contrast rather than a comparable system.
+What distinguishes this thesis from the lines above is the *verification* step. A constructive
+or search-based generator may bias generation toward interesting layouts, but without a verifier
+it cannot certify that a sampled level is solvable or that success genuinely depends on
+cooperation. The present thesis therefore adopts a constraint-aware view of PCG: generation is
+coupled to a formal decision procedure, and the solver acts as an acceptance oracle rather than
+as a post-hoc descriptive tool.
 
 
 == Curriculum Learning and Generated Environments
@@ -123,11 +138,9 @@ The present thesis sits adjacent to this line of work. Like POET and PAIRED, we 
 environments rather than reuse a fixed test set, and we use those environments as a curriculum
 toward a hard target. Unlike POET and PAIRED, the generator here is not adversarial and not
 adaptive to the learner's current policy: it is a *static* solver-in-the-loop generator that
-emits levels certified to satisfy fixed structural properties (solvability, cooperation, profile)
-and at a fixed difficulty level. The curriculum used in @experiments is hand-staged — four
-manually ordered configurations of growing grid size and cooperation requirement — not learnt.
-Replacing the manual staging by an adaptive scheduler in the spirit of POET / PAIRED is a
-natural direction for future work, but is not pursued here.
+emits levels certified to satisfy fixed structural properties (solvability, cooperation,
+profile) at a chosen difficulty configuration. The curriculum used in @experiments is hand-
+staged — four manually ordered configurations of growing grid size and cooperation requirement.
 
 
 == SAT-based Planning
@@ -146,52 +159,35 @@ choices materially affecting solver performance.
 
 The closest methodological precedent is not PCG for MARL, but compilation-based Multi-Agent Path
 Finding (MAPF). In standard MAPF, agents move on a discrete graph from start vertices to goal
-vertices while avoiding collisions. The computational difficulty comes from the interaction between
-multiple agents and the optimality criterion imposed on the solution.
+vertices while avoiding collisions. The computational difficulty comes from the interaction
+between multiple agents and the optimality criterion imposed on the solution.
 
-The survey by #cite(<Surynek2022CompilationMAPF>, form: "prose") shows that MAPF has become a major testbed for
-compilation-based solving. Instead of searching directly in the original state space, one reduces a
-MAPF instance to a target formalism such as CSP, SAT, or MILP, then relies on the target solver to
-handle the combinatorial burden. MAPF research is not exclusively compilation-based; the dominant
-search-based alternative, Conflict-Based Search @Sharon2015CBS, achieves optimal solutions through a
-two-level constraint-satisfaction tree without reducing to a target formalism. We adopt the
-compilation route rather than CBS-style search because the property of interest in this thesis is
-the *existence* of a valid joint plan within a fixed horizon, not its makespan optimality: a
-SAT decision procedure matches the question we ask, whereas CBS is built to deliver optimal-cost
-plans on a graph and would need substantial extension to encode the laser-propagation and
-strict-counterfactual semantics introduced in @cooperation-detection. The compilation survey is
-therefore especially relevant here for two reasons.
+The survey by #cite(<Surynek2022CompilationMAPF>, form: "prose") shows that MAPF has become a
+major testbed for compilation-based solving: instead of searching directly in the original state
+space, one reduces a MAPF instance to a target formalism (CSP, SAT, or MILP) and relies on the
+target solver to handle the combinatorial burden. MAPF research is not exclusively
+compilation-based; the dominant search-based alternative, Conflict-Based Search @Sharon2015CBS,
+achieves optimal solutions through a two-level constraint-satisfaction tree without reducing to
+a target formalism. We adopt the compilation route rather than CBS-style search because the
+property of interest in this thesis is the *existence* of a valid joint plan within a fixed
+horizon, not its makespan optimality: a SAT decision procedure matches the question we ask,
+whereas CBS would need substantial extension to encode the laser-propagation and
+strict-counterfactual semantics introduced in @cooperation-detection.
 
-First, it demonstrates that SAT-based reductions are a mature and credible way to solve structured
-multi-agent planning problems. Second, it makes clear that compilation is not a black-box slogan:
-modeling choices, encoding size, and the interaction between the source problem and the target
-solver all matter materially for performance.
+Within the compilation route, encoding design materially affects solver performance. The work of
+#cite(<FrommknechtSurynek2024>, form: "prose") studies SAT-based MAPF under the makespan
+objective using an MDD-SAT formulation and compares solver-facing choices such as eager versus
+lazy encodings and informative initial assignments. The point of citing this paper is not that it
+solves the same problem, but that it confirms a recurring lesson: performance is not determined
+only by the underlying decision problem; it also depends on how the problem is encoded and on
+how the resulting CNF interacts with the chosen SAT solver. The empirical chapter of this thesis
+(@experiments) compares two alternative uniqueness encodings in the same spirit.
 
-The present thesis inherits this compilation perspective. Bounded-horizon LLE solvability is
-treated as a decision problem and is reduced to SAT. The difference is that LLE is not standard
-MAPF: the environment contains colour-dependent laser semantics and the property of interest is not
-path optimality, but solvability and cooperation under the benchmark mechanics.
-
-
-== SAT-Based MAPF Encoding Design
-
-Beyond the general survey, the MAPF literature also provides concrete lessons about SAT encoding
-design. The paper by #cite(<FrommknechtSurynek2024>, form: "prose") studies SAT-based MAPF solving
-under the makespan objective using an MDD-SAT formulation and compares different solver-facing
-choices, including eager versus lazy encodings and the use of informative initial assignments.
-
-That paper is relevant to the present thesis not because it solves the same problem, but because it
-shows that SAT-based multi-agent solving is sensitive to representation details. Performance is not
-determined only by the underlying decision problem; it also depends on how the problem is encoded
-and on how the resulting CNF interacts with the chosen SAT solver. This is directly aligned with
-the experimental part of the current thesis, where two alternative uniqueness encodings are
-compared empirically.
-
-At the same time, the distance between the two settings should be stated explicitly. Standard MAPF
-encodings reason about graph motion and collisions. The current thesis must additionally encode
-time-dependent laser propagation, same-colour immunity, and a strict counterfactual semantics used
-to define cooperation. The MAPF literature therefore supplies a methodological template, not a
-drop-in solution.
+At the same time, the distance from standard MAPF must be stated explicitly. Standard MAPF
+encodings reason about graph motion and collisions. The present thesis must additionally encode
+time-dependent laser propagation, same-colour immunity, and a strict-counterfactual semantics
+used to define cooperation. The MAPF literature therefore supplies a methodological template,
+not a drop-in solution.
 
 
 == Formal Methods Coupled to Reinforcement Learning

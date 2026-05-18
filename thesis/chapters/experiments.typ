@@ -448,131 +448,32 @@ twenty training levels rather than abstracting the cooperation pattern across th
 
 === Experimental Question
 
-The learnability experiment above demonstrates that off-the-shelf cooperative MARL can solve
-levels drawn from the `cooperative` generator at $8 times 8$ with three agents. The
-canonical hand-crafted target of this thesis — LLE Level 6 — is qualitatively harder: a
-$12 times 13$ corridor-like map with four agents and three lasers in which all agents must pass
-through a shared corridor. Direct training on a single level of that size and structure is known
-to be brittle for value-decomposition methods.
+The learnability experiment of @learnability-experiment shows that off-the-shelf cooperative
+MARL agents can solve $5 times 5$ levels drawn from the constructive cooperative generator
+within a modest training budget but plateau well below $1.0$ on a held-out pool. The canonical
+hand-crafted target of this thesis — LLE Level 6 — is qualitatively harder: a $12 times 13$
+corridor-like map with four agents and three lasers in which all agents must traverse a shared
+corridor. Direct training on a single level of that size and structure is known to be brittle
+for value-decomposition methods.
 
-We therefore ask whether *staged exposure* through a four-stage curriculum of generated levels
-transfers better to the Level-6-style target than three control conditions that skip the
-curriculum. The generators in the curriculum are the same ones described in @generators, used
-here as a controlled source of training instances rather than as standalone artefacts.
+We therefore ask whether *staged exposure* through a curriculum of generated levels of growing
+geometric and cooperative complexity transfers to the Level-6 target better than baselines
+that skip the curriculum. The curriculum stages are drawn from the generator family of
+@generators, used here as a controlled source of training instances rather than as standalone
+artefacts.
 
-=== Curriculum Stages
+=== Status and Planned Outputs
 
-The curriculum is defined by four stages. Every stage uses four agents (so that all stages
-share the same observation and action spaces, and the trained $Q$-networks remain compatible
-across stage transitions) but varies grid size, laser count, horizon, and generator. The
-stages are summarised in @tab-curriculum-stages and rendered as sample grids in
-@appendix-curriculum-s1–@appendix-curriculum-s4.
+The curriculum design is still being iterated at the time of writing. The number of stages,
+the geometry and cooperation ramp between consecutive stages, the choice of generator per
+stage, the MARL algorithm under test, the per-stage training budget, and the set of comparison
+conditions are not yet locked. This section will be expanded once the design is finalised and
+the runs are complete.
 
-#figure(
-  table(
-    columns: 6,
-    stroke: black,
-    inset: 8pt,
-    align: horizon,
-    table.header(
-      [*Stage*], [*Grid*], [*Lasers*], [*$T_("max")$*],
-      [*Generator (thesis name)*], [*Pool size*],
-    ),
-    [1], [6×6],   [0], [12], [`constrained_random_solvable`],  [50 train],
-    [2], [8×8],   [1], [16], [`constructive_cooperative`],     [50 train],
-    [3], [10×10], [2], [18], [`constructive_cooperative`],     [50 train],
-    [4], [12×13], [3], [21], [`constructive_level6_style`],    [50 train + 50 eval],
-  ),
-  caption: [
-    Curriculum stages used by the CURR condition. Generator names are the descriptive
-    thesis-side names; the corresponding registry keys are `random`, `cooperative`,
-    `cooperative`, `level6_style`. All stages use 4 agents.
-  ],
-) <tab-curriculum-stages>
-
-Stages 1–3 each provide a 50-level training pool; stage 4 additionally provides a 50-level
-held-out evaluation pool that is never seen during training. Pool seeds are derived
-deterministically from a single master seed and are documented per pool in the appendix.
-
-=== Conditions
-
-We compare four conditions, all evaluated on the same hand-crafted Level 6 target. Each
-condition uses a single trainer (shared across stages where applicable), so the $Q$-network,
-replay buffer, and optimiser persist between stage transitions; only the source of training levels
-and the active $T_("max")$ change.
-
-- *B1 (target-only baseline).* Train exclusively on the stage-4 training pool (50 level-6-style
-  generated levels). This isolates the contribution of the level-6-style generator without any
-  curriculum.
-- *B2 (uniform-mix baseline).* Train on the union of all four stage training pools (200 levels
-  total), sampling uniformly from the union at every episode. This isolates the contribution of
-  level *diversity* without the staged ordering of CURR.
-- *B3 (oracle baseline).* Train exclusively on the hand-crafted Level 6, sampling that single
-  level at every episode. This is the "no procedural generation at all" control.
-- *CURR (curriculum).* Train on the four stages in order, advancing from stage $k$ to
-  stage $k+1$ as soon as the rolling greedy success rate over the last 100 training episodes
-  reaches 0.80. If the threshold is not met within the per-stage step cap (375,000 steps per
-  stage for the full budget, halved for the pilot), the scheduler advances anyway to prevent
-  lock-up on a hard stage.
-
-The four conditions share the same total training budget: 1,500,000 environment steps for the
-full experiment and 750,000 for the pilot reported here.
-
-=== Evaluation
-
-The headline metric is the greedy success rate on the hand-crafted Level 6, denoted
-$hat(s)_("level6")$, estimated from 200 independent episodes after the last training step
-($epsilon = 0$). Periodic evaluations of 50 episodes are logged every 20,000 environment steps.
-For the B1 condition we additionally report the greedy success rate on the 50-level stage-4
-held-out pool, which probes whether B1 over-fits to its own 50-level training pool.
-
-A positive transfer result is: $hat(s)_("level6")("CURR") > hat(s)_("level6")("B1")$ and
-$> hat(s)_("level6")("B2")$ at the same total step budget. A weaker but still informative
-result is: CURR reaches its asymptote in fewer environment steps than the baselines.
-
-=== Pilot Setup
-
-At the time of writing, only the *pilot* run is in progress: two seeds of QMIX per condition
-($|cal(S)_("pilot")| = 2$, $|cal(A)_("pilot")| = {"QMIX"}$) at the 750,000-step pilot budget.
-The pilot's purpose is to verify that the curriculum
-scheduler, the per-stage advancement criterion, and the eval cadence behave as specified before
-committing the full ($1.5 times 10^6$ steps) $times$ ($3$ algos) $times$ (multiple seeds) run.
-The full design space is the cartesian product
-$
-  cal(C) times cal(A) times cal(S)
-  = {"B1","B2","B3","CURR"} times {"QMIX","VDN","IQL"} times cal(S)
-$
-which we will populate once the pilot's stability is confirmed.
-
-=== Results
-
-// TODO: results
-//
-// The pilot is still in progress as of the thesis-writing date 2026-05-16.
-// Once the four pilot runs (B1, B2, B3, CURR; QMIX; 2 seeds) finish, the
-// expected outputs are:
-//   - results/curriculum_experiment/figures/level6_success_per_condition.pdf
-//   - results/curriculum_experiment/figures/learning_curves.pdf
-//   - the per-condition mean and 95 % CI of success_rate_level6 (and, for
-//     B1, success_rate_held_out_pool)
-// produced by src/experiments/curriculum/plot_results.py.
-//
-// Pending placeholders to fill in once the runs complete:
-//   - Insert level6_success_per_condition.pdf as figure <fig-curriculum-final>
-//   - Insert learning_curves.pdf as figure <fig-curriculum-curves>
-//   - Insert a per-condition mean ± std table (one row per B1/B2/B3/CURR)
-//   - Discuss whether CURR > B1, B2 at 750k steps (pilot conclusion)
-
-_Results of the QMIX pilot will be reported once all four condition cells have completed their
-750,000-step budget; see the placeholder above for the figures and table to insert._
-
-=== Anticipated Interpretation
-
-If CURR outperforms B1 at the pilot budget, the staged exposure provides curricular value beyond
-what level-6-style training alone supplies, and the procedural-generator framework of @generators
-is validated as a curriculum source for cooperative MARL on the Level-6 target. If CURR matches
-B2 (uniform mix) but neither outperforms B3 (single Level 6), the bottleneck is sample efficiency
-of QMIX on this target rather than the training distribution. If CURR underperforms B1, the
-implicit smoothness assumption of the curriculum — that policies useful at stage $k$ remain
-useful at stage $k+1$ — is violated for this specific generator sequence, motivating a redesign
-of the stage geometry rather than a different curriculum scheduler.
+The headline metric will be the greedy success rate on the hand-crafted Level 6 — mean and a
+95 % confidence interval over multiple seeds, evaluated under a fully greedy policy at the end
+of training. The secondary view will be the per-condition learning curves over the full
+training budget. The result that would constitute a positive curriculum-transfer finding is a
+strict ordering in which the staged curriculum reaches a higher Level-6 success rate than the
+non-curriculum baselines at the same total training budget; a weaker but still informative
+result is a curriculum condition that reaches its asymptote in fewer environment steps.

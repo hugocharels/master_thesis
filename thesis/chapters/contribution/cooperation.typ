@@ -276,10 +276,16 @@ returns `independent`. *Example.* A grid with two agents whose direct paths to t
 exits do not cross any beam at all (@fig-profile-independent).
 
 #figure(
-  image("../../../results/cooperation_examples/independent.png", width: 35%),
+  stack(
+    dir: ltr,
+    spacing: 2em,
+    image("../../../results/cooperation_examples/independent.png", height: 4cm),
+    image("../../../results/cooperation_examples/dep_independent.png", height: 4cm),
+  ),
   caption: [
     `independent`: two agents with disjoint direct paths to two exits. No laser is present,
-    so the strict-SAT encoding admits the same trajectory as the standard one.
+    so the strict-SAT encoding admits the same trajectory as the standard one. The
+    dependency graph (right) has no edges.
   ],
 ) <fig-profile-independent>
 
@@ -306,7 +312,12 @@ is no blue beam. The dependency graph has the single edge $0 arrow 1$
 (@fig-profile-asymmetric).
 
 #figure(
-  image("../../../results/cooperation_examples/asymmetric.png", width: 35%),
+  stack(
+    dir: ltr,
+    spacing: 2em,
+    image("../../../results/cooperation_examples/asymmetric.png", height: 4cm),
+    image("../../../results/cooperation_examples/dep_asymmetric.png", height: 4cm),
+  ),
   caption: [
     `asymmetric`: one red laser splits the grid horizontally. The red agent (top-left) crosses
     its own beam unscathed; the blue agent (top-right) requires red to truncate the beam so it
@@ -322,7 +333,12 @@ point in the plan (@fig-profile-mutual). Both edges are present, and a level is 
 agents do not all belong to a single strongly connected component.
 
 #figure(
-  image("../../../results/cooperation_examples/mutual.png", width: 35%),
+  stack(
+    dir: ltr,
+    spacing: 2em,
+    image("../../../results/cooperation_examples/mutual.png", height: 4cm),
+    image("../../../results/cooperation_examples/dep_mutual.png", height: 4cm),
+  ),
   caption: [
     `mutual`: two stacked beams of distinct colours. Each agent is immune to its own beam
     but must wait for the other to truncate the foreign beam before crossing. Edges:
@@ -338,7 +354,12 @@ the blue beam, and neither agent $2$ nor agent $0$ has any further helping role
 (@fig-profile-chain). The graph is $0 arrow 1 arrow 2$.
 
 #figure(
-  image("../../../results/cooperation_examples/chain.png", width: 35%),
+  stack(
+    dir: ltr,
+    spacing: 2em,
+    image("../../../results/cooperation_examples/chain.png", height: 4cm),
+    image("../../../results/cooperation_examples/dep_chain.png", height: 4cm),
+  ),
   caption: [
     `chain`: three agents and two beams. Walls confine each agent to a separate region so
     helping flows in one direction only — red helps blue across the red beam, blue helps the
@@ -354,7 +375,12 @@ The edges are ${(0, 1), (0, 2), (1, 2)}$, so agent $2$ has in-degree two and the
 reciprocal edge $(1, 0)$ is absent.)
 
 #figure(
-  image("../../../results/cooperation_examples/distributed.png", width: 35%),
+  stack(
+    dir: ltr,
+    spacing: 2em,
+    image("../../../results/cooperation_examples/distributed.png", height: 4cm),
+    image("../../../results/cooperation_examples/dep_distributed.png", height: 4cm),
+  ),
   caption: [
     `distributed`: agent $2$ must traverse both the red and the blue beam to reach its exit,
     requiring truncation from both other agents. In-degree of agent $2$ is two. Edges:
@@ -368,7 +394,12 @@ yielding a directed cycle on all three agents and a strongly connected component
 (@fig-profile-fully-coupled). This is the strictest profile and is rare on small grids.
 
 #figure(
-  image("../../../results/cooperation_examples/fully_coupled.png", width: 35%),
+  stack(
+    dir: ltr,
+    spacing: 2em,
+    image("../../../results/cooperation_examples/fully_coupled.png", height: 4cm),
+    image("../../../results/cooperation_examples/dep_fully_coupled.png", height: 4cm),
+  ),
   caption: [
     `fully_coupled`: three agents and three beams stacked, so every agent must shield, and be
     shielded by, both others to reach the bottom row of exits. The complete dependency graph

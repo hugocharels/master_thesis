@@ -48,7 +48,7 @@ created by coloured lasers and same-colour blocking.
 The cooperation criterion of Theorem 4.9 returns a binary verdict, but cooperative behaviour can
 be richer: in a level with several agents and several lasers, helping relations can form a
 one-way edge, a mutual pair, a directed chain, a shared-beneficiary fan-in, or a fully connected
-graph. In Chapter 5 we extract this dependency graph from a SAT model and classify it under one
+graph. In @cooperation-detection we extract this dependency graph from a SAT model and classify it under one
 of five labels — *asymmetric*, *mutual*, *chain*, *distributed*, *fully coupled*. This taxonomy
 is, to our knowledge, new for laser-blocking dependencies in LLE; the prior MARL literature
 considers related but distinct structural notions.

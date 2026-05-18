@@ -69,21 +69,21 @@ beyond exit-reaching — are outside the scope of the formal guarantees develope
 
 == Thesis Structure
 
-The remainder of this thesis is organised as follows. Chapter 2 positions the work relative to
-cooperative MARL benchmarks, procedural content generation, and compilation-based planning
-literature. Chapter 3 fixes the technical setting: the LLE mechanics, the SAT background, and
+The remainder of this thesis is organised as follows. @related-work positions the work relative
+to cooperative MARL benchmarks, procedural content generation, and compilation-based planning
+literature. @background fixes the technical setting: the LLE mechanics, the SAT background, and
 the formal model of bounded-horizon solvability and the cooperation requirement.
 
 The three contribution chapters then develop the original technical content of the thesis in
-logical order. Chapter 4 introduces the SAT-based solver: a propositional encoding of
+logical order. @sat-reduction introduces the SAT-based solver: a propositional encoding of
 bounded-horizon LLE solvability, with correctness proofs and a complexity-theoretic positioning.
-Chapter 5 builds on that encoding to define the cooperation detector based on a strict
-counterfactual semantics, and extends it with a profile analyzer that classifies the kind of
-cooperation a level exhibits. Chapter 6 then uses both decision procedures as acceptance oracles
-inside a family of procedural generators that produce levels certified to satisfy the advertised
-properties.
+@cooperation-detection builds on that encoding to define the cooperation detector based on a
+strict counterfactual semantics, and extends it with a profile analyzer that classifies the kind
+of cooperation a level exhibits. @generators then uses both decision procedures as acceptance
+oracles inside a family of procedural generators that produce levels certified to satisfy the
+advertised properties.
 
-Chapter 7 reports the empirical evaluation: the SAT encoding comparison, generator acceptance
+@experiments reports the empirical evaluation: the SAT encoding comparison, generator acceptance
 rates and cooperation-profile distributions, the learnability of generated cooperative levels
 for off-the-shelf MARL algorithms, and the curriculum-transfer pilot toward the hand-crafted LLE
-Level 6. Chapter 8 concludes with a summary and directions for future work.
+Level 6. @conclusion concludes with a summary and directions for future work.

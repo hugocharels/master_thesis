@@ -10,6 +10,11 @@
 #set text(lang: "en")
 #set par(justify: true)
 
+// Make `@label` to a depth-1 heading render as "Chapter N" instead of the
+// default "Section N", so cross-references between chapters click through
+// to the right place and read naturally.
+#show heading.where(level: 1): set heading(supplement: [Chapter])
+
 #show heading: it => {
   if it.depth == 1 {
     let chapter_num = counter(heading.where(level: 1)).at(it.location()).at(0)
@@ -99,15 +104,15 @@
 #counter(page).update(0)
 #set page(numbering: "1")
 
-= Introduction
+= Introduction <introduction>
 
 #include "chapters/introduction.typ"
 
-= Related Work
+= Related Work <related-work>
 
 #include "chapters/related_work.typ"
 
-= Background and Formalization
+= Background and Formalization <background>
 
 #include "chapters/methods/background.typ"
 
@@ -131,7 +136,7 @@
 
 #include "chapters/experiments.typ"
 
-= Conclusion
+= Conclusion <conclusion>
 
 #include "chapters/conclusion.typ"
 

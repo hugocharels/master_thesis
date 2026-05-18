@@ -28,7 +28,7 @@ successfully.
 )
 
 A complete description of the benchmark, its difficulty properties, and its relation to existing
-MARL methods was given in Chapter 2. The present chapter focuses on the formal model used to
+MARL methods was given in @related-work. The present chapter focuses on the formal model used to
 reason about solvability and cooperation within a bounded time horizon.
 
 

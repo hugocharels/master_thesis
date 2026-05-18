@@ -57,9 +57,14 @@
 
 #v(10pt)
 
+// Alternative title without curriculum learning, in case the transfer
+// experiments do not produce conclusive results:
+//
+//   Procedural Generation of Solvable Cooperative Levels
+//   for the Laser Learning Environment
 #align(center, text(18pt)[
   *Procedural Generation of Solvable Cooperative Levels \
-  for the Laser Learning Environment*
+  for Curriculum Learning in the Laser Learning Environment*
 ])
 
 #v(10pt)

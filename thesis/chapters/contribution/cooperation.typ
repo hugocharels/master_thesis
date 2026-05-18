@@ -224,7 +224,15 @@ example.
 *Independent.* The binary detector returns non-cooperative: $Phi_("strict")(L, T_("max"))$ is
 satisfiable, so no agent ever has to truncate a beam. The profile analyzer short-circuits and
 returns `independent`. *Example.* A grid with two agents whose direct paths to their respective
-exits do not cross any beam at all.
+exits do not cross any beam at all (@fig-profile-independent).
+
+#figure(
+  image("../../../results/cooperation_examples/independent.png", width: 35%),
+  caption: [
+    `independent`: two agents with disjoint direct paths to two exits. No laser is present,
+    so the strict-SAT encoding admits the same trajectory as the standard one.
+  ],
+) <fig-profile-independent>
 
 *Cooperative (no observed helper).* Binary cooperation holds — strict-SAT is UNSAT — yet the
 extracted plan contains no helper event. This is unusual in practice; it arises when the SAT
@@ -235,33 +243,82 @@ required.
 
 *Asymmetric.* The dependency graph has at least one edge $(c, c') in E$, no mutual pair, no
 chain extending beyond a single edge, no shared beneficiary, and the agents do not all belong
-to a single SCC. *Example.* Two agents of distinct colours, only one of whose beams blocks
-the other's path: the agent owning the blocking beam must step into it at some moment to let
-the other agent pass, but the reciprocal situation never arises. The graph has the single edge
-$c arrow c'$.
+to a single SCC. *Example.* Two agents of distinct colours; only the red beam blocks the blue
+agent's path to its exit, so the red agent must step into its own beam at some moment to let
+the blue agent pass. The reciprocal situation never arises since there is no blue beam. The
+dependency graph has the single edge $0 arrow 1$ (@fig-profile-asymmetric).
+
+#figure(
+  image("../../../results/cooperation_examples/asymmetric.png", width: 35%),
+  caption: [
+    `asymmetric`: one red laser splits the grid horizontally. The red agent (top-left) crosses
+    its own beam unscathed; the blue agent (top-right) requires red to truncate the beam so it
+    can reach the bottom-right exit. Edges: ${(0, 1)}$.
+  ],
+) <fig-profile-asymmetric>
 
 *Mutual.* The dependency graph contains a mutual pair, i.e. both edges $(c, c'), (c', c) in E$
-for some pair $c eq.not c'$. *Example.* The two-laser, two-agent geometry produced by the
-constructive cooperative generator with $n_l = 2$: each agent's beam crosses the other agent's
-exit path, so each must truncate its own beam to shield the other at some point in the plan.
-Both edges are present, and the level is classified as `mutual` even when additional one-way
-edges between other pairs also exist.
+for some pair $c eq.not c'$. *Example.* Two laser sources of distinct colours, each crossing
+the other agent's path: each agent must truncate its own beam to shield the other at some
+point in the plan (@fig-profile-mutual). Both edges are present, and a level is classified as
+`mutual` even when additional one-way edges between other pairs also exist, as long as the
+agents do not all belong to a single strongly connected component.
+
+#figure(
+  image("../../../results/cooperation_examples/mutual.png", width: 35%),
+  caption: [
+    `mutual`: two stacked beams of distinct colours. Each agent is immune to its own beam
+    but must wait for the other to truncate the foreign beam before crossing. Edges:
+    ${(0, 1), (1, 0)}$.
+  ],
+) <fig-profile-mutual>
 
 *Chain.* The dependency graph is a directed path: every vertex has in-degree and out-degree at
 most one, the longest chain has length at least two (i.e. at least two consecutive edges), and
 that longest chain visits every participating vertex. *Example.* Three agents arranged so that
-agent $0$ must shield agent $1$, agent $1$ must shield agent $2$, and neither agent $2$ nor
-agent $0$ has any further helping role. The graph is $0 arrow 1 arrow 2$.
+agent $0$ must shield agent $1$ across the red beam, agent $1$ must shield agent $2$ across
+the blue beam, and neither agent $2$ nor agent $0$ has any further helping role
+(@fig-profile-chain). The graph is $0 arrow 1 arrow 2$.
+
+#figure(
+  image("../../../results/cooperation_examples/chain.png", width: 35%),
+  caption: [
+    `chain`: three agents and two beams. Walls confine each agent to a separate region so
+    helping flows in one direction only — red helps blue across the red beam, blue helps the
+    third agent across the blue beam. Edges: ${(0, 1), (1, 2)}$.
+  ],
+) <fig-profile-chain>
 
 *Distributed.* At least one agent has in-degree $>= 2$ in the dependency graph. *Example.*
 Three agents in which two distinct same-colour helpers (agents $0$ and $1$) must each
-truncate their respective beams to free agent $2$'s path to its exit. The edges are
-${(0, 2), (1, 2)}$, so agent $2$ has in-degree two and the level is `distributed`.
+truncate their respective beams to free agent $2$'s path to its exit (@fig-profile-distributed).
+The edges are ${(0, 1), (0, 2), (1, 2)}$, so agent $2$ has in-degree two and the level is
+`distributed`. (The extra edge $(0, 1)$ does not promote the level to `mutual` because the
+reciprocal edge $(1, 0)$ is absent.)
+
+#figure(
+  image("../../../results/cooperation_examples/distributed.png", width: 35%),
+  caption: [
+    `distributed`: agent $2$ must traverse both the red and the blue beam to reach its exit,
+    requiring truncation from both other agents. In-degree of agent $2$ is two. Edges:
+    ${(0, 1), (0, 2), (1, 2)}$.
+  ],
+) <fig-profile-distributed>
 
 *Fully coupled.* The largest strongly connected component of the dependency graph has size
-$|C|$ and $|C| > 1$. *Example.* Three agents in a triangular dependency structure: $0$ helps
-$1$, $1$ helps $2$, and $2$ helps $0$. The graph contains a directed cycle on all three
-agents and the SCC has size three. This is the strictest profile and is rare on small grids.
+$|C|$ and $|C| > 1$. *Example.* Three agents in which every pair of agents helps each other,
+yielding a directed cycle on all three agents and a strongly connected component of size three
+(@fig-profile-fully-coupled). This is the strictest profile and is rare on small grids.
+
+#figure(
+  image("../../../results/cooperation_examples/fully_coupled.png", width: 35%),
+  caption: [
+    `fully_coupled`: three agents and three beams stacked, so every agent must shield, and be
+    shielded by, both others to reach the bottom row of exits. The complete dependency graph
+    has all six edges between distinct agents. Edges:
+    ${(0,1),(0,2),(1,0),(1,2),(2,0),(2,1)}$.
+  ],
+) <fig-profile-fully-coupled>
 
 The analyzer also exposes the auxiliary scalars used by the decision procedure (longest chain
 length, largest SCC size, synchronous width) so downstream code can re-classify levels under a

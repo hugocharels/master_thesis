@@ -1,6 +1,6 @@
 #import "../../macros.typ": formalbox, proofbox, fref
 
-== Definition of Sets
+== Notation
 
 We reuse the level objects introduced in @formalization: the grid dimensions $H$ and $W$, the
 position set $P$, the colour set $C$, the direction set $D$, the wall set $cal(W)$, the source
@@ -16,7 +16,7 @@ position and direction are uniquely determined by $c$. We write $s(c)$ for the i
 agent $c in C$, as defined in #fref(<def-3-1>, [Definition 3.1]).
 
 
-== Definition of Variables
+== Propositional Variables
 
 We introduce three families of propositional variables.
 
@@ -79,8 +79,11 @@ to one logical component of the bounded-horizon decision problem.
       not a_(c,x,y,t) or or.big_((x',y') in "next"(x,y)) a_(c,x',y',t+1)
     $
 
-  Two methods are proposed to enforce that each agent occupies at most one position at each time
-  step.
+  Two formulations are proposed to enforce that each agent occupies at most one position at
+  each time step. The *global* formulation uses a single grid-wide uniqueness rule; the *local*
+  formulation uses a sparser uniqueness rule restricted to $"next"(x, y)$ and pairs it with a
+  backward-consistency clause that pins occupancy at $t + 1$ to a predecessor in
+  $"next"(x, y)$.
 
   - *Global uniqueness:* \
     No two distinct positions can both be occupied by agent $c$ at time $t$:
@@ -100,7 +103,7 @@ to one logical component of the bounded-horizon decision problem.
       not a_(c,x',y',t+1) or not a_(c,x'',y'',t+1)
     $
 
-    *Backward consistency:* \
+  - *Backward consistency* (local formulation only): \
     If agent $c$ is at position $(x, y)$ at time $t + 1$, it must have been at some position in
     $"next"(x, y)$ at time $t$:
     $
@@ -293,11 +296,11 @@ solvability is polynomial-time reducible to SAT.
 
 == Correctness of the Reduction
 
-#formalbox([Proposition 4.8 (Correctness of the SAT Reduction)], [
+#formalbox([Proposition 4.1 (Correctness of the SAT Reduction)], [
   Let $L$ be an LLE level and let $T_("max")$ be a horizon. For either movement formulation
   described above, the CNF formula $Phi(L, T_("max"))$ is satisfiable if and only if there exists a
   valid joint trajectory of length $T_("max")$ for $L$.
-]) <prop-4-8>
+]) <prop-4-1>
 
 #proofbox([
   For soundness, assume $Phi(L, T_("max"))$ is satisfiable. Initialization fixes exactly one start
@@ -315,9 +318,12 @@ solvability is polynomial-time reducible to SAT.
   $a_(c,x,y,t)$ according to whether agent $c$ occupies $(x, y)$ at time $t$ in the trajectory.
   Set beam variables $b_(c,d,x,y,t)$ and laser variables $l_(c,x,y,t)$ according to the
   deterministic beam dynamics induced by the same agent positions. Every clause family is then
-  satisfied by construction: initialization matches the start state, movement and collision clauses
-  match the trajectory semantics, beam propagation follows the induced laser dynamics, and the
-  final positions occupy all exits. Therefore $Phi(L, T_("max"))$ is satisfiable.
+  satisfied by construction: initialization matches the start state; the movement, uniqueness,
+  and collision clauses match the trajectory semantics; the propagation iff and beam-laser link
+  clauses hold because $b$ and $l$ are set exactly to those deterministic values; the
+  agent-laser blocking clauses hold because trajectory validity already forbids any agent from
+  standing on an active laser of a different colour; and the final positions occupy all exits.
+  Therefore $Phi(L, T_("max"))$ is satisfiable.
   $square.stroked$
 ])
 
@@ -331,7 +337,7 @@ polynomial time by simulating the joint execution and checking that all agents o
 tiles at the end without violating the movement, collision, and laser constraints defined in
 @formalization.
 
-Combined with the polynomial-time construction above and #fref(<prop-4-8>, [Proposition 4.8]), this shows that
+Combined with the polynomial-time construction above and #fref(<prop-4-1>, [Proposition 4.1]), this shows that
 bounded-horizon LLE solvability is polynomial-time many-one reducible to SAT:
 
 $

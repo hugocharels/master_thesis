@@ -38,11 +38,11 @@ step.
 
 == Formal Theorem and Proof
 
-#formalbox([Theorem 4.9 (Cooperation Detection Criterion)], [
+#formalbox([Theorem 5.1 (Cooperation Detection Criterion)], [
   Let $L$ be an LLE level and $T_("max")$ a time horizon. Then $L$ requires cooperation with
   horizon $T_("max")$ if and only if $Phi(L, T_("max"))$ is satisfiable and
   $Phi_("strict")(L, T_("max"))$ is unsatisfiable.
-]) <thm-4-9>
+]) <thm-5-1>
 
 #proofbox([
   $(arrow.r)$ Assume that $L$ requires cooperation with horizon $T_("max")$. By #fref(<def-3-7>, [Definition 3.7]),
@@ -67,7 +67,7 @@ step.
 
 == Horizon-Dependence of the Cooperation Criterion <horizon-dependence>
 
-#fref(<thm-4-9>, [Theorem 4.9]) binds cooperation to a fixed horizon $T_("max")$. This is not an artefact of the SAT
+#fref(<thm-5-1>, [Theorem 5.1]) binds cooperation to a fixed horizon $T_("max")$. This is not an artefact of the SAT
 encoding: it is the only sense in which cooperation is decidable in this framework. Solvability
 itself is a horizon-indexed property (#fref(<def-3-4>, [Definition 3.4])), and so is the companion cooperation
 requirement (#fref(<def-3-7>, [Definition 3.7])). The horizon is therefore a true parameter of the cooperation label,
@@ -126,7 +126,7 @@ made to look unsolvable by lowering $T_("max")$ until even the natural solution 
 too generously under-detects cooperation by allowing geometric detours; choosing it too tightly
 makes the standard solver itself UNSAT, so the level is rejected as unsolvable before cooperation
 is even tested. Both failure modes shift the operating point in opposite directions, and neither
-contradicts #fref(<thm-4-9>, [Theorem 4.9]), which states cooperation strictly *relative to* a chosen horizon.
+contradicts #fref(<thm-5-1>, [Theorem 5.1]), which states cooperation strictly *relative to* a chosen horizon.
 
 The recipe used throughout this thesis is to pick $T_("max")$ as the smallest horizon at which a
 representative short solution of the geometry is expected to fit, with a small additive slack. For
@@ -153,7 +153,7 @@ is the user-supplied generation parameter $T_("max")$.
 
 == Cooperation Profiles <cooperation-profiles>
 
-#fref(<thm-4-9>, [Theorem 4.9]) yields a *binary* answer: a level either requires cooperation or it does not. Once the
+#fref(<thm-5-1>, [Theorem 5.1]) yields a *binary* answer: a level either requires cooperation or it does not. Once the
 binary criterion holds, however, several qualitatively different cooperation structures fall under
 that single label, and the generators of @generators rely on this finer distinction to target
 specific patterns. The cooperation profile analyzer operates on top of the binary detector and

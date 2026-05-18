@@ -107,7 +107,7 @@ every individual level. Diversity columns are defined as follows:
   and laser-source sets across the pool (out of $n$ levels).
 - `ham norm` — mean pairwise symmetric-difference size on wall masks, normalised by grid-cell
   count.
-- `cooperative` — number of levels for which the binary criterion of #fref(<thm-4-9>, [Theorem 4.9]) holds
+- `cooperative` — number of levels for which the binary criterion of #fref(<thm-5-1>, [Theorem 5.1]) holds
   (standard SAT and strict UNSAT). Reported as $n/n$ when every level passes.
 - `profile` — distribution across the cooperation-profile families described in @generators
   (or N/A when the pool is non-cooperative by construction).
@@ -196,7 +196,7 @@ the B2 union pool of @transfer-experiment.
     [Unique agent tuples], [50 / 50],
     [Unique laser sets],  [1 / 50 (empty set: no lasers)],
     [Mean pairwise wall-Hamming distance (normalised)], [0.152],
-    [Cooperative under #fref(<thm-4-9>, [Theorem 4.9])], [N/A (no lasers)],
+    [Cooperative under #fref(<thm-5-1>, [Theorem 5.1])], [N/A (no lasers)],
     [Profile distribution], [N/A],
   ),
   caption: [Parameters and diversity statistics of the curriculum stage-1 training pool.],
@@ -232,7 +232,7 @@ condition and as part of the B2 union pool of @transfer-experiment.
     [Unique agent tuples], [45 / 50],
     [Unique laser sets],  [29 / 50],
     [Mean pairwise wall-Hamming distance (normalised)], [0.170],
-    [Cooperative under #fref(<thm-4-9>, [Theorem 4.9])], [50 / 50],
+    [Cooperative under #fref(<thm-5-1>, [Theorem 5.1])], [50 / 50],
     [Profile distribution], [50 asymmetric],
   ),
   caption: [Parameters and diversity statistics of the curriculum stage-2 training pool.],
@@ -268,7 +268,7 @@ CURR condition and as part of the B2 union pool of @transfer-experiment.
     [Unique agent tuples], [49 / 50],
     [Unique laser sets],  [48 / 50],
     [Mean pairwise wall-Hamming distance (normalised)], [0.179],
-    [Cooperative under #fref(<thm-4-9>, [Theorem 4.9])], [50 / 50],
+    [Cooperative under #fref(<thm-5-1>, [Theorem 5.1])], [50 / 50],
     [Profile distribution], [49 mutual, 1 distributed],
   ),
   caption: [Parameters and diversity statistics of the curriculum stage-3 training pool.],
@@ -305,7 +305,7 @@ CURR condition and as the sole training distribution for the B1 baseline of
     [Unique agent tuples], [27 / 50],
     [Unique laser sets],  [45 / 50],
     [Mean pairwise wall-Hamming distance (normalised)], [0.173],
-    [Cooperative under #fref(<thm-4-9>, [Theorem 4.9])], [50 / 50],
+    [Cooperative under #fref(<thm-5-1>, [Theorem 5.1])], [50 / 50],
     [Profile distribution], [39 mutual, 10 asymmetric, 1 distributed],
   ),
   caption: [Parameters and diversity statistics of the curriculum stage-4 training pool.],
@@ -341,7 +341,7 @@ analogue of the Level 6 target.
     [Unique agent tuples], [24 / 50],
     [Unique laser sets],  [37 / 50],
     [Mean pairwise wall-Hamming distance (normalised)], [0.173],
-    [Cooperative under #fref(<thm-4-9>, [Theorem 4.9])], [50 / 50],
+    [Cooperative under #fref(<thm-5-1>, [Theorem 5.1])], [50 / 50],
     [Profile distribution], [39 mutual, 6 asymmetric, 5 distributed],
   ),
   caption: [Parameters and diversity statistics of the curriculum stage-4 held-out evaluation pool.],

@@ -178,7 +178,7 @@ dependency for every laser, not just one. The geometry is built in the following
   standard and strict SAT encodings of @cooperation-detection are run, and the cooperation
   profile analyzer is applied. The candidate is accepted only if it is satisfiable under the
   standard semantics and unsatisfiable under the strict one — the binary cooperation criterion
-  of #fref(<thm-4-9>, [Theorem 4.9]) — and if the profile analyzer's classification matches the requested family
+  of #fref(<thm-5-1>, [Theorem 5.1]) — and if the profile analyzer's classification matches the requested family
   (default: `cooperative`, which accepts any same-colour beam-truncation requirement).
 
 The distinct-colour multi-laser construction is the key qualitative change relative to a

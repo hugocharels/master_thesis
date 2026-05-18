@@ -21,24 +21,29 @@ up to the hand-crafted LLE Level 6.
 
 ## Research Questions
 
-The thesis is structured around four research questions.
+The thesis is structured around six research questions.
 
-- **RQ1 — Encoding.** How can solvability of an LLE level under a fixed horizon `T_max` be
-  encoded as a single SAT formula, in a way that is both sound and modular over the
-  laser-propagation rules?
-- **RQ2 — Cooperation detection.** Can a binary "this level requires cooperation" property be
-  expressed as the conjunction of two SAT calls, and refined into a richer profile
-  (asymmetric, mutual, chain, distributed, fully coupled) using counterfactual selective-strict
-  semantics?
-- **RQ3 — Procedural generation.** Given the encoding of RQ1 and the cooperation criterion of
-  RQ2, how can we sample cooperative levels that are diverse along well-defined axes
-  (geometry, cooperation profile, solution length) while keeping rejection rates manageable?
-- **RQ4 — Curriculum transfer.** Do generated levels accelerate or unlock learning on the
-  hand-crafted LLE Level 6 target, compared to MARL baselines trained directly on the target?
+- **RQ1 — Solvability verification.** How can we formally verify that a level is solvable, by
+  encoding bounded-horizon LLE solvability as a single SAT formula?
+- **RQ2 — Cooperation verification.** How can we formally verify that a level genuinely
+  requires cooperation rather than admitting independent solutions, using a strict-laser
+  counterfactual on top of the same encoding?
+- **RQ3 — Solver-in-the-loop generation.** How can both decision procedures be embedded inside
+  a procedural generator so that every accepted level comes with certified properties?
+- **RQ4 — Profile-targeted generation.** Can we control the *kind* of cooperation a generated
+  level exhibits — asymmetric, mutual, chain, distributed, or fully coupled — beyond the binary
+  "is cooperation required" criterion?
+- **RQ5 — Training on generated levels.** Can MARL agents trained exclusively on procedurally
+  generated levels learn the cooperative behaviour the levels are designed to elicit, and does
+  that behaviour transfer to human-designed levels?
+- **RQ6 — Curriculum learning.** Can the controllability of the generator be exploited to
+  organise levels into a curriculum that accelerates learning on the hand-crafted LLE Level 6
+  target?
 
 RQ1 and RQ2 are addressed in the SAT-encoding and cooperation-detection chapters of the thesis.
-RQ3 is the procedural-generators chapter together with the rejection / profile benchmarks. RQ4
-is the empirical chapter (5×5 learnability rerun and curriculum-transfer experiment).
+RQ3 and RQ4 are the procedural-generators chapter together with the rejection / profile
+benchmarks. RQ5 and RQ6 are the empirical chapter (5×5 learnability rerun and curriculum-
+transfer experiment).
 
 ---
 

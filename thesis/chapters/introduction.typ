@@ -11,6 +11,13 @@ only if it exposes a meaningful coordination challenge while remaining actually 
 Unsolvable levels provide no valid signal, and levels that admit independent solutions fail to test
 the cooperative mechanism they are meant to study.
 
+In this thesis we work with the Laser Learning Environment (LLE), a 2D grid-based cooperative
+MARL benchmark in which agents of distinct colours must shield one another from same-coloured
+laser beams to reach their exits. LLE is the concrete environment used throughout, but the
+methodology developed here — coupling procedural generation with a formal verification oracle —
+is environment-agnostic: it applies to any MARL setting where the target properties are
+expressible as decision problems.
+
 
 == Motivation
 
@@ -25,79 +32,58 @@ cooperation* in the specific sense induced by the environment's mechanics. Witho
 guarantees, generation risks producing levels that are invalid, trivial, or misaligned with the
 training objective.
 
+Generated levels are also useful beyond standalone training: the same configuration knobs that
+control individual levels — grid size, number of agents, number of lasers, wall budget,
+cooperation profile, horizon — also define a natural difficulty axis. A formally-verified
+generator is therefore a candidate building block for *curriculum learning*: rather than train
+directly on a hard hand-crafted target, an agent can be trained on a sequence of progressively
+harder generated levels.
+
 
 == Research Questions and Scope
 
 This thesis addresses the following question: how can we automatically generate levels for a
-cooperative MARL environment that are provably solvable and provably require the target cooperative
-interaction?
+cooperative MARL environment that are provably solvable and provably require the target
+cooperative interaction, and how can such levels be used to support MARL training?
 
-More precisely, the work is organised around five research questions:
+More precisely, the work is organised around six research questions:
 
 - *RQ1:* How can we formally verify that a level is solvable by the agents?
 - *RQ2:* How can we formally verify that solving a level genuinely requires cooperation between
   agents, rather than allowing independent solutions?
 - *RQ3:* How can formal verification be embedded inside a procedural generator so that every
   accepted level comes with certified properties?
-- *RQ4:* Can agents trained exclusively on procedurally generated levels transfer their behaviour
-  to human-designed levels?
-- *RQ5:* Can we control the cooperation structure of generated levels by targeting specific
+- *RQ4:* Can we control the cooperation structure of generated levels by targeting specific
   profiles such as asymmetric, mutual, chain, distributed, or fully coupled dependencies?
+- *RQ5:* Can MARL agents trained exclusively on procedurally generated levels learn the
+  cooperative behaviour the levels are designed to elicit, and does that behaviour transfer to
+  human-designed levels?
+- *RQ6:* Can the controllability of the generator be exploited to organise levels into a
+  curriculum that accelerates learning on a hand-crafted target?
 
-The thesis instantiates this framework on one concrete cooperative environment, focusing on a
-restricted but explicit subset of its mechanics. The formal model covers agent movement,
-inter-agent blocking interactions, and a bounded-horizon solvability criterion. Additional
-environment mechanics are outside the scope of the formal guarantees developed here. The broader
-methodology — coupling procedural generation with a formal verification oracle — is
-environment-agnostic: it applies to any setting where the target properties are expressible as
-decision problems.
-
-
-== Contributions
-
-This thesis makes the following contributions:
-
-- *A decision procedure for bounded-horizon solvability.* We provide a propositional encoding of
-  the solvability decision problem over a bounded time horizon. The procedure either returns a
-  certificate — a valid joint trajectory — or proves that no such trajectory exists within the
-  chosen horizon (@sat-reduction).
-
-- *A formal cooperation detector.* We define a strict variant of the environment semantics in
-  which agents cannot exploit same-agent blocking to bypass constraints imposed by others. A level
-  requires cooperative interaction if and only if it is solvable under standard semantics and
-  unsolvable under the strict variant (@cooperation-detection).
-
-- *A solver-in-the-loop generation framework.* Building on the solver and cooperation detector, we
-  implement six generators across two property families — solvable and cooperative. Each accepted
-  level is certified by the solver to satisfy the advertised property (@generators).
-
-- *A cooperation profile taxonomy and profile-targeted generation.* We define a set of cooperation
-  profiles — asymmetric, mutual, chain, distributed, fully coupled — that characterise the
-  dependency structure of cooperative levels. Generators can target a specific profile, producing
-  levels whose cooperation type is controlled, not merely certified (@cooperation-detection,
-  @generators).
-
-- *An empirical evaluation.* We compare two alternative propositional encodings of the
-  agent-uniqueness constraint, measuring their effect on formula size and solver runtime. We also
-  measure generator acceptance rates and cooperation profile distributions across grid sizes
-  (@benchmarking, @experiments).
+The thesis instantiates this framework on LLE, focusing on a restricted but explicit subset of
+its mechanics. The formal model covers agent movement, inter-agent blocking interactions, and a
+bounded-horizon solvability criterion. Additional LLE mechanics — gem collection, scoring
+beyond exit-reaching — are outside the scope of the formal guarantees developed here.
 
 
 == Thesis Structure
 
 The remainder of this thesis is organised as follows. Chapter 2 positions the work relative to
 cooperative MARL benchmarks, procedural content generation, and compilation-based planning
-literature. Chapter 3 fixes the technical setting: the LLE mechanics, the SAT background, and the
-formal model of bounded-horizon solvability and the cooperation requirement.
+literature. Chapter 3 fixes the technical setting: the LLE mechanics, the SAT background, and
+the formal model of bounded-horizon solvability and the cooperation requirement.
 
 The three contribution chapters then develop the original technical content of the thesis in
-logical order. Chapter 4 introduces the SAT-based solver: a propositional encoding of bounded-horizon
-LLE solvability, with correctness proofs and a complexity-theoretic positioning. Chapter 5 builds
-on that encoding to define the cooperation detector based on a strict counterfactual semantics, and
-extends it with a profile analyzer that classifies the kind of cooperation a level exhibits.
-Chapter 6 then uses both decision procedures as acceptance oracles inside a family of procedural
-generators that produce levels certified to satisfy the advertised properties.
+logical order. Chapter 4 introduces the SAT-based solver: a propositional encoding of
+bounded-horizon LLE solvability, with correctness proofs and a complexity-theoretic positioning.
+Chapter 5 builds on that encoding to define the cooperation detector based on a strict
+counterfactual semantics, and extends it with a profile analyzer that classifies the kind of
+cooperation a level exhibits. Chapter 6 then uses both decision procedures as acceptance oracles
+inside a family of procedural generators that produce levels certified to satisfy the advertised
+properties.
 
-Chapter 7 reports the empirical evaluation: the SAT encoding comparison, generator rejection rates,
-the cooperation profile distribution, and the transfer experiment to human-designed levels.
-Chapter 8 concludes with a summary and directions for future work.
+Chapter 7 reports the empirical evaluation: the SAT encoding comparison, generator acceptance
+rates and cooperation-profile distributions, the learnability of generated cooperative levels
+for off-the-shelf MARL algorithms, and the curriculum-transfer pilot toward the hand-crafted LLE
+Level 6. Chapter 8 concludes with a summary and directions for future work.

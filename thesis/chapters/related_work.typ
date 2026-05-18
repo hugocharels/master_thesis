@@ -37,11 +37,11 @@ curriculum-transfer target.
 == The Laser Learning Environment
 
 The Laser Learning Environment (LLE), whose mechanics we formalise in @lle-background, was
-introduced precisely to study coordination-critical multi-agent tasks @LLE. It sits alongside other cooperative-MARL benchmarks such as SMAC
-@Samvelyan2019SMAC (StarCraft micro-management with partially observable team play) and
-Overcooked @Carroll2019Overcooked (a constrained cooperative kitchen with temporal
-synchronisation), but differs in that its hardness comes from explicit *inter-agent blocking*
-rather than from partial observability or large action spaces. The LLE paper identifies three
+introduced precisely to study coordination-critical multi-agent tasks @LLE. It sits alongside
+other cooperative-MARL benchmarks such as SMAC @Samvelyan2019SMAC (StarCraft micro-management
+with partially observable team play) and Overcooked @Carroll2019Overcooked (a constrained
+cooperative kitchen with temporal synchronisation), but differs in that its hardness comes from
+explicit *inter-agent blocking* rather than from partial observability or large action spaces. The LLE paper identifies three
 properties that make the benchmark difficult for value-based MARL methods: *perfect
 coordination*, *interdependence*, and *zero-incentive dynamics*. Together, these properties
 create bottlenecks in which one agent must perform a locally unrewarded action that enables
@@ -63,10 +63,10 @@ created by coloured lasers and same-colour blocking.
 The same-colour beam-truncation mechanism on which LLE relies admits a "cooperation required /
 not required" verdict per level, but cooperative behaviour at finer granularity can vary
 considerably: in a level with several agents and several lasers, helping relations can form a
-one-way edge, a mutual pair, a directed chain, a shared-beneficiary fan-in, or a fully connected
-graph. The cooperation profile analyzer of @cooperation-detection extracts this dependency
-graph from a SAT model of a solution and classifies it under one of five labels — *asymmetric*,
-*mutual*, *chain*, *distributed*, *fully coupled*. The structural categories themselves are
+one-way edge, a mutual pair, a directed chain, a fan-in (one beneficiary, multiple helpers), or
+a fully connected graph. The cooperation profile analyzer of @cooperation-detection extracts
+this dependency graph from a SAT model of a solution and labels it as, respectively,
+*asymmetric*, *mutual*, *chain*, *distributed*, or *fully coupled*. The structural categories themselves are
 standard graph-theory vocabulary; to our knowledge, this is the first taxonomy that *recovers*
 such structures from a SAT certificate of solvability in LLE. The prior MARL literature
 considers related but distinct structural notions.

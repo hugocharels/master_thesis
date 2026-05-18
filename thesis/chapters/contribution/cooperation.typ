@@ -163,7 +163,7 @@ produces a richer classification by combining three pieces of derived data:
 + a *necessary-helper set* identified by colour-wise counterfactual SAT calls; and
 + a *dependency graph* between agents, built from the helper events.
 
-The decision procedure produces one of seven labels:
+The decision procedure produces one of eight labels:
 
 - *unsolvable*: $Phi(L, T_("max"))$ is UNSAT.
 - *independent*: cooperation is not required.

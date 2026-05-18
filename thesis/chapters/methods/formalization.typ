@@ -23,7 +23,8 @@ any finite $n_a$.
   - $cal(W) subset.eq P$ is the set of wall positions.
   - $cal(S) subset.eq C times D times P$ is the set of laser sources. A source
     $(c, d, p) in cal(S)$ emits a laser of colour $c$ in direction $d$ from position $p$.
-  - $cal(E) subset.eq P$ is the set of exit positions, with $|cal(E)| = |C|$.
+  - $cal(E) subset.eq P$ is the set of exit positions; we assume $|cal(E)| = |C|$ as an input
+    invariant of LLE levels.
   - In the instances studied in this thesis, each colour appears in at most one laser source.
   - The sets $s(C)$, $cal(W)$, $cal(E)$, and
     $
@@ -50,8 +51,8 @@ for the set of colours that actually have a source.
   - Under the *strict beam semantics*, the beam of source $(c, d, p_s)$ is active on every cell of
     that ray up to, but not including, the first wall.
 
-  A laser of colour $c$ is active at a position when the beam of the unique source of colour $c$
-  is active there.
+  For $c in C_("src")$, a laser of colour $c$ is active at a position when the beam of the
+  unique source of colour $c$ is active there.
 ]) <def-3-2>
 
 #formalbox([Definition 3.3 (Valid Joint Trajectory)], [
@@ -66,8 +67,9 @@ for the set of colours that actually have a source.
 
   - *Initialization:* $p_0(c) = s(c)$ for all $c in C$.
   - *Movement:* For all $t < T_("max")$ and all $c in C$, $p_(t+1)(c)$ is reachable from $p_t(c)$
-    in one step: the agent may stay in place or move to a 4-neighbouring cell, but it may not move
-    into a wall or a laser-source cell.
+    in one step: the agent may stay in place or move to a 4-neighbouring cell. Walls and
+    laser-source cells are the only blocked destinations; exit tiles and cells crossed by the
+    agent's own-colour laser are admissible.
   - *No collision:* $p_t(c_1) eq.not p_t(c_2)$ for all $t$ and all distinct $c_1, c_2 in C$.
   - *Conservative hand-off rule:* For all $t < T_("max")$ and all distinct $c_1, c_2 in C$,
     agents may not enter a cell occupied by another agent at the previous time step; that is,
@@ -77,9 +79,11 @@ for the set of colours that actually have a source.
     step. The same rule rules out direct swaps.
   - *Laser safety:* No agent $c_1$ occupies a cell at time $t$ where a laser of colour
     $c_2 in C_("src")$, with $c_2 eq.not c_1$, is active under the standard beam semantics of
-    #fref(<def-3-2>, [Definition 3.2]).
+    #fref(<def-3-2>, [Definition 3.2]). The restriction $c_2 eq.not c_1$ encodes *immunity*:
+    an agent is unaffected by — and may stand inside — a laser of its own colour.
   - *Stay on exit:* If $p_t(c) in cal(E)$ for some $t < T_("max")$, then
-    $p_(t+1)(c) = p_t(c)$.
+    $p_(t+1)(c) = p_t(c)$. This follows the LLE engine convention: once an agent enters an
+    exit tile, it remains there for the rest of the episode.
 ]) <def-3-3>
 
 #formalbox([Definition 3.4 (Solvability)], [
@@ -98,9 +102,10 @@ The restriction to a bounded horizon is natural for the SAT encoding. In the mod
 beam activity at time $t$ is a deterministic function of the joint position map $p_t$, so the
 full game state is determined by the joint agent positions. Any valid trajectory that visits the
 same joint position map twice can have the intervening segment excised without affecting
-reachability of later states. Hence, if a level is solvable at all, it admits a valid trajectory
-whose length is at most the number of collision-free joint position maps, which is bounded by
-$|P|^(n_a)$. A sufficient $T_("max")$ therefore always exists. In practice $T_("max")$ is
+reachability of later states; the stay-on-exit rule does not break this argument, since any
+agent on an exit at the start of the loop must remain on that same exit throughout the loop.
+Hence, if a level is solvable at all, it admits a valid trajectory whose length is at most the
+number of collision-free joint position maps, which is bounded by $|P|^(n_a)$. A sufficient $T_("max")$ therefore always exists. In practice $T_("max")$ is
 chosen by the generation process, and all formal guarantees in this thesis are stated relative
 to that choice.
 

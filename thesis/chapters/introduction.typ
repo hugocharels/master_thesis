@@ -13,9 +13,9 @@ the cooperative mechanism they are meant to study.
 
 We instantiate this work on the Laser Learning Environment (LLE), a cooperative MARL benchmark
 whose mechanics are formalised in @lle-background; its hand-crafted Level 6 serves as the
-canonical hard target throughout the thesis. We conjecture that the methodology developed
-here — coupling procedural generation with a formal verification oracle — generalises to any
-MARL setting whose target structural properties are expressible as decision problems, but we
+canonical hard target throughout the thesis. We expect the methodology developed here —
+coupling procedural generation with a formal verification oracle — to generalise to any MARL
+setting whose target structural properties are expressible as decision problems, but we
 evaluate it on LLE only and leave broader transfer to future work.
 
 

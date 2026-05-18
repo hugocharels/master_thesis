@@ -1,5 +1,3 @@
-#import "../macros.typ": fref
-
 == Cooperative MARL and Coordination-Critical Benchmarks
 
 This thesis is motivated by a benchmark-design question within cooperative Multi-Agent
@@ -68,9 +66,10 @@ considerably: in a level with several agents and several lasers, helping relatio
 one-way edge, a mutual pair, a directed chain, a shared-beneficiary fan-in, or a fully connected
 graph. The cooperation profile analyzer of @cooperation-detection extracts this dependency
 graph from a SAT model of a solution and classifies it under one of five labels — *asymmetric*,
-*mutual*, *chain*, *distributed*, *fully coupled*. To our knowledge, this is the first such
-taxonomy specific to laser-blocking dependencies in LLE; the prior MARL literature considers
-related but distinct structural notions.
+*mutual*, *chain*, *distributed*, *fully coupled*. The structural categories themselves are
+standard graph-theory vocabulary; to our knowledge, this is the first taxonomy that *recovers*
+such structures from a SAT certificate of solvability in LLE. The prior MARL literature
+considers related but distinct structural notions.
 
 The closest precedent is the *coordination graph* introduced by #cite(<Guestrin2002CoordinatedRL>, form: "prose"),
 which decomposes a joint $Q$-function over agent subsets connected by hyper-edges. Coordination

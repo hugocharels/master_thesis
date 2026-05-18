@@ -210,6 +210,14 @@ WorldSolver(world, laser_mode=LaserMode.SELECTIVE_STRICT, strict_colors=K)
 for an arbitrary colour set $K$. Selective-strict is the SAT lever that lets us single out one
 helper at a time without affecting the other beams.
 
+The same argument used in the proof of #fref(<thm-5-1>, [Theorem 5.1]) generalises to this
+intermediate encoding: $Phi$ with the selective-strict encoding parameterised by $K$ is
+satisfiable if and only if $L$ admits a successful standard trajectory in which no agent of
+colour $c in K$ ever stands on the unblocked beam path of the source of colour $c$. We
+therefore use the selective-strict encoding as a sound decision oracle for "$L$ remains
+solvable when each colour in $K$ is individually barred from truncating its own beam", which
+is exactly what the necessary-helper analysis below requires.
+
 === Helper Events from a SAT Model
 
 Given a satisfying assignment of $Phi(L, T_("max"))$, the analyzer recovers the joint trajectory
@@ -380,6 +388,14 @@ coordinate their movements for unrelated geometric reasons — without any laser
 involved — would not be identified as cooperative by this detector. This definition is not claimed
 to exhaust every possible interpretation of cooperation in multi-agent environments; it is the
 specific mechanism studied in this benchmark, and the formal guarantee is scoped accordingly.
+
+*Taxonomy scope.* The eight labels above are designed to be informative *in practice* on small
+LLE grids, not to partition every directed graph one could imagine. Graphs that combine weaker
+structures without satisfying any stronger criterion fall into the residual `asymmetric` class.
+For instance, a 3-cycle among three of four agents (a strict 3-SCC that does not span every
+agent) is labelled `asymmetric`, not `fully coupled`, because the SCC is smaller than $|C|$.
+Such pathological shapes have not appeared in our experiments, but the catch-all behaviour of
+`asymmetric` is by design rather than an oversight.
 
 *Model-dependence of finer-grained analyses.* The binary detector above is a property of the
 *level*: the satisfiability of $Phi(L, T_("max"))$ and $Phi_("strict")(L, T_("max"))$ does not

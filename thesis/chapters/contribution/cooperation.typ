@@ -58,7 +58,7 @@ step.
   $Phi_("strict")(L, T_("max"))$ is unsatisfiable. The first condition implies that $L$ is solvable
   under the standard semantics. Suppose, for contradiction, that some successful standard
   trajectory uses no same-colour beam-truncation step — that is, no agent $c$ ever stands on a
-  cell traversed by its own beam. Under that hypothesis the two semantics produce identical beam
+  cell of the unblocked beam path of the source of colour $c$. Under that hypothesis the two semantics produce identical beam
   states for this trajectory: the standard rule truncates the beam of colour $c$ only at a cell
   occupied by agent $c$, and by assumption no such occupancy occurs, so each beam reaches the
   same wall or grid boundary as it would under the strict rule. The same variable assignment
@@ -255,9 +255,11 @@ entering the classification decision.
 === Profile Families
 
 The profile label is the output of a small decision procedure applied to $G_L$, with the binary
-cooperation requirement as a hard precondition. The priority order is *fully coupled $succ$ mutual
-$succ$ distributed $succ$ chain $succ$ asymmetric $succ$ cooperative*, so a level matching several
-criteria is labelled by the strongest one. We describe each label below with a short geometric
+cooperation requirement as a hard precondition. The priority order over the cooperation-required
+labels is *fully coupled $succ$ mutual $succ$ distributed $succ$ chain $succ$ asymmetric
+$succ$ cooperative*, so a level matching several criteria is labelled by the strongest one.
+The two non-cooperative labels (`unsolvable` and `independent`) short-circuit before this order
+is considered. We describe each label below with a short geometric
 example.
 
 *Independent.* The binary detector returns non-cooperative: $Phi_("strict")(L, T_("max"))$ is
@@ -279,13 +281,21 @@ extractor only records an event when a helper sits on its own beam path with a f
 agent strictly downstream at the same time step, and a few edge cases (e.g. a helper truncating
 at the last cell of its own beam path) escape that criterion. We have not observed this
 fallback fire on any LLE level encountered in this thesis; the label is listed for completeness.
+The same word `cooperative` reappears in @generators as a *filter target* meaning "any level
+satisfying the binary cooperation criterion, regardless of finer profile". The two uses are
+distinct: the classifier returns `cooperative` only as the fallback above, while the generator
+filter `cooperative` accepts levels of any cooperative profile.
 
-*Asymmetric.* The dependency graph has at least one edge $(c, c') in E$, no mutual pair, no
-chain extending beyond a single edge, no shared beneficiary, and the agents do not all belong
-to a single SCC. *Example.* Two agents of distinct colours; only the red beam blocks the blue
-agent's path to its exit, so the red agent must step into its own beam at some moment to let
-the blue agent pass. The reciprocal situation never arises since there is no blue beam. The
-dependency graph has the single edge $0 arrow 1$ (@fig-profile-asymmetric).
+*Asymmetric.* The residual category: the dependency graph has at least one edge $(c, c') in E$
+and matches none of the stronger profiles above. The label is therefore the *fallback* applied
+whenever cooperation is required but the graph fits neither *fully coupled*, *mutual*,
+*distributed*, nor *chain*; a typical asymmetric graph is a small set of one-way edges, but
+sparser shapes that escape the chain criterion (e.g. two short paths that do not span every
+participating agent) also fall here. *Example.* Two agents of distinct colours; only the red
+beam blocks the blue agent's path to its exit, so the red agent must step into its own beam
+at some moment to let the blue agent pass. The reciprocal situation never arises since there
+is no blue beam. The dependency graph has the single edge $0 arrow 1$
+(@fig-profile-asymmetric).
 
 #figure(
   image("../../../results/cooperation_examples/asymmetric.png", width: 35%),

@@ -213,33 +213,32 @@ working pattern.
 Taken together, the MARL benchmarking literature, the PCG and curriculum-learning literature,
 and the SAT-planning / compilation-based MAPF literature mark the conceptual neighbourhood of
 this thesis. None of them, however, fully covers the problem we address: each line studies one
-side of the problem in isolation, and the literature leaves a clear opening for the present
-work.
+side of the problem in isolation. The remaining gap can be summarised under four headings.
 
-- The LLE paper @LLE establishes the benchmark and explains why its coordination bottlenecks are
-  difficult for MARL algorithms, but it does not provide a formal generator for certified
-  cooperative levels.
-- The MAPF compilation survey @Surynek2022CompilationMAPF shows that SAT is an effective backend
-  for multi-agent planning problems, but it addresses standard MAPF rather than LLE-specific laser
-  dynamics.
-- The MAPF SAT-engineering paper @FrommknechtSurynek2024 shows that encoding design affects solver
-  performance in practice, but it remains within the standard MAPF framework and does not address
-  cooperation as a semantic property of the instance.
-- The coordination-graph line of work @Guestrin2002CoordinatedRL gives a representation for known
-  inter-agent dependencies but does not provide a *taxonomy* of dependency structures that arise
-  from a specific cooperation mechanism.
-- The environment-design line of work @Wang2019POET @Dennis2020PAIRED treats curriculum
-  generation as an adaptive co-evolution problem but assumes a parameterised environment family
-  without formal per-instance acceptance guarantees on solvability or cooperation.
-- The PCG-for-RL line @RisiTogelius2020 @Khalifa2020PCGRL frames procedural generation as a
-  tool for RL generalisation and even casts the generator itself as an RL agent, but does not
-  embed a decision procedure that proves generated instances satisfy a target structural
-  property.
-- The shielded-RL line @Alshiekh2018Shielding shows that formal methods integrate cleanly with
-  RL when used as a runtime *action* filter, but does not address the upstream question of
-  whether the *training material* itself satisfies the specification.
+- *Cooperative MARL benchmarks and inter-agent structure.* The LLE paper @LLE establishes the
+  benchmark and explains why its coordination bottlenecks are difficult for MARL algorithms,
+  but it does not provide a formal generator for certified cooperative levels. The
+  coordination-graph line @Guestrin2002CoordinatedRL gives a representation for known
+  inter-agent dependencies but does not classify the *types* of dependency that emerge from a
+  specific cooperation mechanism.
+- *Compilation-based multi-agent planning.* The MAPF compilation literature
+  @Surynek2022CompilationMAPF @FrommknechtSurynek2024 shows that SAT is an effective backend
+  for multi-agent planning and that encoding design matters in practice, but it solves a
+  different problem (path optimality on a collision graph) and does not address either the
+  laser-propagation semantics or cooperation as a semantic property of the instance.
+- *Procedural generation, curriculum learning, and environment design.* The PCG-for-RL line
+  @RisiTogelius2020 @Khalifa2020PCGRL frames generation as a tool for RL generalisation, and
+  the environment-design line @Wang2019POET @Dennis2020PAIRED treats curriculum generation as
+  adaptive co-evolution. Neither embeds a decision procedure that *proves* each generated
+  instance satisfies a target structural property.
+- *Formal methods on top of RL.* The shielded-RL line @Alshiekh2018Shielding shows that formal
+  methods integrate cleanly with RL when used as a runtime *action* filter, but does not
+  address the upstream question of whether the *training material* itself satisfies the
+  specification.
 
-This thesis sits at the intersection of those lines of work. It transfers the compilation-based SAT
-mindset from MAPF into the LLE setting, formalises bounded-horizon solvability for an LLE-specific
-model, and introduces a strict-semantics counterfactual that turns a benchmark-level intuition
-about cooperation into a decidable property inside procedural generation.
+This thesis sits at the intersection of those four lines. It transfers the compilation-based
+SAT mindset from MAPF into the LLE setting, formalises bounded-horizon solvability for an
+LLE-specific model, introduces a strict-semantics counterfactual that turns a benchmark-level
+intuition about cooperation into a decidable property inside procedural generation, and
+classifies the resulting dependency structures into a taxonomy that downstream generators can
+target as a parameter.

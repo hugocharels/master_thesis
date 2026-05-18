@@ -23,7 +23,11 @@ actor-critic of MADDPG @Lowe2017MADDPG, the counterfactual-baseline policy gradi
 @Foerster2018COMA, and MAVEN @Mahajan2019MAVEN, which extends QMIX with latent-variable exploration
 to overcome its monotonicity limitations on coordination tasks. These methods perform well when
 individual contributions are roughly additive, but they struggle precisely on the
-coordination-critical, low-reward bottlenecks that LLE is designed to expose @LLE.
+coordination-critical, low-reward bottlenecks that LLE is designed to expose @LLE. The empirical
+chapter of this thesis (@experiments) accordingly uses three points on this algorithm spectrum —
+independent $Q$-learning (IQL, no credit-assignment baseline), VDN (additive decomposition), and
+QMIX (monotonic mixing) — to train on generated cooperative levels and on the curriculum-transfer
+target.
 
 
 == The Laser Learning Environment
@@ -141,8 +145,13 @@ compilation-based solving. Instead of searching directly in the original state s
 MAPF instance to a target formalism such as CSP, SAT, or MILP, then relies on the target solver to
 handle the combinatorial burden. MAPF research is not exclusively compilation-based; the dominant
 search-based alternative, Conflict-Based Search @Sharon2015CBS, achieves optimal solutions through a
-two-level constraint-satisfaction tree without reducing to a target formalism. The compilation
-survey is especially relevant here for two reasons.
+two-level constraint-satisfaction tree without reducing to a target formalism. We adopt the
+compilation route rather than CBS-style search because the property of interest in this thesis is
+the *existence* of a valid joint plan within a fixed horizon, not its makespan optimality: a
+SAT decision procedure matches the question we ask, whereas CBS is built to deliver optimal-cost
+plans on a graph and would need substantial extension to encode the laser-propagation and
+strict-counterfactual semantics introduced in @cooperation-detection. The compilation survey is
+therefore especially relevant here for two reasons.
 
 First, it demonstrates that SAT-based reductions are a mature and credible way to solve structured
 multi-agent planning problems. Second, it makes clear that compilation is not a black-box slogan:
@@ -178,7 +187,11 @@ drop-in solution.
 
 == Positioning of the Thesis
 
-The literature leaves a clear opening for the present work.
+Taken together, the MARL benchmarking literature, the PCG and curriculum-learning literature,
+and the SAT-planning / compilation-based MAPF literature mark the conceptual neighbourhood of
+this thesis. None of them, however, fully covers the problem we address: each line studies one
+side of the problem in isolation, and the literature leaves a clear opening for the present
+work.
 
 - The LLE paper @LLE establishes the benchmark and explains why its coordination bottlenecks are
   difficult for MARL algorithms, but it does not provide a formal generator for certified

@@ -1,6 +1,16 @@
 """Static configuration for the learnability experiment.
 
-Single configuration: 8x8 grid, 3 agents, 2 lasers, cooperative generator.
+Smaller-grid debug configuration: 5x5 grid, 2 agents, 1 laser,
+cooperative generator. Used to test whether MARL can learn anything
+at all on cooperative levels -- the 8x8/3a/2L version produced 0%
+success across 60 cells, which left open the question of whether
+the algorithm is fundamentally unable or whether the 8x8 task is
+simply too hard for the 200k-step budget.
+
+The earlier 8x8/3a/2L results are preserved under
+``results/learnability/`` (file system) and at commit 3279ed0 onward
+(git history). This run writes to ``results/learnability_5x5/``.
+
 Train on 20 generated levels, eval on 20 held-out generated levels.
 """
 
@@ -22,15 +32,15 @@ class GridConfig:
 
 
 GRID = GridConfig(
-    height=8,
-    width=8,
-    n_agents=3,
-    n_lasers=2,
-    t_max=16,
+    height=5,
+    width=5,
+    n_agents=2,
+    n_lasers=1,
+    t_max=10,
     generator_name="cooperative",
 )
 
-RNG_SEED: int = 20260615
+RNG_SEED: int = 20260618
 TRAIN_POOL_SIZE: int = 20
 TEST_POOL_SIZE: int = 20
 

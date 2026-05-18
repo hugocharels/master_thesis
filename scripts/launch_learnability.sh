@@ -6,7 +6,7 @@ set -e
 
 PY="${MARL_VENV:-C:/Users/hugoc/Projects/marl/.venv/Scripts/python.exe}"
 export PYTHONPATH=src
-OUT_DIR="results/learnability"
+OUT_DIR="results/learnability_5x5"
 STEPS=200000
 MAX_PARALLEL=${MAX_PARALLEL:-5}
 

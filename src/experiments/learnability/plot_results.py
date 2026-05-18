@@ -200,12 +200,12 @@ def _build_parser() -> argparse.ArgumentParser:
         description="Aggregate learnability runs into figures.",
     )
     parser.add_argument(
-        "--runs-dir", type=Path, default=Path("results/learnability/runs"),
-        help="Run directory. Default: results/learnability/runs.",
+        "--runs-dir", type=Path, default=Path("results/learnability_5x5/runs"),
+        help="Run directory. Default: results/learnability_5x5/runs.",
     )
     parser.add_argument(
-        "--out-dir", type=Path, default=Path("results/learnability/figures"),
-        help="Figure directory. Default: results/learnability/figures.",
+        "--out-dir", type=Path, default=Path("results/learnability_5x5/figures"),
+        help="Figure directory. Default: results/learnability_5x5/figures.",
     )
     return parser
 

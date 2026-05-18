@@ -39,7 +39,7 @@ from experiments.learnability.configs import (
 )
 from experiments.learnability.pool_generator import load_pool, pool_dir
 
-DEFAULT_OUT_DIR = Path("results") / "learnability"
+DEFAULT_OUT_DIR = Path("results") / "learnability_5x5"
 
 
 # ---------------------------------------------------------------------------

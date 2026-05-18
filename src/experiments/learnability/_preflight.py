@@ -18,7 +18,7 @@ from experiments.learnability.pool_generator import build_pool, pool_dir, save_p
 
 
 def main() -> None:
-    base_dir = Path("results/learnability")
+    base_dir = Path("results/learnability_5x5")
 
     print(
         f"=== {GRID.height}x{GRID.width}, {GRID.n_agents} agents, "

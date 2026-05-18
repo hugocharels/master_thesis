@@ -103,15 +103,16 @@ horizons reproduces all three failure modes at once (@tab-horizon-demo).
     table.header([*$T_("max")$*], [*Standard SAT*], [*Profile label*]),
     [2],  [UNSAT],         [— (rejected as unsolvable)],
     [3],  [SAT, strict UNSAT], [`asymmetric`, edges ${(0, 1)}$],
-    [11], [SAT, strict SAT],   [`independent`, edges $emptyset$],
+    [9], [SAT, strict SAT],   [`independent`],
   ),
   caption: [
     Cooperation classification of the level in @fig-horizon-demo at three horizons. With
     $T_("max") = 2$ no agent has time to reach an exit, so the standard solver returns UNSAT
     and cooperation is never tested. With $T_("max") = 3$ — the tightest horizon at which the
     level is solvable — cooperation is required: the only feasible plan uses red same-colour
-    truncation. With $T_("max") = 11$ the strict solver finds a trajectory in which the blue
-    agent walks around the beam, so cooperation is no longer flagged.
+    truncation. With $T_("max") = 9$ — the smallest horizon admitting a detour around the beam
+    — the strict solver finds a trajectory in which the blue agent walks around the beam, so
+    cooperation is no longer flagged.
   ],
 ) <tab-horizon-demo>
 

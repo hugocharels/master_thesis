@@ -159,7 +159,7 @@ HORIZON_EXAMPLES: dict[str, HorizonEntry] = {
     #   - mid  T_max -> cooperative (intended classification)
     #   - high T_max -> independent (detour bypass: strict-SAT becomes SAT)
     "horizon_demo": HorizonEntry(
-        t_max_values=(2, 3, 11),
+        t_max_values=(2, 3, 9),
         world="""
             . .   S0 S1
             . L0E .  .

@@ -1,3 +1,5 @@
+#import "../macros.typ": fref
+
 == Cooperative MARL and Coordination-Critical Benchmarks
 
 This thesis is motivated by a benchmark-design question within cooperative Multi-Agent
@@ -45,7 +47,7 @@ created by coloured lasers and same-colour blocking.
 
 == Dependency Structures in Cooperative MARL
 
-The cooperation criterion of Theorem 4.9 returns a binary verdict, but cooperative behaviour can
+The cooperation criterion of #fref(<thm-4-9>, [Theorem 4.9]) returns a binary verdict, but cooperative behaviour can
 be richer: in a level with several agents and several lasers, helping relations can form a
 one-way edge, a mutual pair, a directed chain, a shared-beneficiary fan-in, or a fully connected
 graph. In @cooperation-detection we extract this dependency graph from a SAT model and classify it under one

@@ -1,4 +1,4 @@
-#import "../../macros.typ": formalbox, proofbox
+#import "../../macros.typ": formalbox, proofbox, fref
 
 == Definition of Sets
 
@@ -13,7 +13,7 @@ $T = {0, 1, ..., T_("max")}$.
 The sets $P_("src")$ and $C_("src")$ are as defined in @formalization. We recall that each colour
 appears in at most one laser source; under this assumption, when a source of colour $c$ exists, its
 position and direction are uniquely determined by $c$. We write $s(c)$ for the initial position of
-agent $c in C$, as defined in Definition 3.1.
+agent $c in C$, as defined in #fref(<def-3-1>, [Definition 3.1]).
 
 
 == Definition of Variables
@@ -297,7 +297,7 @@ solvability is polynomial-time reducible to SAT.
   Let $L$ be an LLE level and let $T_("max")$ be a horizon. For either movement formulation
   described above, the CNF formula $Phi(L, T_("max"))$ is satisfiable if and only if there exists a
   valid joint trajectory of length $T_("max")$ for $L$.
-])
+]) <prop-4-8>
 
 #proofbox([
   For soundness, assume $Phi(L, T_("max"))$ is satisfiable. Initialization fixes exactly one start
@@ -324,14 +324,14 @@ solvability is polynomial-time reducible to SAT.
 
 == Complexity-Theoretic Consequences
 
-We can now state the consequence for the decision problem introduced in Definition 4.5.
+We can now state the consequence for the decision problem introduced in #fref(<def-3-5>, [Definition 3.5]).
 
 The bounded-horizon LLE solvability problem lies in *NP*. A candidate trajectory can be verified in
 polynomial time by simulating the joint execution and checking that all agents occupy the exit
 tiles at the end without violating the movement, collision, and laser constraints defined in
 @formalization.
 
-Combined with the polynomial-time construction above and Proposition 4.8, this shows that
+Combined with the polynomial-time construction above and #fref(<prop-4-8>, [Proposition 4.8]), this shows that
 bounded-horizon LLE solvability is polynomial-time many-one reducible to SAT:
 
 $

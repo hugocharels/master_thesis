@@ -1,3 +1,5 @@
+#import "../../macros.typ": fref
+
 == Design Pattern
 
 All generators follow a common architecture built around three principles:
@@ -75,7 +77,7 @@ The random cooperative generator extends the random solvable generator with a se
 on the strict semantics of @cooperation-detection. A candidate is accepted only if it is
 satisfiable under the standard encoding and unsatisfiable under the strict encoding. This guarantees
 that every accepted level structurally requires the beam-truncation mechanism identified as
-cooperation in Definition 3.7.
+cooperation in #fref(<def-3-7>, [Definition 3.7]).
 
 The current implementation augments this binary guarantee with a *cooperation profile analyzer*.
 The binary detector remains the formal guarantee used throughout the thesis: a level is cooperative
@@ -176,7 +178,7 @@ dependency for every laser, not just one. The geometry is built in the following
   standard and strict SAT encodings of @cooperation-detection are run, and the cooperation
   profile analyzer is applied. The candidate is accepted only if it is satisfiable under the
   standard semantics and unsatisfiable under the strict one — the binary cooperation criterion
-  of Theorem 4.9 — and if the profile analyzer's classification matches the requested family
+  of #fref(<thm-4-9>, [Theorem 4.9]) — and if the profile analyzer's classification matches the requested family
   (default: `cooperative`, which accepts any same-colour beam-truncation requirement).
 
 The distinct-colour multi-laser construction is the key qualitative change relative to a

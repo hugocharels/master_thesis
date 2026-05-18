@@ -1,4 +1,4 @@
-#import "../../macros.typ": formalbox
+#import "../../macros.typ": formalbox, fref
 
 == Problem Formalization <formalization>
 
@@ -36,7 +36,7 @@ encoding developed in @sat-reduction; the encoding itself remains correct for an
       P_("src") = {p in P | exists c in C, d in D : (c, d, p) in cal(S)}
     $
     are pairwise disjoint.
-])
+]) <def-3-1>
 
 We also write
 $
@@ -58,7 +58,7 @@ for the set of colours that actually have a source.
 
   A laser of colour $c$ is active at a position when the beam of the unique source of colour $c$
   is active there.
-])
+]) <def-3-2>
 
 #formalbox([Definition 3.3 (Valid Joint Trajectory)], [
   A *horizon* $T_("max") in NN$ is the maximum number of joint moves allowed in a candidate
@@ -80,10 +80,10 @@ for the set of colours that actually have a source.
     $p_(t+1)(c_1) eq.not p_t(c_2)$ and $p_t(c_1) eq.not p_(t+1)(c_2)$.
   - *Laser safety:* No agent $c_1$ occupies a cell at time $t$ where a laser of colour
     $c_2 in C_("src")$, with $c_2 eq.not c_1$, is active under the standard beam semantics of
-    Definition 3.2.
+    #fref(<def-3-2>, [Definition 3.2]).
   - *Stay on exit:* If $p_t(c) in cal(E)$ for some $t < T_("max")$, then
     $p_(t+1)(c) = p_t(c)$.
-])
+]) <def-3-3>
 
 #formalbox([Definition 3.4 (Solvability)], [
   A level $L$ is *solvable* with horizon $T_("max")$ if there exists a valid joint trajectory
@@ -95,7 +95,7 @@ for the set of colours that actually have a source.
   $
 
   A level is *solvable* without qualification if it is solvable for some finite horizon.
-])
+]) <def-3-4>
 
 The restriction to a bounded horizon is natural for the SAT encoding. In the model studied here,
 beam activity at time $t$ is a deterministic function of the joint position map $p_t$. Hence the
@@ -116,13 +116,13 @@ generation process, not a formal limitation of the approach.
   - *Input:* an LLE level $L$ and a horizon $T_("max") in NN$.
   - *Question:* does $L$ admit a valid joint trajectory of length $T_("max")$ whose final occupied
     positions are exactly the exits?
-])
+]) <def-3-5>
 
 #formalbox([Definition 3.6 (Strict Beam Semantics)], [
-  A *strict trajectory* of length $T_("max")$ is defined exactly as in Definition 3.3, except that
-  beam activity is computed using the strict beam semantics of Definition 3.2: same-colour
+  A *strict trajectory* of length $T_("max")$ is defined exactly as in #fref(<def-3-3>, [Definition 3.3]), except that
+  beam activity is computed using the strict beam semantics of #fref(<def-3-2>, [Definition 3.2]): same-colour
   occupancy no longer truncates the corresponding beam.
-])
+]) <def-3-6>
 
 In the model studied here, the relevant cooperative action is precisely this same-colour
 beam-truncation mechanism: an agent occupies a position that would otherwise allow its own beam to
@@ -134,7 +134,7 @@ continue, thereby opening a path for another agent.
   - $L$ is solvable under the standard semantics.
   - $L$ admits no strict trajectory of length $T_("max")$ whose final positions occupy all exit
     tiles.
-])
+]) <def-3-7>
 
 When the horizon is clear from context, we simply say that $L$ requires cooperation. This bounded
 form is the one used throughout the rest of the methods chapter, since both the SAT solver and the

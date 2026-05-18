@@ -1,8 +1,8 @@
-#import "../../macros.typ": formalbox, proofbox
+#import "../../macros.typ": formalbox, proofbox, fref
 
 == Strict SAT Encoding
 
-Recall from Definition 3.6 that strict beam semantics changes only one aspect of the dynamics:
+Recall from #fref(<def-3-6>, [Definition 3.6]) that strict beam semantics changes only one aspect of the dynamics:
 same-colour occupancy no longer truncates the corresponding beam. Same-colour immunity is
 unchanged.
 
@@ -42,15 +42,15 @@ step.
   Let $L$ be an LLE level and $T_("max")$ a time horizon. Then $L$ requires cooperation with
   horizon $T_("max")$ if and only if $Phi(L, T_("max"))$ is satisfiable and
   $Phi_("strict")(L, T_("max"))$ is unsatisfiable.
-])
+]) <thm-4-9>
 
 #proofbox([
-  $(arrow.r)$ Assume that $L$ requires cooperation with horizon $T_("max")$. By Definition 3.7,
+  $(arrow.r)$ Assume that $L$ requires cooperation with horizon $T_("max")$. By #fref(<def-3-7>, [Definition 3.7]),
   $L$ is solvable under the standard semantics, so $Phi(L, T_("max"))$ is satisfiable. Suppose for
   contradiction that $Phi_("strict")(L, T_("max"))$ is also satisfiable. Then there exists a strict
   trajectory whose final positions occupy all exit tiles. Since strict beam semantics differs from
   the standard one only by removing same-colour beam truncation, such a trajectory is also a valid
-  standard trajectory that succeeds without using that mechanism. This contradicts Definition 3.7.
+  standard trajectory that succeeds without using that mechanism. This contradicts #fref(<def-3-7>, [Definition 3.7]).
   Therefore $Phi_("strict")(L, T_("max"))$ is unsatisfiable.
 
   $(arrow.l)$ Assume that $Phi(L, T_("max"))$ is satisfiable and
@@ -67,10 +67,10 @@ step.
 
 == Horizon-Dependence of the Cooperation Criterion <horizon-dependence>
 
-Theorem 4.9 binds cooperation to a fixed horizon $T_("max")$. This is not an artefact of the SAT
+#fref(<thm-4-9>, [Theorem 4.9]) binds cooperation to a fixed horizon $T_("max")$. This is not an artefact of the SAT
 encoding: it is the only sense in which cooperation is decidable in this framework. Solvability
-itself is a horizon-indexed property (Definition 3.4), and so is the companion cooperation
-requirement (Definition 3.7). The horizon is therefore a true parameter of the cooperation label,
+itself is a horizon-indexed property (#fref(<def-3-4>, [Definition 3.4])), and so is the companion cooperation
+requirement (#fref(<def-3-7>, [Definition 3.7])). The horizon is therefore a true parameter of the cooperation label,
 and the same level can switch classification when $T_("max")$ changes.
 
 The mechanism behind this sensitivity is straightforward. The strict SAT encoding refuses
@@ -126,7 +126,7 @@ made to look unsolvable by lowering $T_("max")$ until even the natural solution 
 too generously under-detects cooperation by allowing geometric detours; choosing it too tightly
 makes the standard solver itself UNSAT, so the level is rejected as unsolvable before cooperation
 is even tested. Both failure modes shift the operating point in opposite directions, and neither
-contradicts Theorem 4.9, which states cooperation strictly *relative to* a chosen horizon.
+contradicts #fref(<thm-4-9>, [Theorem 4.9]), which states cooperation strictly *relative to* a chosen horizon.
 
 The recipe used throughout this thesis is to pick $T_("max")$ as the smallest horizon at which a
 representative short solution of the geometry is expected to fit, with a small additive slack. For
@@ -153,7 +153,7 @@ is the user-supplied generation parameter $T_("max")$.
 
 == Cooperation Profiles <cooperation-profiles>
 
-Theorem 4.9 yields a *binary* answer: a level either requires cooperation or it does not. Once the
+#fref(<thm-4-9>, [Theorem 4.9]) yields a *binary* answer: a level either requires cooperation or it does not. Once the
 binary criterion holds, however, several qualitatively different cooperation structures fall under
 that single label, and the generators of @generators rely on this finer distinction to target
 specific patterns. The cooperation profile analyzer operates on top of the binary detector and
@@ -191,7 +191,7 @@ by a set of colours $S subset.eq C_("src")$:
 - for every source $(c, d, p_s) in cal(S)$ with $c in.not S$, the standard equivalence is used.
 
 When $S = nothing$, the encoding coincides with the standard semantics; when $S = C_("src")$, it
-coincides with the strict semantics of Definition 3.6. Intermediate choices forbid same-colour
+coincides with the strict semantics of #fref(<def-3-6>, [Definition 3.6]). Intermediate choices forbid same-colour
 truncation for the colours in $S$ while leaving the remaining beams untouched. The implementation
 uses
 ```python

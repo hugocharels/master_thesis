@@ -49,7 +49,7 @@ the LLE Python package, so **for level generation alone you do not need to clone
 repository**. Install LLE from PyPI:
 
 ```bash
-pip install laser-learning-environment
+pip install laser-learning-environment[generator]
 ```
 
 and use its built-in CLI / API. See <https://github.com/yamoling/lle> for the upstream

@@ -201,14 +201,10 @@ $cal(S)$ to avoid confusion:
 - for every source $(c, d, p_s) in cal(S)$ with $c in.not K$, the standard equivalence is used.
 
 When $K = nothing$, the encoding coincides with the standard semantics; when $K = C_("src")$, it
-coincides with the strict semantics of #fref(<def-3-6>, [Definition 3.6]). Intermediate choices forbid same-colour
-truncation for the colours in $K$ while leaving the remaining beams untouched. The implementation
-uses
-```python
-WorldSolver(world, laser_mode=LaserMode.SELECTIVE_STRICT, strict_colors=K)
-```
-for an arbitrary colour set $K$. Selective-strict is the SAT lever that lets us single out one
-helper at a time without affecting the other beams.
+coincides with the strict semantics of #fref(<def-3-6>, [Definition 3.6]). Intermediate choices
+forbid same-colour truncation for the colours in $K$ while leaving the remaining beams
+untouched. Selective-strict is the SAT lever that lets us single out one helper at a time
+without affecting the other beams.
 
 The same argument used in the proof of #fref(<thm-5-1>, [Theorem 5.1]) generalises to this
 intermediate encoding: $Phi$ with the selective-strict encoding parameterised by $K$ is

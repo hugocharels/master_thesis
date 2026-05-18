@@ -23,17 +23,22 @@ Four levels of increasing size and complexity were used:
     columns: 4,
     gutter: 8pt,
     align: center,
-    [*3x3* \ 2 agents, 1 laser],
-    [*5x5* \ 3 agents, 2 lasers],
-    [*8x8* \ 4 agents, 3 lasers],
-    [*LLE Level 6* \ 4 agents, 3 lasers],
+    [*3×3* \ 2 agents, 1 laser \ $T_("max") = 4$],
+    [*5×5* \ 3 agents, 2 lasers \ $T_("max") = 5$],
+    [*8×8* \ 4 agents, 3 lasers \ $T_("max") = 15$],
+    [*LLE Level 6* \ 4 agents, 3 lasers \ $T_("max") = 21$],
 
     image("../../results/MLG-Student-Day/level_3x3_agents_2_lasers_1.png", width: 100%),
     image("../../results/MLG-Student-Day/level_5x5_agents_3_lasers_2.png", width: 100%),
     image("../../results/MLG-Student-Day/level_8x8_agents_4_lasers_3.png", width: 100%),
     image("../../results/MLG-Student-Day/level_lle_level6.png", width: 100%),
   ),
-  caption: [The four test levels used for benchmarking, ordered by increasing complexity.],
+  caption: [
+    The four test levels used for benchmarking, ordered by increasing complexity. Each level is
+    paired with the horizon $T_("max")$ used to encode it in the SAT formulation; the horizon is
+    set to the minimum number of joint steps known to be sufficient for solvability of the
+    level.
+  ],
 )
 
 The first three levels were constructed to expose scaling behaviour as grid size and agent count

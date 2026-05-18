@@ -38,8 +38,8 @@ curriculum-transfer target.
 
 == The Laser Learning Environment
 
-The Laser Learning Environment (LLE) was introduced precisely to study coordination-critical
-multi-agent tasks @LLE. It sits alongside other cooperative-MARL benchmarks such as SMAC
+The Laser Learning Environment (LLE), whose mechanics we formalise in @lle-background, was
+introduced precisely to study coordination-critical multi-agent tasks @LLE. It sits alongside other cooperative-MARL benchmarks such as SMAC
 @Samvelyan2019SMAC (StarCraft micro-management with partially observable team play) and
 Overcooked @Carroll2019Overcooked (a constrained cooperative kitchen with temporal
 synchronisation), but differs in that its hardness comes from explicit *inter-agent blocking*
@@ -145,7 +145,8 @@ staged — four manually ordered configurations of growing grid size and coopera
 
 == SAT-based Planning
 
-A second compilation lineage directly relevant to this thesis is *SAT-based planning*.
+A second compilation lineage directly relevant to this thesis is *SAT-based planning* (we recall
+the propositional satisfiability background in @sat-background).
 #cite(<KautzSelman1992>, form: "prose") introduced SATPLAN, encoding bounded-horizon STRIPS planning
 instances as propositional formulas; subsequent work refined both the encodings and the search
 strategies @KautzSelman1996. The treatment by #cite(<Rintanen2006>, form: "prose") covers parallel-plan

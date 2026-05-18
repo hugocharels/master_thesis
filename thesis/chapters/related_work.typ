@@ -43,6 +43,27 @@ cooperation: the key object is not generic teamwork, but a concrete interdepende
 created by coloured lasers and same-colour blocking.
 
 
+== Dependency Structures in Cooperative MARL
+
+The cooperation criterion of Theorem 4.9 returns a binary verdict, but cooperative behaviour can
+be richer: in a level with several agents and several lasers, helping relations can form a
+one-way edge, a mutual pair, a directed chain, a shared-beneficiary fan-in, or a fully connected
+graph. In Chapter 5 we extract this dependency graph from a SAT model and classify it under one
+of five labels — *asymmetric*, *mutual*, *chain*, *distributed*, *fully coupled*. This taxonomy
+is, to our knowledge, new for laser-blocking dependencies in LLE; the prior MARL literature
+considers related but distinct structural notions.
+
+The closest precedent is the *coordination graph* introduced by #cite(<Guestrin2002CoordinatedRL>, form: "prose"),
+which decomposes a joint $Q$-function over agent subsets connected by hyper-edges. Coordination
+graphs are a representational tool: they assume the structure is known a priori and use it to
+make value computation tractable. Our taxonomy operates in the opposite direction. The structure
+is not given; it is *recovered* from a SAT certificate of solvability, and the label is a
+property of the level produced rather than a modelling assumption made about the agents. The two
+notions are therefore complementary: a coordination graph tells the *learner* which agent subsets
+interact, while our profile tells the *level designer* what kind of cooperation a generated
+instance contains.
+
+
 == Procedural Generation Under Structural Constraints
 
 Procedural Content Generation (PCG) is useful in reinforcement-learning settings because it can
@@ -62,6 +83,36 @@ interesting layouts, but without a verifier it cannot certify that a sampled lev
 that success genuinely depends on cooperation. For that reason, the present thesis adopts a
 constraint-aware view of PCG: generation is coupled to a formal decision procedure, and the solver
 acts as an acceptance oracle rather than as a post-hoc descriptive tool.
+
+
+== Curriculum Learning and Generated Environments
+
+The general idea of training on a sequence of progressively harder tasks predates the modern
+deep-learning era; #cite(<Bengio2009>, form: "prose") formalised *curriculum learning* as a meta-learning
+strategy in which the order of training examples is itself a design choice. In reinforcement
+learning specifically, the survey by #cite(<Narvekar2020Curriculum>, form: "prose") catalogues the design
+space along three axes — the *task generator*, the *sequencing policy*, and the *transfer
+mechanism* — and shows that curriculum learning consistently helps on long-horizon and
+sparse-reward problems, the regime in which LLE Level 6 sits.
+
+A more recent line of work tightens the coupling between curriculum and environment generation.
+*POET* @Wang2019POET co-evolves a population of environments and a population of agents in an
+open-ended loop: environments that are too easy or too hard for the current agent population are
+eliminated, and surviving environments act as a self-organising curriculum. *PAIRED*
+@Dennis2020PAIRED extends this idea to *unsupervised environment design*: an adversary
+parameterises environments to maximise the regret of a protagonist agent against an antagonist
+baseline, which provably keeps the generated environments solvable while remaining at the
+frontier of the protagonist's ability.
+
+The present thesis sits adjacent to this line of work. Like POET and PAIRED, we generate
+environments rather than reuse a fixed test set, and we use those environments as a curriculum
+toward a hard target. Unlike POET and PAIRED, the generator here is not adversarial and not
+adaptive to the learner's current policy: it is a *static* solver-in-the-loop generator that
+emits levels certified to satisfy fixed structural properties (solvability, cooperation, profile)
+and at a fixed difficulty level. The curriculum used in @experiments is hand-staged — four
+manually ordered configurations of growing grid size and cooperation requirement — not learnt.
+Replacing the manual staging by an adaptive scheduler in the spirit of POET / PAIRED is a
+natural direction for future work, but is not pursued here.
 
 
 == SAT-based Planning
@@ -136,6 +187,12 @@ The literature leaves a clear opening for the present work.
 - The MAPF SAT-engineering paper @FrommknechtSurynek2024 shows that encoding design affects solver
   performance in practice, but it remains within the standard MAPF framework and does not address
   cooperation as a semantic property of the instance.
+- The coordination-graph line of work @Guestrin2002CoordinatedRL gives a representation for known
+  inter-agent dependencies but does not provide a *taxonomy* of dependency structures that arise
+  from a specific cooperation mechanism.
+- The environment-design line of work @Wang2019POET @Dennis2020PAIRED treats curriculum
+  generation as an adaptive co-evolution problem but assumes a parameterised environment family
+  without formal per-instance acceptance guarantees on solvability or cooperation.
 
 This thesis sits at the intersection of those lines of work. It transfers the compilation-based SAT
 mindset from MAPF into the LLE setting, formalises bounded-horizon solvability for an LLE-specific

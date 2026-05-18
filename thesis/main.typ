@@ -141,11 +141,11 @@
 #include "chapters/conclusion.typ"
 
 #[
-  // Restart the chapter counter so that the first appendix section is "A".
-  // The `Appendix` heading inside appendix.typ uses `numbering: none` but
-  // still advances the depth-1 counter, taking it from 0 to 1, which makes
-  // the first depth-2 heading land at (1, 1) -> "A.1".
-  #counter(heading).update(0)
+  // The `Appendix` heading inside appendix.typ uses `numbering: none`, so it
+  // does NOT advance the depth-1 counter. We therefore reset the counter to 1
+  // here, which leaves the Appendix heading sitting at chapter 1; the first
+  // depth-2 heading then lands at (1, 1) -> "A.1".
+  #counter(heading).update(1)
   #set heading(numbering: (..nums) => {
     let n = nums.pos()
     let letters = ("A", "B", "C", "D", "E", "F", "G", "H")

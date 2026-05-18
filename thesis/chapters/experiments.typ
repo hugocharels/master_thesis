@@ -126,24 +126,24 @@ much wall-clock time those attempts consume.
 
 === Protocol
 
-For each generator type and grid size combination, a fixed number of independent trials is
-executed: 200 trials for the $3 times 3$ and $5 times 5$ grids, and 20 trials for the
-$8 times 8$ grid. Each trial searches for one accepted level by calling
-`generate()` repeatedly with `max_attempts=1` so that every call is a single attempt. A trial
-ends when one level is accepted or a per-trial budget is exhausted (500 attempts for the small
-grids; 100 attempts or 30 seconds for the $8 times 8$ grid). Failed trials are excluded from the
-mean attempt count and reported separately.
+For each generator and grid-size combination, a fixed number of independent trials is executed:
+200 trials for the $3 times 3$ and $5 times 5$ grids, and 20 trials for the $8 times 8$ grid.
+Each trial searches for one accepted level by repeatedly drawing a fresh single-attempt
+candidate until one is accepted. A trial ends when one level is accepted or a per-trial budget
+is exhausted (500 attempts for the small grids; 100 attempts or 30 seconds for the
+$8 times 8$ grid). Failed trials are excluded from the mean attempt count and reported
+separately.
 
-Each single attempt samples a candidate layout, validates geometric constraints (where
-applicable), constructs an `lle.World`, and runs the SAT-based acceptance test of the generator.
-The mean number of attempts per accepted level is the direct measurement of the rejection cost:
-it is approximately the reciprocal of the acceptance rate.
+Each attempt samples a candidate layout, validates geometric constraints (where applicable),
+constructs the corresponding LLE world, and runs the SAT-based acceptance test of the
+generator. The mean number of attempts per accepted level is the direct measurement of the
+rejection cost: it is approximately the reciprocal of the acceptance rate.
 
-Five generators are evaluated: `constrained_random_solvable` (`random` in the runtime registry),
-`constrained_random_cooperative`, `constructive_solvable` (`constructive`),
-`constructive_cooperative` (`cooperative`), and `constructive_level6_style` (`level6_style`).
-Three grid configurations are used: $3 times 3$ with 2 agents and 1 laser, $5 times 5$ with 3
-agents and 2 lasers, and $8 times 8$ with 4 agents and 3 lasers.
+Five generator settings are evaluated, drawn from the four families of @generators: the
+Constrained Random generator in solvable and cooperative settings, the Constructive generator
+in solvable and cooperative settings, and the Level-6-Style generator. Three grid
+configurations are used: $3 times 3$ with 2 agents and 1 laser, $5 times 5$ with 3 agents and
+2 lasers, and $8 times 8$ with 4 agents and 3 lasers.
 
 === Results
 
@@ -175,40 +175,37 @@ agents and 2 lasers, and $8 times 8$ with 4 agents and 3 lasers.
 
 The results split the five generators into three regimes.
 
-The `constrained_random_solvable` generator has rejection rates of 71.2 %, 86.8 %, and 83.9 %
-across the three grid sizes, with mean attempts of 3.5, 7.6, and 6.2. Rejection here is driven by
-the fact that random layouts rarely admit a valid joint trajectory within the requested horizon.
-On the $8 times 8$ grid, one trial out of twenty exhausted its budget without finding an accepted
-level.
+The Constrained Random generator in *solvable* mode has rejection rates of 71.2 %, 86.8 %, and
+83.9 % across the three grid sizes, with mean attempts of 3.5, 7.6, and 6.2. Rejection here is
+driven by the fact that random layouts rarely admit a valid joint trajectory within the
+requested horizon. On the $8 times 8$ grid, one trial out of twenty exhausted its budget without
+finding an accepted level.
 
-The two constructive generators are the cheapest in the family. The `constructive_solvable`
-generator runs at 0.0 %, 9.5 %, and 4.8 % rejection across the three grid sizes (1.00, 1.10, and
-1.05 mean attempts), and the post-fix `constructive_cooperative` runs at 0.0 %, 6.1 %, and 4.8 %
-(1.00, 1.06, and 1.05 mean attempts). The cooperative generator now matches its solvable
-counterpart almost exactly: the multi-colour structural-laser construction of @generators
-guarantees that every accepted candidate satisfies the binary cooperation criterion by
-construction, so the SAT acceptance step rejects only the small fraction of candidates whose
-random wall sample happens to produce an unsolvable or trivial layout. This is the largest
-quantitative change relative to the pre-fix generator, whose acceptance was driven by a
-rejection-sampling profile filter and which produced substantially higher rejection on small
-grids.
+The two Constructive variants are the cheapest in the family. The Constructive generator in
+*solvable* mode runs at 0.0 %, 9.5 %, and 4.8 % rejection across the three grid sizes (1.00,
+1.10, and 1.05 mean attempts), and in *cooperative* mode at 0.0 %, 6.1 %, and 4.8 % (1.00, 1.06,
+and 1.05 mean attempts). The two settings match almost exactly: the multi-colour
+structural-laser construction of @generators guarantees that every accepted candidate satisfies
+the binary cooperation criterion by construction, so the SAT acceptance step rejects only the
+small fraction of candidates whose random wall sample happens to produce an unsolvable or
+trivial layout.
 
-The `constrained_random_cooperative` generator behaves consistently with the prior expectation
-on the two smaller grids: 98.7 % rejection at $3 times 3$ (79.5 mean attempts) and 98.5 % at
-$5 times 5$ (68.8 mean attempts). The high cost reflects the strict subset structure:
-cooperation-requiring layouts are a strict subset of solvable layouts, and a uniformly sampled
-candidate is unlikely to require beam-blocking.#footnote[
-  The $8 times 8$ configuration of `constrained_random_cooperative` could not be measured here:
-  the LLE C extension crashed during trial 6 of 20 (SIGSEGV) on a randomly-sampled world.
-  We report this row as missing rather than inferring a value, and excluded it from the plots.
+The Constrained Random generator in *cooperative* mode has 98.7 % rejection at $3 times 3$ (79.5
+mean attempts) and 98.5 % at $5 times 5$ (68.8 mean attempts). The high cost reflects the strict
+subset structure: cooperation-requiring layouts are a strict subset of solvable layouts, and a
+uniformly sampled candidate is unlikely to require beam-blocking.#footnote[
+  The $8 times 8$ configuration of the Constrained Random generator in cooperative mode could
+  not be measured here: the LLE C extension crashed during trial 6 of 20 (SIGSEGV) on a
+  randomly-sampled world. We report this row as missing rather than inferring a value, and
+  excluded it from the plots.
 ]
 
-The `constructive_level6_style` generator sits between the two regimes. On the $3 times 3$ grid
-its rejection is 98.7 % (78.3 mean attempts), because the level-6 cluster template requires more
-grid cells than the small grid can offer without geometric conflicts. From $5 times 5$ upward
-the cluster geometry becomes feasible: rejection drops to 81.1 % and 76.2 % at $5 times 5$ and
-$8 times 8$ (5.3 and 4.2 mean attempts respectively). The level-6-style template trades a
-moderate efficiency cost for the richer cooperation profile reported in @profile-distribution.
+The Level-6-Style generator sits between the two regimes. On the $3 times 3$ grid its rejection
+is 98.7 % (78.3 mean attempts), because the cluster template requires more grid cells than the
+small grid can offer without geometric conflicts. From $5 times 5$ upward the cluster geometry
+becomes feasible: rejection drops to 81.1 % and 76.2 % at $5 times 5$ and $8 times 8$ (5.3 and
+4.2 mean attempts respectively). The Level-6-Style template trades a moderate efficiency cost
+for the richer cooperation profile reported in @profile-distribution.
 
 
 == Cooperation Profile Distribution <profile-distribution>
@@ -223,12 +220,11 @@ cooperation profile analyzer also introduced in @cooperation-detection.
 
 === Protocol
 
-For each of three cooperative generators (`constrained_random_cooperative`,
-`constructive_cooperative`, and `constructive_level6_style`) and two grid configurations
-($5 times 5$ with 2 agents and 1 laser, $8 times 8$ with 3 agents and 2 lasers), the script
-accepts 100 cooperative levels on the small grid and 50 on the large grid, then classifies each
-into one of the analyzer's profile families: `asymmetric`, `mutual`, `chain`, `distributed`, or
-`fully_coupled`.
+For each of three cooperative generators (Constrained Random, Constructive, and Level-6-Style,
+all in cooperative mode) and two grid configurations ($5 times 5$ with 2 agents and 1 laser,
+$8 times 8$ with 3 agents and 2 lasers), the script accepts 100 cooperative levels on the small
+grid and 50 on the large grid, then classifies each into one of the analyzer's profile families:
+`asymmetric`, `mutual`, `chain`, `distributed`, or `fully_coupled`.
 
 === Results
 
@@ -250,28 +246,26 @@ at least 3 agents — and the `mutual` family is in principle reachable but does
 single laser the cooperation pattern is restricted to a one-way blocking action by the laser's
 colour-matched agent.
 
-The $8 times 8$ configuration with 3 agents and 2 lasers is where the post-fix
-`constructive_cooperative` generator separates from the previous-generation behaviour. The new
-generator produces 46 `mutual`, 2 `asymmetric`, and 2 `distributed` levels out of 50, i.e. a
-92 % majority of mutual cooperation. This reflects the multi-colour structural-laser
-construction: with two distinct-colour lasers each crossing the entire lane band, the agent of
-colour 0 must block laser 0 for the other agents to pass, and symmetrically agent 1 must block
-laser 1, so two helpers act on their own beams in turn — the canonical mutual pattern. By
-contrast, the pre-fix `constructive_cooperative` generator produced exclusively `asymmetric`
-levels on the same configuration, with a single helper acting on a single structural laser.
+The $8 times 8$ configuration with 3 agents and 2 lasers exposes the contrast between the three
+generators. The Constructive generator produces 46 `mutual`, 2 `asymmetric`, and 2 `distributed`
+levels out of 50, i.e. a 92 % majority of mutual cooperation. This reflects the multi-colour
+structural-laser construction: with two distinct-colour lasers each crossing the entire lane
+band, the agent of colour 0 must block laser 0 for the other agents to pass, and symmetrically
+agent 1 must block laser 1, so two helpers act on their own beams in turn — the canonical mutual
+pattern.
 
-The `constrained_random_cooperative` generator produces 46 `asymmetric`, 3 `distributed`, and
-1 `chain` level out of 50 on the same $8 times 8$ configuration. Random layouts that happen to
-require beam-blocking do so most often through a one-way dependency; richer profiles arise only
+The Constrained Random generator produces 46 `asymmetric`, 3 `distributed`, and 1 `chain` level
+out of 50 on the same $8 times 8$ configuration. Random layouts that happen to require
+beam-blocking do so most often through a one-way dependency; richer profiles arise only
 incidentally and the generator does not reach the `mutual` family here.
 
-The `constructive_level6_style` generator produces 34 `mutual`, 13 `asymmetric`, and 3
-`distributed` levels out of 50 on the $8 times 8$ configuration. The cluster-and-corridor
-geometry forces all agents through a shared corridor and tends to produce multiple agents
-helping each other simultaneously, much like the canonical LLE Level 6 itself (which the
-analyzer also classifies as `mutual`). The two-constructive-generator regime is therefore:
-`constructive_cooperative` favours the mutual pattern by design (92 % mutual), and
-`constructive_level6_style` favours it by geometric pressure (68 % mutual).
+The Level-6-Style generator produces 34 `mutual`, 13 `asymmetric`, and 3 `distributed` levels
+out of 50 on the same configuration. The cluster-and-corridor geometry forces all agents through
+a shared corridor and tends to produce multiple agents helping each other simultaneously, much
+like the canonical LLE Level 6 itself (which the analyzer also classifies as `mutual`). The
+two Constructive families therefore split their cooperative output as follows: the Constructive
+generator favours the mutual pattern by design (92 % mutual), and the Level-6-Style generator
+favours it by geometric pressure (68 % mutual).
 
 Across the three generators, no level was classified as `fully_coupled` in this benchmark.
 That family requires a strongly connected dependency graph of size at least three, which neither
@@ -285,17 +279,17 @@ profiles.
 
 The two benchmarks above characterise complementary aspects of the generation framework.
 
-The rejection-rate experiment measures *efficiency*. The headline finding is that the post-fix
-`constructive_cooperative` generator runs at near-zero rejection (5–6 % at $5 times 5$ and
-$8 times 8$, comparable to the solvable variant), thanks to the multi-colour structural-laser
-construction that guarantees cooperation by construction rather than by rejection sampling.
-This makes the generator practical for producing large pools at scale.
+The rejection-rate experiment measures *efficiency*. The headline finding is that the
+Constructive generator in cooperative mode runs at near-zero rejection (5–6 % at $5 times 5$
+and $8 times 8$, comparable to the solvable setting), thanks to the multi-colour
+structural-laser construction that guarantees cooperation by construction rather than by
+rejection sampling. This makes the generator practical for producing large pools at scale.
 
 The profile-distribution experiment measures *output diversity*. The headline finding is that
-the same post-fix generator now produces predominantly `mutual` levels (92 % mutual on
-$8 times 8$ with two lasers), where the pre-fix generator was confined to `asymmetric`. Together
-with the level-6-style generator, the family now spans the asymmetric / mutual / distributed
-range of the analyzer's classification.
+the same Constructive cooperative generator produces predominantly `mutual` levels (92 % mutual
+on $8 times 8$ with two lasers). Together with the Level-6-Style generator (68 % mutual on the
+same grid), the family spans the asymmetric / mutual / distributed range of the analyzer's
+classification.
 
 What these experiments do not establish is whether certified levels are useful for training. The
 generator framework guarantees formal properties of accepted levels, but whether those properties
@@ -309,8 +303,8 @@ remains an open empirical question, addressed in @learnability-experiment and
 === Experimental Question
 
 We now ask whether off-the-shelf MARL agents can learn to solve levels produced by the
-`cooperative` generator, and whether the choice of MARL algorithm matters as the cooperation
-requirement scales up in grid size and agent count. The cooperative generator certifies every
+Constructive generator in cooperative mode, and whether the choice of MARL algorithm matters as
+the cooperation requirement scales up in grid size and agent count. The cooperative generator certifies every
 accepted level under the binary criterion of @cooperation-detection: standard SAT and strict
 UNSAT, so every training and evaluation level requires at least one same-colour beam-truncation
 step. The learnability question is therefore not whether the levels are solvable in principle
@@ -326,7 +320,7 @@ team-value (VDN), to a monotonic mixing network (QMIX).
 
 The experiment fixes a single small-grid configuration that exercises the cooperation pressure
 end-to-end while remaining within reach of a 200,000-step budget: a $5 times 5$ grid with two
-agents and one laser, horizon $T_("max") = 10$, and the `cooperative` generator. The
+agents and one laser, horizon $T_("max") = 10$, and the Constructive cooperative generator. The
 configuration is summarised in @tab-learnability-config. An earlier $8 times 8$, three-agent, two-laser
 configuration produced $0%$ success across all sixty (algorithm, seed) cells, leaving open
 whether the algorithms are fundamentally unable or whether the task simply exceeds the budget.
@@ -342,13 +336,9 @@ The $5 times 5$ rerun isolates the former question.
       [*Grid*], [*Agents*], [*Lasers*], [*$T_("max")$*],
       [*Generator*], [*Steps*],
     ),
-    [5×5], [2], [1], [10], [`cooperative`], [200,000],
+    [5×5], [2], [1], [10], [Constructive (cooperative)], [200,000],
   ),
-  caption: [
-    Learnability-experiment configuration. The generator name refers to the registry key
-    `cooperative`, which corresponds to the descriptive name `constructive_cooperative` used
-    in @generators.
-  ],
+  caption: [Learnability-experiment configuration.],
 ) <tab-learnability-config>
 
 The pre-flight script generates two disjoint level pools from independent seeded streams: a

@@ -13,10 +13,25 @@ the cooperative mechanism they are meant to study.
 
 In this thesis we work with the Laser Learning Environment (LLE), a 2D grid-based cooperative
 MARL benchmark in which agents of distinct colours must shield one another from same-coloured
-laser beams to reach their exits. LLE is the concrete environment used throughout. We conjecture
-that the methodology developed here — coupling procedural generation with a formal verification
-oracle — generalises to any MARL setting whose target structural properties are expressible as
-decision problems, but we evaluate it on LLE only and leave broader transfer to future work.
+laser beams to reach their exits. The hand-crafted Level 6 of LLE (@fig-intro-level6) is the
+canonical hard target used throughout the thesis: four agents start clustered together, three
+coloured lasers cut across a corridor that every agent must traverse, and only same-colour
+truncation lets the team progress. LLE is the concrete environment used throughout. We
+conjecture that the methodology developed here — coupling procedural generation with a formal
+verification oracle — generalises to any MARL setting whose target structural properties are
+expressible as decision problems, but we evaluate it on LLE only and leave broader transfer to
+future work.
+
+#figure(
+  image("../../assets/lvl6-annotated.png", width: 70%),
+  caption: [
+    LLE Level 6, the canonical hard target used throughout this thesis. Four agents (red, blue,
+    green, yellow) start in the top-left cluster; their exits sit in the bottom-right cluster.
+    Three coloured laser beams cross the corridor. An agent is immune to its own beam but lethal
+    to other-colour agents, so progress requires each laser-coloured agent to step into its own
+    beam at the right moment to shield the others.
+  ],
+) <fig-intro-level6>
 
 
 == Motivation

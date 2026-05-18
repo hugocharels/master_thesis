@@ -45,12 +45,15 @@ if [ -f /proc/driver/nvidia/version ] || [ -e /dev/nvidia0 ]; then
     elif [ "$GPU_DEVICES" = "none" ]; then
         GPU_ARGS=()
     else
-        # docker's --gpus flag accepts a comma-separated device list as
-        # `device=0,1,2` (modern docker >= 19.03). Older docs sometimes
-        # show literal double quotes around the value -- those break on
-        # current docker versions, which interpret them as part of the
-        # device id and fall back to "no GPUs". Pass the value plain.
-        GPU_ARGS=(--gpus "device=$GPU_DEVICES")
+        # docker's --gpus flag needs the comma-separated device list
+        # wrapped in literal double quotes that survive the shell and
+        # reach docker as part of the argument value. Without them
+        # docker's option parser splits on commas and treats each token
+        # as a separate option, producing:
+        #   Error: cannot set both Count and DeviceIDs on device request
+        # Using a bash array preserves the literal quotes through
+        # "${GPU_ARGS[@]}" expansion.
+        GPU_ARGS=(--gpus "\"device=$GPU_DEVICES\"")
     fi
 fi
 

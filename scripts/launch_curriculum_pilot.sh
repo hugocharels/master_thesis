@@ -22,15 +22,19 @@ MAX_PARALLEL=${MAX_PARALLEL:-4}
 # env var set -> torch falls back to CPU.
 NUM_GPUS=$(nvidia-smi -L 2>/dev/null | wc -l || echo 0)
 
-CONDITIONS=("B1" "B2" "B3" "CURR")
-ALGOS=("QMIX")
-SEEDS=$(seq 0 3)          # 4 seeds for the pilot
+CONDITIONS=(${CONDITIONS:-B1 B2 B3 CURR})
+ALGOS=(${ALGOS:-QMIX})
+SEEDS=${SEEDS:-$(seq 0 3)} # 4 seeds for the pilot by default; override via env
+
+# Count seeds explicitly (SEEDS may be a space-separated list)
+n_seeds=0
+for _s in $SEEDS; do n_seeds=$((n_seeds + 1)); done
 
 pids=()
 count=0
 launched=0
 skipped=0
-total=$((${#CONDITIONS[@]} * ${#ALGOS[@]} * 4))
+total=$((${#CONDITIONS[@]} * ${#ALGOS[@]} * n_seeds))
 
 for cond in "${CONDITIONS[@]}"; do
   for algo in "${ALGOS[@]}"; do

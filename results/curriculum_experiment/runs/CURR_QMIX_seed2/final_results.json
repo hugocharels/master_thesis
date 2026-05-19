@@ -3,7 +3,7 @@
   "condition": "CURR",
   "mean_return_level6": -0.6299998760223389,
   "n_eval_episodes": 200,
-  "seed": 0,
+  "seed": 2,
   "success_rate_level6": 0.0,
   "success_rate_level6_std": 0.0,
   "total_steps_trained": 750000

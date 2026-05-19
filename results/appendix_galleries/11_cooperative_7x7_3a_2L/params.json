@@ -1,0 +1,19 @@
+{
+  "generator": "cooperative",
+  "profile": "cooperative",
+  "params": {
+    "size": [
+      7,
+      7
+    ],
+    "agents": 3,
+    "lasers": 2,
+    "t_max": 14,
+    "num_walls": 4,
+    "max_attempts": 1000
+  },
+  "seed": 20260632,
+  "n_samples_requested": 16,
+  "n_samples_generated": 16,
+  "elapsed_seconds": 2.7082669734954834
+}

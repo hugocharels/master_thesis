@@ -1,0 +1,19 @@
+{
+  "generator": "level6_style",
+  "profile": null,
+  "params": {
+    "size": [
+      10,
+      10
+    ],
+    "agents": 4,
+    "lasers": 3,
+    "t_max": 18,
+    "num_walls": 8,
+    "max_attempts": 2000
+  },
+  "seed": 20260652,
+  "n_samples_requested": 16,
+  "n_samples_generated": 16,
+  "elapsed_seconds": 16.411429166793823
+}

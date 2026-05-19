@@ -148,7 +148,8 @@
   #counter(heading).update(1)
   #set heading(numbering: (..nums) => {
     let n = nums.pos()
-    let letters = ("A", "B", "C", "D", "E", "F", "G", "H")
+    let letters = ("A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M",
+                   "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z")
     let letter = letters.at(n.at(0) - 1, default: "?")
     if n.len() == 1 { letter } else { letter + "." + n.slice(1).map(str).join(".") }
   })

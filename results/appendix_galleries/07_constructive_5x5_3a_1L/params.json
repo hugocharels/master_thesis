@@ -1,0 +1,19 @@
+{
+  "generator": "constructive",
+  "profile": null,
+  "params": {
+    "size": [
+      5,
+      5
+    ],
+    "agents": 3,
+    "lasers": 1,
+    "t_max": 10,
+    "num_walls": 3,
+    "max_attempts": 1000
+  },
+  "seed": 20260621,
+  "n_samples_requested": 16,
+  "n_samples_generated": 16,
+  "elapsed_seconds": 0.11847305297851562
+}

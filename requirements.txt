@@ -2,3 +2,4 @@ laser-learning-environment
 python-sat
 matplotlib
 pytest
+tqdm

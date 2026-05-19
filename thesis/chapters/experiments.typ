@@ -1,6 +1,13 @@
-The current experimental evaluation is intentionally focused. Its purpose is not yet to validate the
-full generator family, but to measure the effect of one modeling choice inside the SAT solver: the
-formulation of the agent-uniqueness constraint.
+The empirical evaluation has four parts. The first measures the effect of one modelling choice
+inside the SAT solver — the local versus global formulation of the agent-uniqueness constraint
+— on four benchmark levels. The second characterises the generator family's *efficiency* by
+measuring per-generator rejection rates and the number of attempts needed to obtain one
+accepted level. The third characterises the family's *output diversity* by classifying the
+cooperation profiles of accepted cooperative levels. The fourth asks whether off-the-shelf
+value-decomposition MARL agents can *learn* cooperative levels emitted by the generator, on a
+small grid where the training budget is comfortably sufficient. The curriculum-transfer
+experiment of @transfer-experiment is the fifth piece; it is in design at the time of writing
+and reported as a skeleton.
 
 
 == Experimental Question
@@ -342,8 +349,8 @@ The $5 times 5$ rerun isolates the former question.
 ) <tab-learnability-config>
 
 The pre-flight script generates two disjoint level pools from independent seeded streams: a
-training pool of $|cal(D)_("train")| = 20$ levels (split seed 20260615) and a held-out test pool
-of $|cal(D)_("test")| = 20$ levels (split seed 20260616). The same pools are reused for all
+training pool of $|cal(D)_("train")| = 20$ levels (split seed 20260618) and a held-out test
+pool of $|cal(D)_("test")| = 20$ levels (split seed 20260619). The same pools are reused for all
 algorithms and all training seeds, so any cross-algorithm difference is attributable to
 optimisation rather than to a pool resample. Per-level renderings of both pools are reproduced
 in the appendix (@appendix-learnability-train, @appendix-learnability-test).
@@ -381,8 +388,9 @@ environment steps, averaged over the twenty seeds with a 95 % confidence band. A
 algorithms reach a non-trivial success rate on the training pool well before the 200,000-step
 budget is exhausted, confirming that the $5 times 5$ cooperative task is learnable in
 principle. The held-out test pool is markedly harder for every algorithm: the test curves
-plateau below the corresponding training curves, with a gap of roughly 0.4 to 0.5 in absolute
-success rate at the end of training.
+plateau below the corresponding training curves, with a train–test gap of $0.37$ for IQL,
+$0.40$ for QMIX, and $0.52$ for VDN at the end of training (@tab-learnability-final, and the
+per-seed numbers in @tab-learnability-perseed).
 
 #figure(
   image("../../results/learnability_5x5/figures/learning_curves.pdf", width: 100%),
@@ -435,6 +443,8 @@ twenty training levels rather than abstracting the cooperation pattern across th
 
 
 == Curriculum Transfer to Level-6-Style Targets <transfer-experiment>
+
+This section addresses RQ6 of @introduction.
 
 === Experimental Question
 

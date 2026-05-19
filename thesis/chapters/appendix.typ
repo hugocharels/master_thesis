@@ -375,7 +375,7 @@ Held-out cooperative pool used as $cal(D)_("test")$ for @learnability-experiment
     [Lasers],             [1],
     [$T_("max")$],        [10],
     [Generator],          [Constructive (cooperative mode)],
-    [Pool seed],          [20260618],
+    [Pool seed],          [20260619],
     [Number of levels],   [20],
   ),
   caption: [Parameters of the learnability test pool.],

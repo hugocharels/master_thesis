@@ -91,11 +91,12 @@ def test_only_stage_four_has_a_held_out_eval_pool():
 
 
 def test_step_caps_match_thesis_design():
-    # Asymmetric per-stage caps: early stages (warmup, single laser)
-    # get less budget than the level-6-style target. Pilot caps are
+    # Asymmetric per-stage caps: stage 1 (warmup, no laser) is mastered
+    # quickly so its budget is small; stages 2-4 (cooperation under
+    # laser pressure) get the bulk of the budget. Pilot caps are
     # exactly half of the full caps.
-    expected_full = (200_000, 250_000, 300_000, 750_000)
-    expected_pilot = (100_000, 125_000, 150_000, 375_000)
+    expected_full = (100_000, 600_000, 600_000, 700_000)
+    expected_pilot = (50_000, 300_000, 300_000, 350_000)
     actual_full = tuple(s.per_stage_step_cap_full for s in CURRICULUM_STAGES)
     actual_pilot = tuple(s.per_stage_step_cap_pilot for s in CURRICULUM_STAGES)
     assert actual_full == expected_full
@@ -103,14 +104,14 @@ def test_step_caps_match_thesis_design():
 
 
 def test_full_pilot_caps_sum_to_total_budget():
-    # 200k + 250k + 300k + 750k = 1_500_000 == FULL_RUN_TOTAL_STEPS,
+    # 100k + 600k + 600k + 700k = 2_000_000 == FULL_RUN_TOTAL_STEPS,
     # halved for the pilot.
     assert sum(s.per_stage_step_cap_full for s in CURRICULUM_STAGES) == FULL_RUN_TOTAL_STEPS
     assert sum(s.per_stage_step_cap_pilot for s in CURRICULUM_STAGES) == PILOT_RUN_TOTAL_STEPS
 
 
 def test_advancement_constants_are_thesis_values():
-    assert ADVANCEMENT_SUCCESS_THRESHOLD == 0.80
+    assert ADVANCEMENT_SUCCESS_THRESHOLD == 0.60
     assert ADVANCEMENT_WINDOW_EPISODES == 100
 
 

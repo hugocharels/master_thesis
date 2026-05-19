@@ -110,17 +110,19 @@ THESIS_GENERATOR_NAMES: dict[str, str] = {
 # -- The four-stage curriculum (thesis design) --------------------------------
 
 CURRICULUM_STAGES: tuple[StageConfig, ...] = (
-    # Per-stage step caps are intentionally asymmetric: early-stage
-    # navigation / single-laser tasks need less training than the
-    # level-6-style target stage. The totals sum to FULL_RUN_TOTAL_STEPS
-    # (1,500,000) and PILOT_RUN_TOTAL_STEPS (750,000) below.
+    # Per-stage step caps redistributed after the 1.5M / 4-variant pilot
+    # showed stages 2 and 3 hitting their caps without mastery while
+    # stage 1 over-allocated. The cooperation skill (one agent blocking
+    # a beam so others can pass) is the actual difficulty - the agent
+    # has plenty of time to learn navigation but needs much more to
+    # learn the joint coordination pattern.
     #
-    #   Stage 1 (warmup):       200k full /  100k pilot
-    #   Stage 2 (1 laser):      250k full /  125k pilot
-    #   Stage 3 (2 lasers):     300k full /  150k pilot
-    #   Stage 4 (level6 style): 750k full /  375k pilot
+    #   Stage 1 (warmup):       100k full /   50k pilot
+    #   Stage 2 (1 laser):      600k full /  300k pilot
+    #   Stage 3 (2 lasers):     600k full /  300k pilot
+    #   Stage 4 (level6 style): 700k full /  350k pilot
     #
-    # Sums:                   1,500k full / 750k pilot.
+    # Sums:                   2,000k full / 1,000k pilot.
     StageConfig(
         stage_id=1,
         height=6,
@@ -135,8 +137,8 @@ CURRICULUM_STAGES: tuple[StageConfig, ...] = (
         generator_name="random",
         pool_size=50,
         eval_pool_size=0,
-        per_stage_step_cap_full=200_000,
-        per_stage_step_cap_pilot=100_000,
+        per_stage_step_cap_full=100_000,
+        per_stage_step_cap_pilot=50_000,
     ),
     StageConfig(
         stage_id=2,
@@ -149,8 +151,8 @@ CURRICULUM_STAGES: tuple[StageConfig, ...] = (
         generator_name="cooperative",
         pool_size=50,
         eval_pool_size=0,
-        per_stage_step_cap_full=250_000,
-        per_stage_step_cap_pilot=125_000,
+        per_stage_step_cap_full=600_000,
+        per_stage_step_cap_pilot=300_000,
     ),
     StageConfig(
         stage_id=3,
@@ -162,8 +164,8 @@ CURRICULUM_STAGES: tuple[StageConfig, ...] = (
         generator_name="cooperative",
         pool_size=50,
         eval_pool_size=0,
-        per_stage_step_cap_full=300_000,
-        per_stage_step_cap_pilot=150_000,
+        per_stage_step_cap_full=600_000,
+        per_stage_step_cap_pilot=300_000,
     ),
     StageConfig(
         stage_id=4,
@@ -176,8 +178,8 @@ CURRICULUM_STAGES: tuple[StageConfig, ...] = (
         generator_name="level6_style",
         pool_size=50,
         eval_pool_size=50,
-        per_stage_step_cap_full=750_000,
-        per_stage_step_cap_pilot=375_000,
+        per_stage_step_cap_full=700_000,
+        per_stage_step_cap_pilot=350_000,
     ),
 )
 
@@ -189,15 +191,15 @@ CURRICULUM_STAGES: tuple[StageConfig, ...] = (
 # training episodes reaches ``ADVANCEMENT_SUCCESS_THRESHOLD``. If the
 # threshold is not met within the per-stage step cap, the scheduler
 # advances anyway (preventing pathological lock-ups on a hard stage).
-ADVANCEMENT_SUCCESS_THRESHOLD: float = 0.80
+ADVANCEMENT_SUCCESS_THRESHOLD: float = 0.60
 ADVANCEMENT_WINDOW_EPISODES: int = 100
 
 
 # -- Total training budgets ---------------------------------------------------
 #
 # Phase 4 chooses between the two by passing ``--pilot`` or not.
-FULL_RUN_TOTAL_STEPS: int = 1_500_000
-PILOT_RUN_TOTAL_STEPS: int = 750_000
+FULL_RUN_TOTAL_STEPS: int = 2_000_000
+PILOT_RUN_TOTAL_STEPS: int = 1_000_000
 
 
 # -- Periodic-evaluation cadence ---------------------------------------------

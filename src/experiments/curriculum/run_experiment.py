@@ -484,6 +484,9 @@ def _train_loop(
     log_stage_transitions: bool,
     target_obs_shape: tuple[int, int, int],
     target_state_shape: tuple[int, ...],
+    holdout_eval_pool: list[World] | None = None,
+    holdout_eval_t_max: int | None = None,
+    csv_writer_holdout=None,
     start_step: int = 0,
     start_episode: int = 0,
     start_wall_clock_seconds: float = 0.0,
@@ -578,9 +581,26 @@ def _train_loop(
                 target_state_shape=target_state_shape,
             )
             csv_writer_eval.writerow([next_eval_at, f"{sr:.6f}", f"{mr:.6f}"])
+
+            holdout_msg = ""
+            if holdout_eval_pool is not None and csv_writer_holdout is not None:
+                ho_sr, _ho_std, ho_mr = _evaluate(
+                    eval_pool=holdout_eval_pool,
+                    eval_t_max=holdout_eval_t_max or eval_t_max,
+                    eval_agent=eval_agent,
+                    n_episodes=EVAL_EPISODES,
+                    eval_rng=eval_rng,
+                    target_obs_shape=target_obs_shape,
+                    target_state_shape=target_state_shape,
+                )
+                csv_writer_holdout.writerow(
+                    [next_eval_at, f"{ho_sr:.6f}", f"{ho_mr:.6f}"]
+                )
+                holdout_msg = f"  ho_sr={ho_sr:.3f}  ho_mr={ho_mr:.3f}"
+
             print(
                 f"step={next_eval_at:>7d}  stage={sampler.current_stage_id}  "
-                f"sr={sr:.3f}  mr={mr:.3f}",
+                f"sr={sr:.3f}  mr={mr:.3f}{holdout_msg}",
                 file=sys.stderr,
                 flush=True,
             )
@@ -838,13 +858,17 @@ def _per_stage_step_caps(total_steps: int) -> list[int]:
 def _epsilon_decay_steps(total_steps: int) -> int:
     """How many env steps to spend annealing epsilon from 1.0 to 0.05.
 
-    Scales with the total budget (30 %) but never less than 100,000 so
-    short runs still have a meaningful exploration phase. For
-    ``total_steps = 1_500_000`` (full) this returns 450,000; for
-    ``total_steps = 750_000`` (pilot) it returns 225,000; for shorter
-    debugging runs it returns 100,000.
+    Always 100,000 steps regardless of total budget. Earlier versions
+    scaled with the budget (max(100k, 0.30 * total_steps)), but at the
+    750k pilot that pushed decay over 225k steps - i.e. ``epsilon ~
+    0.60`` at stage 1's 100k cap, so the curriculum scheduler advanced
+    on the cap rather than on mastery across all 4 pilot seeds.
+    Anchoring decay to stage 1's cap makes ``epsilon`` reach the floor
+    at the end of stage 1 regardless of total budget, so each stage
+    has a meaningful exploitation phase.
     """
-    return max(100_000, int(0.30 * total_steps))
+    del total_steps  # kept in signature for back-compat; no longer scales
+    return 100_000
 
 
 def _make_run_dir(out_dir: Path, condition: str, algo: str, seed: int) -> Path:
@@ -926,8 +950,22 @@ def main(argv: list[str] | None = None) -> int:
     # threaded for forward-compatibility with held-out evals.)
     eval_rng = random.Random(args.seed * 1_000_003 + 17)
 
+    # ---- Held-out stage-4 pool (generalisation eval) -----------------------
+    # Loaded for every condition (not just B1) so the periodic eval has a
+    # training-distribution signal alongside the hand-crafted Level 6.
+    # Falls back to ``None`` if the pool file is missing (e.g. older pools
+    # generated before the stage-4 eval pool existed).
+    holdout_pool: list[World] | None
+    try:
+        loaded = load_pool(pool_path(out_dir, CURRICULUM_STAGES[3], "eval"))
+        holdout_pool = loaded if loaded else None
+    except FileNotFoundError:
+        holdout_pool = None
+    holdout_t_max = CURRICULUM_STAGES[3].t_max
+
     # ---- Resume from checkpoint (if any) -----------------------------------
     eval_csv_path = run_dir / "level6_eval.csv"
+    holdout_csv_path = run_dir / "holdout_eval.csv"
     stage_csv_path = run_dir / "stage_progress.csv"
     eval_csv_path.parent.mkdir(parents=True, exist_ok=True)
 
@@ -962,6 +1000,7 @@ def main(argv: list[str] | None = None) -> int:
         # rows that survived past the last successful save.
         _truncate_csv_to_step(eval_csv_path, start_step)
         _truncate_csv_to_step(stage_csv_path, start_step)
+        _truncate_csv_to_step(holdout_csv_path, start_step)
         stage_id_msg = (
             scheduler.current_stage_id if scheduler is not None else "n/a"
         )
@@ -975,16 +1014,21 @@ def main(argv: list[str] | None = None) -> int:
     # fresh start we (re)write the header at the top.
     csv_mode = "a" if resumed else "w"
     with eval_csv_path.open(csv_mode, newline="", encoding="utf-8") as eval_f, \
-            stage_csv_path.open(csv_mode, newline="", encoding="utf-8") as stage_f:
+            stage_csv_path.open(csv_mode, newline="", encoding="utf-8") as stage_f, \
+            holdout_csv_path.open(csv_mode, newline="", encoding="utf-8") as ho_f:
         eval_writer = csv.writer(eval_f)
         stage_writer = csv.writer(stage_f)
+        holdout_writer = csv.writer(ho_f) if holdout_pool is not None else None
         if not resumed:
             eval_writer.writerow(["step", "success_rate", "mean_return"])
             stage_writer.writerow(["step", "stage_id"])
+            if holdout_writer is not None:
+                holdout_writer.writerow(["step", "success_rate", "mean_return"])
 
         print(
             f"Starting {args.condition}_{args.algo}_seed{args.seed}: "
-            f"steps={args.steps} device={device} resumed={resumed}",
+            f"steps={args.steps} device={device} resumed={resumed} "
+            f"holdout_pool={'yes' if holdout_pool else 'no'}",
             file=sys.stderr,
             flush=True,
         )
@@ -1002,6 +1046,9 @@ def main(argv: list[str] | None = None) -> int:
             log_stage_transitions=(args.condition == "CURR"),
             target_obs_shape=target_obs_shape,
             target_state_shape=target_state_shape,
+            holdout_eval_pool=holdout_pool,
+            holdout_eval_t_max=holdout_t_max,
+            csv_writer_holdout=holdout_writer,
             start_step=start_step,
             start_episode=start_episode,
             start_wall_clock_seconds=start_wall_clock,
@@ -1031,28 +1078,26 @@ def main(argv: list[str] | None = None) -> int:
         "n_eval_episodes": FINAL_EVAL_EPISODES,
     }
 
-    # B1 only: also evaluate on the held-out generated stage-4 pool.
-    if args.condition == "B1":
-        try:
-            held_out_pool = load_pool(pool_path(out_dir, CURRICULUM_STAGES[3], "eval"))
-        except FileNotFoundError:
-            held_out_pool = []
-        if held_out_pool:
-            held_sr, held_sr_std, held_ret = _evaluate(
-                eval_pool=held_out_pool,
-                eval_t_max=CURRICULUM_STAGES[3].t_max,
-                eval_agent=eval_agent,
-                n_episodes=FINAL_EVAL_EPISODES,
-                eval_rng=eval_rng,
-                target_obs_shape=target_obs_shape,
-                target_state_shape=target_state_shape,
-            )
-            final_payload["success_rate_held_out_pool"] = held_sr
-            final_payload["success_rate_held_out_pool_std"] = held_sr_std
-            final_payload["mean_return_held_out_pool"] = held_ret
-        else:
-            final_payload["success_rate_held_out_pool"] = None
-            final_payload["mean_return_held_out_pool"] = None
+    # All conditions: also evaluate on the held-out generated stage-4 pool.
+    # This is the training-distribution generalisation metric; for CURR it
+    # answers "did the curriculum solve the stage-4 distribution it trained
+    # on" independently of whether Level 6 transferred.
+    if holdout_pool is not None:
+        held_sr, held_sr_std, held_ret = _evaluate(
+            eval_pool=holdout_pool,
+            eval_t_max=holdout_t_max,
+            eval_agent=eval_agent,
+            n_episodes=FINAL_EVAL_EPISODES,
+            eval_rng=eval_rng,
+            target_obs_shape=target_obs_shape,
+            target_state_shape=target_state_shape,
+        )
+        final_payload["success_rate_held_out_pool"] = held_sr
+        final_payload["success_rate_held_out_pool_std"] = held_sr_std
+        final_payload["mean_return_held_out_pool"] = held_ret
+    else:
+        final_payload["success_rate_held_out_pool"] = None
+        final_payload["mean_return_held_out_pool"] = None
 
     (run_dir / "final_results.json").write_text(
         json.dumps(final_payload, indent=2, sort_keys=True), encoding="utf-8"

@@ -42,22 +42,6 @@ OUTPUT_ROOT = PROJECT_ROOT / "results" / "appendix_galleries"
 # Each row: (label, generator_name, params_dict, n_samples, seed, optional profile)
 # profile is honored only for the "cooperative" generator family.
 GALLERY: list[tuple] = [
-    # ---- Random generator (no geometric validation) ----
-    ("01_random_3x3_2a_1L",
-     "random",
-     {"size": (3, 3), "agents": 2, "lasers": 1, "t_max": 6,
-      "num_walls": 1, "validate_geometry": False, "max_attempts": 2000},
-     16, 20260601, None),
-    ("02_random_5x5_3a_2L",
-     "random",
-     {"size": (5, 5), "agents": 3, "lasers": 2, "t_max": 10,
-      "num_walls": 2, "validate_geometry": False, "max_attempts": 5000},
-     16, 20260602, None),
-    ("03_random_7x7_4a_2L",
-     "random",
-     {"size": (7, 7), "agents": 4, "lasers": 2, "t_max": 14,
-      "num_walls": 4, "validate_geometry": False, "max_attempts": 10000},
-     16, 20260603, None),
     # ---- Constrained Random generator (with geometric validation) ----
     ("04_constrained_random_3x3_2a_1L",
      "random",

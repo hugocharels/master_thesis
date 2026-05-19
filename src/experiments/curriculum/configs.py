@@ -207,6 +207,21 @@ EVAL_EPISODES: int = 50
 FINAL_EVAL_EPISODES: int = 200
 
 
+# -- Reward shaping ----------------------------------------------------------
+#
+# Generated levels have no gems and stage 1 has no lasers, so the only
+# non-zero reward signal from LLE is the sparse +REWARD_EXIT per
+# agent-exit plus +REWARD_DONE on full team exit. Under random exploration
+# the probability of all four agents stumbling onto exits in a single
+# 12-step episode is effectively zero, so the Q-targets are identically
+# zero for ~100k training steps and the policy never improves. A small
+# per-step penalty (subtracted from every step's reward) restores a
+# learnable gradient: timing out is mildly negative, exiting is strongly
+# positive. The same penalty is applied uniformly across all conditions
+# and stages so the training-time distributions remain aligned.
+STEP_PENALTY: float = 0.01
+
+
 # -- Experimental design space -----------------------------------------------
 
 CONDITIONS: tuple[str, ...] = ("B1", "B2", "B3", "CURR")

@@ -64,6 +64,7 @@ from experiments.curriculum.configs import (
     FULL_RUN_TOTAL_STEPS,
     PILOT_RUN_TOTAL_STEPS,
     RNG_SEED,
+    STEP_PENALTY,
 )
 from experiments.curriculum.curriculum_scheduler import StageScheduler
 from experiments.curriculum.lle_marl_env import PadObservations3D, ThesisLLEConfig
@@ -198,7 +199,7 @@ def _build_sample_env_config(condition: str, pools: list[list[World]]) -> Thesis
     """
     del condition, pools  # unused: sizing is condition-independent
     t_max = CURRICULUM_STAGES[3].t_max
-    return ThesisLLEConfig.from_world(World.level(6), t_max=t_max)
+    return ThesisLLEConfig.from_world(World.level(6), t_max=t_max, step_penalty=STEP_PENALTY)
 
 
 def _target_obs_shape() -> tuple[int, int, int]:
@@ -208,7 +209,7 @@ def _target_obs_shape() -> tuple[int, int, int]:
     (3 lasers), so its layered observation is the elementwise maximum
     across the curriculum stages.
     """
-    cfg = ThesisLLEConfig.from_world(World.level(6), t_max=CURRICULUM_STAGES[3].t_max)
+    cfg = ThesisLLEConfig.from_world(World.level(6), t_max=CURRICULUM_STAGES[3].t_max, step_penalty=STEP_PENALTY)
     shape = cfg.env.observation_shape
     return (int(shape[0]), int(shape[1]), int(shape[2]))
 
@@ -221,7 +222,7 @@ def _target_state_shape() -> tuple[int]:
     must see a single state size, so smaller-stage states are padded
     with zeros up to Level 6's shape.
     """
-    cfg = ThesisLLEConfig.from_world(World.level(6), t_max=CURRICULUM_STAGES[3].t_max)
+    cfg = ThesisLLEConfig.from_world(World.level(6), t_max=CURRICULUM_STAGES[3].t_max, step_penalty=STEP_PENALTY)
     return (int(cfg.env.state_shape[0]),)
 
 
@@ -232,7 +233,7 @@ def _make_padded_env(
     target_state_shape: tuple[int, ...],
 ):
     """Build a ``ThesisLLEConfig``-backed env padded to the target shapes."""
-    cfg = ThesisLLEConfig.from_world(world, t_max=t_max)
+    cfg = ThesisLLEConfig.from_world(world, t_max=t_max, step_penalty=STEP_PENALTY)
     return PadObservations3D(cfg.env, target_obs_shape, target_state_shape)
 
 

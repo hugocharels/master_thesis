@@ -45,21 +45,25 @@ from marlenv.wrappers.rlenv_wrapper import RLEnvWrapper
 
 @dataclass
 class WeightedSingleObjective(SingleObjective):
-    """Single-objective LLE reward with a configurable per-gem reward.
+    """Single-objective LLE reward with configurable gem reward and step penalty.
 
     Mirrors :class:`lle.env.reward_strategy.SingleObjective` but reads the
     gem reward from ``self.gem_reward`` instead of the module-level
-    ``REWARD_GEM`` constant. ``exit``, ``death`` and ``done`` rewards keep
-    their default values from LLE so that the only behavioural change is
-    whether collecting a gem yields a positive scalar.
+    ``REWARD_GEM`` constant, and subtracts a small ``step_penalty`` from
+    every step so the agent receives a non-trivial gradient signal even
+    on stages with no lasers and no gems. Without it, stage 1 of the
+    curriculum (no laser, no gem, only sparse +REWARD_EXIT on team exit)
+    is identically zero-reward under random exploration and unlearnable
+    from a cold start.
     """
 
-    def __init__(self, n_agents: int, gem_reward: float = 1.0):
+    def __init__(self, n_agents: int, gem_reward: float = 1.0, step_penalty: float = 0.0):
         super().__init__(n_agents)
         self.gem_reward = float(gem_reward)
+        self.step_penalty = float(step_penalty)
 
     def compute_reward(self, events):
-        reward = 0.0
+        reward = -self.step_penalty
         for event in events:
             match event.event_type:
                 case EventType.AGENT_DIED:
@@ -111,6 +115,7 @@ class ThesisLLEConfig(EnvConfig[lle.LLE]):
     _: KW_ONLY
     t_max: int = 21
     gem_reward: float = 0.0
+    step_penalty: float = 0.0
     obs_type: str = "layered"
     state_type: str = "state"
 
@@ -135,7 +140,9 @@ class ThesisLLEConfig(EnvConfig[lle.LLE]):
         # constructed env. The new strategy is reset by ``env.reset()`` via
         # ``self.reward_strategy.reset()``.
         env.reward_strategy = WeightedSingleObjective(
-            env.n_agents, gem_reward=self.gem_reward
+            env.n_agents,
+            gem_reward=self.gem_reward,
+            step_penalty=self.step_penalty,
         )
         return env
 
@@ -146,6 +153,7 @@ class ThesisLLEConfig(EnvConfig[lle.LLE]):
         *,
         t_max: int = 21,
         gem_reward: float = 0.0,
+        step_penalty: float = 0.0,
         obs_type: str = "layered",
         state_type: str = "state",
     ) -> "ThesisLLEConfig":
@@ -158,6 +166,7 @@ class ThesisLLEConfig(EnvConfig[lle.LLE]):
             world_toml=world.world_string,
             t_max=t_max,
             gem_reward=gem_reward,
+            step_penalty=step_penalty,
             obs_type=obs_type,
             state_type=state_type,
         )

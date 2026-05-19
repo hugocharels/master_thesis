@@ -219,7 +219,7 @@ FINAL_EVAL_EPISODES: int = 200
 # learnable gradient: timing out is mildly negative, exiting is strongly
 # positive. The same penalty is applied uniformly across all conditions
 # and stages so the training-time distributions remain aligned.
-STEP_PENALTY: float = 0.01
+STEP_PENALTY: float = 0.03
 
 
 # -- Experimental design space -----------------------------------------------

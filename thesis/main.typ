@@ -125,24 +125,6 @@ cooperative levels, Laser Learning Environment, curriculum learning.
 #pagebreak()
 
 
-// ---------------------------------------------------------------------------
-// Acknowledgments
-// ---------------------------------------------------------------------------
-
-#v(50pt)
-#align(center, text(20pt, weight: "bold")[Acknowledgments])
-#v(20pt)
-
-// TODO: replace this placeholder paragraph with the author's actual
-// acknowledgments before submission. The recommended length is half a page
-// to one page, naming the supervisors, the ULB MLG group, and any other
-// people or institutions that contributed to the work.
-_This page is intentionally left as a placeholder; acknowledgments will be added before
-submission._
-
-#pagebreak()
-
-
 // Table of contents
 #outline()
 

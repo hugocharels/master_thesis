@@ -14,7 +14,7 @@ PY="${MARL_VENV:-C:/Users/hugoc/Projects/marl/.venv/Scripts/python.exe}"
 export PYTHONPATH=src
 
 OUT_DIR="results/curriculum_experiment"
-STEPS=750000              # PILOT_RUN_TOTAL_STEPS in configs.py
+STEPS=${STEPS:-750000}    # PILOT_RUN_TOTAL_STEPS in configs.py; override via env
 MAX_PARALLEL=${MAX_PARALLEL:-4}
 
 # Round-robin across the GPUs exposed via `docker run --gpus device=...`.

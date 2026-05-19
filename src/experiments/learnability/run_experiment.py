@@ -35,6 +35,7 @@ from experiments.learnability.configs import (
     EVAL_FREQUENCY_STEPS,
     FINAL_EVAL_EPISODES,
     GRID,
+    GridConfig,
     TOTAL_STEPS,
 )
 from experiments.learnability.pool_generator import load_pool, pool_dir
@@ -56,6 +57,13 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--seed", required=True, type=int)
     parser.add_argument("--steps", type=int, default=TOTAL_STEPS)
     parser.add_argument("--out-dir", type=Path, default=None)
+    # Grid overrides (default = the 5x5 baseline from configs.GRID)
+    parser.add_argument("--height", type=int, default=GRID.height)
+    parser.add_argument("--width", type=int, default=GRID.width)
+    parser.add_argument("--agents", type=int, default=GRID.n_agents)
+    parser.add_argument("--lasers", type=int, default=GRID.n_lasers)
+    parser.add_argument("--t-max", type=int, default=GRID.t_max)
+    parser.add_argument("--generator", default=GRID.generator_name)
     return parser
 
 
@@ -193,7 +201,14 @@ def main() -> None:
     algo: str = args.algo
     seed: int = args.seed
     total_steps: int = args.steps
-    config = GRID
+    config = GridConfig(
+        height=args.height,
+        width=args.width,
+        n_agents=args.agents,
+        n_lasers=args.lasers,
+        t_max=args.t_max,
+        generator_name=args.generator,
+    )
     out_dir: Path = args.out_dir or DEFAULT_OUT_DIR
 
     # Seed everything

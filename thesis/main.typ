@@ -94,9 +94,54 @@
 
 #pagebreak()
 
-// Intentional blank page after the cover.
-#v(1fr)
+// ---------------------------------------------------------------------------
+// Abstract
+// ---------------------------------------------------------------------------
+
+#v(50pt)
+#align(center, text(20pt, weight: "bold")[Abstract])
+#v(20pt)
+
+This thesis develops a SAT-based framework for the procedural generation of solvable,
+cooperative levels for the Laser Learning Environment (LLE), a multi-agent reinforcement
+learning benchmark. We formalise bounded-horizon LLE solvability as a propositional
+satisfiability decision problem and prove the reduction correct; we introduce a
+strict-beam-semantics counterfactual that turns the *cooperation-required* property into a
+second decidable problem on the same level; and we refine the resulting binary criterion into
+a profile taxonomy that classifies the dependency structure of a cooperative level into one of
+five patterns (asymmetric, mutual, chain, distributed, fully coupled). These decision
+procedures are embedded inside a family of procedural generators (Random, Constrained Random,
+Constructive, Level-6-Style) that emit only solver-certified levels with the requested
+properties. The empirical evaluation compares two SAT encodings, characterises per-generator
+rejection rates and cooperation-profile distributions, and shows that off-the-shelf
+value-decomposition MARL algorithms (IQL, VDN, QMIX) can learn certified cooperative levels at
+$5 times 5$. A curriculum-transfer experiment toward the hand-crafted LLE Level 6 is left for
+future work.
+
+#v(20pt)
+*Keywords:* multi-agent reinforcement learning, procedural content generation, SAT solving,
+cooperative levels, Laser Learning Environment, curriculum learning.
+
 #pagebreak()
+
+
+// ---------------------------------------------------------------------------
+// Acknowledgments
+// ---------------------------------------------------------------------------
+
+#v(50pt)
+#align(center, text(20pt, weight: "bold")[Acknowledgments])
+#v(20pt)
+
+// TODO: replace this placeholder paragraph with the author's actual
+// acknowledgments before submission. The recommended length is half a page
+// to one page, naming the supervisors, the ULB MLG group, and any other
+// people or institutions that contributed to the work.
+_This page is intentionally left as a placeholder; acknowledgments will be added before
+submission._
+
+#pagebreak()
+
 
 // Table of contents
 #outline()

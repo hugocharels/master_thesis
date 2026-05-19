@@ -75,9 +75,10 @@ The random generator samples every layout component uniformly: agent start posit
 wall positions, and laser source positions are drawn pairwise-distinct from the grid, and each
 laser source is given a random direction. The resulting candidate is submitted to the SAT
 oracle under whichever acceptance setting (solvability only, plus cooperation, or plus
-cooperation with profile filter) was requested. When a lower bound $T_("min")$ is provided, the generator also requires the
-candidate to be unsatisfiable for $T_("min") - 1$, selecting levels that fall inside a
-difficulty window.
+cooperation with profile filter) was requested. When a lower-bound horizon $T_("min")$ is
+provided — a user-supplied difficulty knob, separate from the encoding horizon $T_("max")$ —
+the generator also requires the candidate to be unsatisfiable for $T_("min") - 1$, selecting
+levels that fall inside a difficulty window.
 
 This generator is deliberately simple. Its main value is methodological: it gives an unbiased
 sampling baseline against which more structured generators can be compared. Its main weakness

@@ -1,10 +1,10 @@
 {
   "algo": "QMIX",
   "condition": "CURR",
-  "mean_return_level6": 0.0,
+  "mean_return_level6": -2.0399999618530273,
   "n_eval_episodes": 200,
   "seed": 0,
   "success_rate_level6": 0.0,
   "success_rate_level6_std": 0.0,
-  "total_steps_trained": 750000
+  "total_steps_trained": 200000
 }

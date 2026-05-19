@@ -115,8 +115,8 @@ Constructive, Level-6-Style) that emit only solver-certified levels with the req
 properties. The empirical evaluation compares two SAT encodings, characterises per-generator
 rejection rates and cooperation-profile distributions, and shows that off-the-shelf
 value-decomposition MARL algorithms (IQL, VDN, QMIX) can learn certified cooperative levels at
-$5 times 5$. A curriculum-transfer experiment toward the hand-crafted LLE Level 6 is left for
-future work.
+$5 times 5$. A curriculum-transfer experiment toward the hand-crafted LLE Level 6 is in
+design at the time of writing.
 
 #v(20pt)
 *Keywords:* multi-agent reinforcement learning, procedural content generation, SAT solving,

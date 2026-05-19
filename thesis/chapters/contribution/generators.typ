@@ -98,7 +98,7 @@ class of obviously bad candidates before invoking the solver. The generator ther
 the same formal guarantees as the random generator (solvable, optionally cooperative with
 profile filter) at a typically much lower rejection rate. The constrained random variant is
 the default we use when the experiments call for "random sampling" of solvable or cooperative
-levels.
+levels. Example pools at three grid sizes are shown in @appendix-gallery-constrained-random.
 
 
 == Constructive Generator
@@ -143,7 +143,10 @@ helper-beneficiary pair and the cooperation profile is *asymmetric* by construct
 $n_l = 2$ the two lasers cross each other's lanes and the profile is *mutual* — every helper
 is also a beneficiary. With $n_l >= 3$ on grids large enough to accommodate the construction
 the profile mix shifts toward *distributed* as one agent benefits from multiple distinct
-helpers.
+helpers. Example pools in solvable and cooperative settings are shown in
+@appendix-gallery-constructive-solvable and @appendix-gallery-constructive-cooperative; pools
+generated under an explicit profile filter (mutual, distributed) are shown in
+@appendix-gallery-constructive-profile.
 
 
 == Level-6-Style Generator
@@ -162,7 +165,9 @@ This geometry consistently produces *mutual* cooperation profiles that mirror th
 of Level 6, and it is the generator we recommend for producing training instances intended
 to transfer to Level 6 (see the curriculum-transfer experiment in @experiments). The profile
 filter from @profile-targeting still applies — the default target is `mutual`, but other
-profile labels can be requested when the parameter combination supports them.
+profile labels can be requested when the parameter combination supports them. Example pools
+at three grid sizes (up to the $12 times 13$ Level 6 footprint) are shown in
+@appendix-gallery-level6.
 
 
 == Summary

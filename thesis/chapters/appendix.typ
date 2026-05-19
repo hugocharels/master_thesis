@@ -258,7 +258,7 @@ mean number of attempts per accepted level.
     the number of successful trials and "Fail" the number of trials that exhausted their
     per-trial budget (500 attempts for the small grids; 100 attempts or 30 seconds for the
     $8 times 8$ grid). The $8 times 8$ Constrained Random cooperative row is missing because
-    the LLE C extension crashed during the benchmark on a randomly-sampled world. Source:
+    the LLE C extension segfaulted during the benchmark on a randomly-sampled world. Source:
     `results/rejection_benchmark/benchmark_results.json`.
   ],
 ) <tab-rejection-detail>

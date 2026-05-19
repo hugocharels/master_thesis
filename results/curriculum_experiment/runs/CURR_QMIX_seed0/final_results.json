@@ -1,7 +1,7 @@
 {
   "algo": "QMIX",
   "condition": "CURR",
-  "mean_return_level6": -2.0399999618530273,
+  "mean_return_level6": -1.2699999809265137,
   "n_eval_episodes": 200,
   "seed": 0,
   "success_rate_level6": 0.0,

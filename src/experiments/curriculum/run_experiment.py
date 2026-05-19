@@ -577,6 +577,12 @@ def _train_loop(
                 target_state_shape=target_state_shape,
             )
             csv_writer_eval.writerow([next_eval_at, f"{sr:.6f}", f"{mr:.6f}"])
+            print(
+                f"step={next_eval_at:>7d}  stage={sampler.current_stage_id}  "
+                f"sr={sr:.3f}  mr={mr:.3f}",
+                file=sys.stderr,
+                flush=True,
+            )
             next_eval_at += EVAL_FREQUENCY_STEPS
 
         # Periodic checkpoint. We allow multiple cadences in one
@@ -975,6 +981,12 @@ def main(argv: list[str] | None = None) -> int:
             eval_writer.writerow(["step", "success_rate", "mean_return"])
             stage_writer.writerow(["step", "stage_id"])
 
+        print(
+            f"Starting {args.condition}_{args.algo}_seed{args.seed}: "
+            f"steps={args.steps} device={device} resumed={resumed}",
+            file=sys.stderr,
+            flush=True,
+        )
         steps_consumed = _train_loop(
             sampler=sampler,
             trainer=trainer,

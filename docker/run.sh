@@ -77,6 +77,10 @@ fi
 docker run --rm -it \
     "${GPU_ARGS[@]}" \
     -e MAX_PARALLEL \
+    -e SEEDS \
+    -e CONDITIONS \
+    -e ALGOS \
+    -e STEPS \
     --memory="$MEM_LIMIT" \
     --memory-swap="$SWAP_LIMIT" \
     -v "$PROJECTS_DIR:/workspace" \

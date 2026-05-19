@@ -7,7 +7,8 @@ cooperation profiles of accepted cooperative levels. The fourth asks whether off
 value-decomposition MARL agents can *learn* cooperative levels emitted by the generator, on a
 small grid where the training budget is comfortably sufficient. The curriculum-transfer
 experiment of @transfer-experiment is the fifth piece; it is in design at the time of writing
-and reported as a skeleton.
+and reported as a skeleton. Software versions and seed conventions for every experiment in
+this chapter are summarised in @appendix-reproducibility.
 
 
 == Experimental Question
@@ -50,7 +51,8 @@ Four levels of increasing size and complexity were used:
 
 The first three levels were constructed to expose scaling behaviour as grid size and agent count
 increase. The fourth is LLE Level 6, one of the hand-crafted benchmark levels distributed with LLE,
-included to assess solver behaviour on a realistic cooperative instance.
+included to assess solver behaviour on a realistic cooperative instance. Per-level parameters
+(grid, agent and laser counts, horizon) are tabulated in @appendix-benchmark-levels.
 
 
 == Results

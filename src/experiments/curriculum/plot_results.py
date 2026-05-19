@@ -68,6 +68,37 @@ CONDITION_LABELS: dict[str, str] = {
     "CURR": "CURR (curriculum)",
 }
 
+
+# Two-sided 95 % critical value of Student's t for df = n - 1, n = 2..20.
+# Used by ``_ci95_halfwidth`` so the curriculum plots use the same
+# uncertainty convention as the learnability section of the thesis
+# ($plus.minus t_{n-1, 0.025} sigma / sqrt(n)$). At n = 4 seeds (the
+# pilot size), df = 3 and the t value is 3.182 vs the normal-z 1.960;
+# using std or z would understate uncertainty by roughly 60 %.
+_T_CRITICAL_95: dict[int, float] = {
+    1: 12.706, 2: 4.303, 3: 3.182, 4: 2.776, 5: 2.571,
+    6: 2.447,  7: 2.365, 8: 2.306, 9: 2.262, 10: 2.228,
+    11: 2.201, 12: 2.179, 13: 2.160, 14: 2.145, 15: 2.131,
+    16: 2.120, 17: 2.110, 18: 2.101, 19: 2.093,
+}
+
+
+def _ci95_halfwidth(matrix: np.ndarray) -> np.ndarray:
+    """Return the 95 % CI half-width along axis 0 (per-step or scalar).
+
+    Uses the Student-t critical value for df = n - 1 when n <= 20 and
+    the normal-z value 1.960 otherwise. For n == 1 the half-width is 0
+    by convention (no uncertainty estimate from a single seed).
+    """
+    n = matrix.shape[0]
+    if n < 2:
+        # Either zero or one seed: no uncertainty estimate.
+        return np.zeros(matrix.shape[1:] if matrix.ndim > 1 else (), dtype=np.float64)
+    t = _T_CRITICAL_95.get(n - 1, 1.960)
+    # ``ddof=1`` so the sample std matches the t-distribution assumption.
+    std = matrix.std(axis=0, ddof=1)
+    return t * std / np.sqrt(n)
+
 ALGO_COLORS: dict[str, str] = {
     "IQL": "#4C78A8",
     "VDN": "#F58518",
@@ -209,11 +240,11 @@ def plot_learning_curves(runs_dir: Path, out_path: Path) -> None:
         steps_ref = seed_data[0][0][:min_len]
         sr_matrix = np.vstack([sr[:min_len] for _, sr in seed_data])
         mean = sr_matrix.mean(axis=0)
-        std = sr_matrix.std(axis=0)
+        ci = _ci95_halfwidth(sr_matrix)
         color = CONDITION_COLORS[condition]
         label = f"{CONDITION_LABELS[condition]} (n={sr_matrix.shape[0]})"
         ax.plot(steps_ref, mean, label=label, color=color, linewidth=1.8)
-        ax.fill_between(steps_ref, mean - std, mean + std, color=color, alpha=0.18)
+        ax.fill_between(steps_ref, mean - ci, mean + ci, color=color, alpha=0.18)
         plotted_any = True
 
     if not plotted_any:
@@ -227,7 +258,7 @@ def plot_learning_curves(runs_dir: Path, out_path: Path) -> None:
 
     ax.set_xlabel("Training steps")
     ax.set_ylabel("Success rate on Level 6")
-    ax.set_title("Learning curves on hand-crafted Level 6 (QMIX)")
+    ax.set_title("Learning curves on hand-crafted Level 6 (QMIX, 95 % CI)")
     ax.set_ylim(-0.05, 1.05)
     ax.grid(True, linestyle=":", alpha=0.4)
     ax.legend(loc="best", fontsize=9)
@@ -324,8 +355,10 @@ def plot_final_success_rates(runs_dir: Path, out_path: Path) -> None:
         return
 
     means = [float(np.mean(per_condition[c])) for c in present]
-    stds = [
-        float(np.std(per_condition[c])) if len(per_condition[c]) > 1 else 0.0
+    ci95 = [
+        float(_ci95_halfwidth(np.asarray(per_condition[c]).reshape(-1, 1))[0])
+        if len(per_condition[c]) > 1
+        else 0.0
         for c in present
     ]
     colors = [CONDITION_COLORS[c] for c in present]
@@ -336,7 +369,7 @@ def plot_final_success_rates(runs_dir: Path, out_path: Path) -> None:
     ax.bar(
         x,
         means,
-        yerr=stds,
+        yerr=ci95,
         color=colors,
         edgecolor="#444444",
         linewidth=0.8,
@@ -346,7 +379,7 @@ def plot_final_success_rates(runs_dir: Path, out_path: Path) -> None:
     ax.set_xticks(x)
     ax.set_xticklabels([f"{c}\n(n={n})" for c, n in zip(present, counts)])
     ax.set_ylabel("Final success rate on Level 6")
-    ax.set_title("Final Level-6 success rate by condition (QMIX)")
+    ax.set_title("Final Level-6 success rate by condition (QMIX, 95 % CI)")
     ax.set_ylim(0.0, 1.05)
     ax.grid(True, axis="y", linestyle=":", alpha=0.4)
     fig.tight_layout()
@@ -392,8 +425,11 @@ def plot_exp1_learnability(runs_dir: Path, out_path: Path) -> None:
         return
 
     means = [float(np.mean(per_algo[a])) for a in present]
-    stds = [
-        float(np.std(per_algo[a])) if len(per_algo[a]) > 1 else 0.0 for a in present
+    ci95 = [
+        float(_ci95_halfwidth(np.asarray(per_algo[a]).reshape(-1, 1))[0])
+        if len(per_algo[a]) > 1
+        else 0.0
+        for a in present
     ]
     colors = [ALGO_COLORS[a] for a in present]
     counts = [len(per_algo[a]) for a in present]
@@ -403,7 +439,7 @@ def plot_exp1_learnability(runs_dir: Path, out_path: Path) -> None:
     ax.bar(
         x,
         means,
-        yerr=stds,
+        yerr=ci95,
         color=colors,
         edgecolor="#444444",
         linewidth=0.8,
@@ -413,7 +449,7 @@ def plot_exp1_learnability(runs_dir: Path, out_path: Path) -> None:
     ax.set_xticks(x)
     ax.set_xticklabels([f"{a}\n(n={n})" for a, n in zip(present, counts)])
     ax.set_ylabel("Success rate on held-out generated pool")
-    ax.set_title("Experiment 1: B1 learnability on the held-out pool")
+    ax.set_title("Experiment 1: B1 learnability on the held-out pool (95 % CI)")
     ax.set_ylim(0.0, 1.05)
     ax.grid(True, axis="y", linestyle=":", alpha=0.4)
     fig.tight_layout()

@@ -75,7 +75,8 @@ the $8 times 8$ level, and finally 252,964 versus 1,167,640 on LLE Level 6.
 
 This widening gap is the main structural result of the experiment. The local formulation scales much
 better because its exclusivity clauses are tied to neighbourhood-sized successor sets, while the
-global formulation introduces pairwise exclusions across the full position set.
+global formulation introduces pairwise exclusions across the full position set. The
+per-constraint-family decomposition behind these totals is reported in @appendix-sat-clauses.
 
 
 === Solving Time
@@ -103,9 +104,10 @@ Hand-crafted levels such as Level 6 admit propagation-friendly satisfying assign
 CDCL solvers find quickly, while randomly structured large instances can expose pathological
 search behaviour even at smaller clause counts.
 
-The practical conclusion is therefore the same as the analytical one: the local formulation is not
-merely a cleaner theoretical encoding, but the preferable default implementation choice for the
-solver developed in this thesis.
+The practical conclusion is therefore the same as the analytical one: the local formulation is
+not merely a cleaner theoretical encoding, but the preferable default implementation choice
+for the solver developed in this thesis. Raw per-(level, method) gen/solve timings are reported
+in @appendix-sat-times.
 
 
 == Interpretation and Scope
@@ -214,7 +216,8 @@ is 98.7 % (78.3 mean attempts), because the cluster template requires more grid 
 small grid can offer without geometric conflicts. From $5 times 5$ upward the cluster geometry
 becomes feasible: rejection drops to 81.1 % and 76.2 % at $5 times 5$ and $8 times 8$ (5.3 and
 4.2 mean attempts respectively). The Level-6-Style template trades a moderate efficiency cost
-for the richer cooperation profile reported in @profile-distribution.
+for the richer cooperation profile reported in @profile-distribution. Detailed per-(generator,
+grid) numbers are tabulated in @appendix-rejection-detail.
 
 
 == Cooperation Profile Distribution <profile-distribution>
@@ -281,7 +284,8 @@ That family requires a strongly connected dependency graph of size at least thre
 the lane template nor the cluster template targets by construction; reliably generating
 fully-coupled instances would require either a larger laser count or the profile-targeted
 generation mode, in which the generator's acceptance filter explicitly rejects non-matching
-profiles.
+profiles. The raw per-(generator, grid) profile counts are tabulated in
+@appendix-profile-detail.
 
 
 == Discussion

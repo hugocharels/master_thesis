@@ -204,13 +204,13 @@ in @benchmarking. Standard deviations follow the mean in parentheses.
       [*Gen time (ms)*], [*Solve time (ms)*], [*Total (ms)*],
     ),
     [3×3],     [local],  [$0.19 plus.minus 0.07$],   [$0.013 plus.minus 0.004$], [$0.20$],
-    [3×3],     [global], [$0.20 plus.minus 0.07$],   [$0.013 plus.minus 0.004$], [$0.21$],
+    [3×3],     [global], [$0.23 plus.minus 0.18$],   [$0.018 plus.minus 0.006$], [$0.25$],
     [5×5],     [local],  [$2.0 plus.minus 2.8$],     [$0.08 plus.minus 0.02$],   [$2.1$],
-    [5×5],     [global], [$2.7 plus.minus 2.5$],     [$0.21 plus.minus 0.05$],   [$2.9$],
+    [5×5],     [global], [$2.4 plus.minus 3.3$],     [$0.17 plus.minus 0.03$],   [$2.6$],
     [8×8],     [local],  [$28 plus.minus 11$],       [$4.8 plus.minus 0.6$],     [$33$],
-    [8×8],     [global], [$58 plus.minus 11$],       [$13 plus.minus 2$],        [$70$],
-    [Level 6], [local],  [$104 plus.minus 50$],      [$11 plus.minus 1$],        [$115$],
-    [Level 6], [global], [$418 plus.minus 36$],      [$13 plus.minus 2$],        [$431$],
+    [8×8],     [global], [$65 plus.minus 15$],       [$76 plus.minus 7$],        [$141$],
+    [Level 6], [local],  [$116 plus.minus 8$],       [$7.1 plus.minus 0.9$],     [$123$],
+    [Level 6], [global], [$486 plus.minus 29$],      [$58 plus.minus 3$],        [$544$],
   ),
   caption: [
     Mean CNF generation, SAT solve, and total times (milliseconds) per level and movement

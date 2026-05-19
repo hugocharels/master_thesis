@@ -65,9 +65,8 @@ More precisely, the work is organised around six research questions:
 - *RQ4:* Can we control the cooperation structure of generated levels by targeting specific
   profiles such as asymmetric, mutual, chain, distributed, or fully coupled dependencies?
 - *RQ5:* Can MARL agents trained exclusively on procedurally generated cooperative levels
-  reach a greedy success rate significantly above a random-policy baseline on a held-out pool
-  of generated levels at a fixed training budget, and how does that performance vary across
-  IQL, VDN, and QMIX?
+  reach a non-trivial greedy success rate on a held-out pool of generated levels at a fixed
+  training budget, and how does that performance vary across IQL, VDN, and QMIX?
 - *RQ6:* Does a staged curriculum of generated levels of growing geometric and cooperative
   complexity yield a higher greedy success rate on hand-crafted LLE Level 6 than a baseline
   trained directly on Level 6 (or on the union of all stage pools) at the same total training

@@ -48,10 +48,11 @@ We restate the six research questions of @introduction and assess what each chap
 
 - *RQ5 — learnability of certified cooperative levels.* Answered positively on a small grid.
   The learnability experiment of @learnability-experiment shows that IQL, VDN, and QMIX all
-  reach a greedy success rate well above a random-policy baseline on the $5 times 5$
-  cooperative training pool within a 200,000-step budget. The dominant difficulty observed is
-  generalisation to the held-out pool rather than credit assignment; the cross-algorithm
-  spread is small relative to the train/test gap.
+  reach non-trivial greedy success rates ($0.59$–$0.70$ on the training pool, $0.18$–$0.23$
+  on the held-out pool) on the $5 times 5$ cooperative pool within a 200,000-step budget.
+  The dominant difficulty observed is generalisation to the held-out pool rather than credit
+  assignment; the cross-algorithm spread is small relative to the train/test gap, which is
+  the open question the next direction in @transfer-experiment is designed to probe.
 
 - *RQ6 — curriculum transfer to LLE Level 6.* Not yet answered. The experimental design of
   @transfer-experiment is still being iterated at the time of writing and the runs have not

@@ -26,7 +26,7 @@ AGENT_COLOURS = {
 PROFILES: dict[str, dict] = {
     "independent": {"nodes": [0, 1], "edges": []},
     "asymmetric": {"nodes": [0, 1], "edges": [(0, 1)]},
-    "mutual": {"nodes": [0, 1], "edges": [(0, 1), (1, 0)]},
+    "mutual": {"nodes": [0, 1, 2], "edges": [(0, 1), (1, 0)]},
     "chain": {"nodes": [0, 1, 2], "edges": [(0, 1), (1, 2)]},
     "distributed": {
         "nodes": [0, 1, 2],

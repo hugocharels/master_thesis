@@ -340,8 +340,10 @@ agents do not all belong to a single strongly connected component.
   ),
   caption: [
     `mutual`: two stacked beams of distinct colours. Each agent is immune to its own beam
-    but must wait for the other to truncate the foreign beam before crossing. Edges:
-    ${(0, 1), (1, 0)}$.
+    but must wait for the other to truncate the foreign beam before crossing. A third agent
+    is present so the level has three exits to fill; it has an independent path and does
+    not participate in any helper relationship, hence appears as an isolated vertex in the
+    dependency graph. Edges: ${(0, 1), (1, 0)}$.
   ],
 ) <fig-profile-mutual>
 

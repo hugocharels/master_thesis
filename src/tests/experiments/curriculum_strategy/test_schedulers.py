@@ -96,3 +96,9 @@ def test_fixed_schedule_rejects_empty_and_nonpositive_budget():
         FixedScheduleScheduler([], pools, rng_seed=0)
     with pytest.raises(ValueError):
         FixedScheduleScheduler([(RUNGS[0], 0)], pools, rng_seed=0)
+
+
+def test_fixed_schedule_rejects_missing_pool():
+    pools = {1: [_FakeWorld(1, 0)]}  # only rung 1; rung 3 has no pool
+    with pytest.raises(ValueError):
+        FixedScheduleScheduler([(RUNGS[2], 1000)], pools, rng_seed=0)

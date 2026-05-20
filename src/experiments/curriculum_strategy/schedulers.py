@@ -43,7 +43,7 @@ class FixedScheduleScheduler:
             if budget <= 0:
                 raise ValueError(f"budget must be positive, got {budget}")
             if rung.stage_id not in pools:
-                raise KeyError(f"no pool for rung stage_id={rung.stage_id}")
+                raise ValueError(f"no pool for rung stage_id={rung.stage_id}")
         self._schedule = list(schedule)
         self._pools = pools
         self._rng = random.Random(rng_seed)

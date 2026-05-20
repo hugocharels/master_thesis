@@ -7,30 +7,43 @@
 # no editing. Already-finished cells (final_results.json present) are
 # skipped, so re-running resumes an interrupted sweep.
 #
-# Examples:
-#   # Full sweep: 4 conditions x 3 algos x 20 seeds = 240 runs, 3 at a time:
-#   bash scripts/launch_curriculum_strategy.sh
+# ON THE ULB CLUSTER, run this INSIDE the docker container. docker/run.sh
+# picks the GPU (GPU_DEVICES) and forwards MAX_PARALLEL/SEEDS/CONDITIONS/
+# ALGOS/STEPS into the container; inside, this script auto-detects the
+# exposed GPU(s) (leave GPUS unset). The GPUS knob below is only for
+# running the venv Python directly (e.g. locally on Windows).
 #
-#   # Pilot gate: VDN x 4 conditions x 1 seed:
+# Examples (cluster, via docker -- the usual case):
+#   # Pilot: VDN x 4 conditions x 1 seed, all 4 at once on physical GPU 2:
+#   GPU_DEVICES=2 MAX_PARALLEL=4 ALGOS="VDN" SEEDS="0" \
+#     bash docker/run.sh -- bash scripts/launch_curriculum_strategy.sh
+#
+#   # Full sweep on GPU 2, 3 concurrent:
+#   GPU_DEVICES=2 MAX_PARALLEL=3 \
+#     bash docker/run.sh -- bash scripts/launch_curriculum_strategy.sh
+#
+#   # Two GPUs, 3 each (=6 concurrent):
+#   GPU_DEVICES=2,4 MAX_PARALLEL=6 \
+#     bash docker/run.sh -- bash scripts/launch_curriculum_strategy.sh
+#
+# Examples (direct, no docker -- e.g. local Windows):
 #   ALGOS="VDN" SEEDS="0" bash scripts/launch_curriculum_strategy.sh
+#   GPUS="2" MAX_PARALLEL=3 bash scripts/launch_curriculum_strategy.sh   # pin GPU
 #
-#   # Pin to GPU 2 only, 3 concurrent (3 on that one GPU):
-#   GPUS="2" MAX_PARALLEL=3 bash scripts/launch_curriculum_strategy.sh
-#
-#   # GPUs 0 and 1, 3 per GPU (=6 concurrent), round-robined across them:
-#   GPUS="0 1" MAX_PARALLEL=6 bash scripts/launch_curriculum_strategy.sh
-#
-#   # One condition only, fewer seeds, shorter budget:
-#   CONDITIONS="forward direct" SEEDS="$(seq 0 9)" STEPS=300000 \
-#     bash scripts/launch_curriculum_strategy.sh
+# Already-finished cells (final_results.json present) are skipped, so
+# re-running resumes an interrupted sweep.
 #
 # Knobs (all optional env vars):
-#   GPUS          which physical GPU ids to use, space-separated (e.g. "2" or
-#                 "0 1 3"). Unset = auto-detect all. Empty ("") = CPU.
+#   GPU_DEVICES   (docker/run.sh) physical GPU(s) for the container, e.g. 2
+#                 or 2,4. This is the cluster GPU selector.
+#   GPUS          (this script, direct mode only) physical GPU ids to use,
+#                 space-separated. Unset = auto-detect all exposed. "" = CPU.
 #   MAX_PARALLEL  TOTAL concurrent training processes (3 per GPU -> set to
-#                 3 * number-of-GPUs-in-GPUS).
+#                 3 * number-of-GPUs).
 #   CONDITIONS / ALGOS / SEEDS / STEPS  the sweep dimensions and budget.
-#   MARL_VENV     python interpreter (override on the Linux cluster).
+#   MARL_VENV     python interpreter. Same default/convention as the other
+#                 launch_*.sh scripts, so it resolves the same way inside the
+#                 cluster docker image; override only if your setup differs.
 
 set -e
 

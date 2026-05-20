@@ -46,6 +46,7 @@ from experiments.curriculum_strategy.configs import (
     EVAL_EPISODES,
     EVAL_FREQUENCY_STEPS,
     FINAL_EVAL_EPISODES,
+    FORWARD_STAGE_STEPS,
     RUNGS,
     TARGET_RUNG,
     TOTAL_STEPS,
@@ -203,7 +204,10 @@ def main() -> None:
     agent = trainer.make_agent().to(device)
     test_agent = trainer.make_agent().to(device)
 
-    strategy = make_strategy(condition, RUNGS, train_pools, total_steps, rng_seed=seed)
+    strategy = make_strategy(
+        condition, RUNGS, train_pools, total_steps, rng_seed=seed,
+        stage_budgets=list(FORWARD_STAGE_STEPS),
+    )
     eval_rng = random.Random(seed + 1000)
 
     run_dir = out_dir / "runs" / f"{condition}_{algo}_seed{seed}"

@@ -120,18 +120,39 @@ class MixedSampler:
         return False
 
 
+def _scaled_budgets(stage_budgets: Sequence[int], total_steps: int) -> list[int]:
+    """Scale ``stage_budgets`` proportionally so they sum to ``total_steps``.
+
+    Lets the per-stage split (e.g. 50k/150k summing to the full 200k) be reused
+    verbatim for a shorter ``--steps`` run (e.g. a smoke test) while always
+    conserving the total exactly -- the rounding remainder goes to the last
+    stage.
+    """
+    s = sum(stage_budgets)
+    if s <= 0:
+        raise ValueError(f"stage_budgets must sum to a positive value, got {s}")
+    out = [int(b / s * total_steps) for b in stage_budgets]
+    out[-1] += total_steps - sum(out)
+    return out
+
+
 def make_strategy(
     condition: str,
     rungs: Sequence[StageConfig],
     pools: dict[int, list],
     total_steps: int,
     rng_seed: int,
+    stage_budgets: Sequence[int] | None = None,
 ):
     """Build the strategy object for ``condition``.
 
-    ``forward``/``reverse`` split ``total_steps`` into equal per-rung
-    budgets; ``direct`` puts the whole budget on the last (target) rung;
-    ``mixed`` samples rungs uniformly for the whole budget.
+    ``forward``/``reverse`` allocate ``total_steps`` across the rungs using
+    ``stage_budgets`` (aligned to ``rungs`` order, scaled to sum to
+    ``total_steps``); when ``stage_budgets`` is ``None`` they fall back to an
+    equal split. ``reverse`` keeps each rung's budget but visits the rungs in
+    reverse order, so the only difference from ``forward`` is the ordering.
+    ``direct`` puts the whole budget on the last (target) rung; ``mixed``
+    samples rungs uniformly for the whole budget.
     """
     from experiments.curriculum_strategy.configs import equal_split
 
@@ -139,14 +160,20 @@ def make_strategy(
     target = rungs[-1]
     if condition == "direct":
         return FixedScheduleScheduler([(target, total_steps)], pools, rng_seed)
-    if condition == "forward":
-        budgets = equal_split(total_steps, len(rungs))
-        return FixedScheduleScheduler(list(zip(rungs, budgets)), pools, rng_seed)
-    if condition == "reverse":
-        budgets = equal_split(total_steps, len(rungs))
-        return FixedScheduleScheduler(
-            list(zip(list(reversed(rungs)), budgets)), pools, rng_seed
-        )
+    if condition in ("forward", "reverse"):
+        if stage_budgets is None:
+            budgets = equal_split(total_steps, len(rungs))
+        else:
+            if len(stage_budgets) != len(rungs):
+                raise ValueError(
+                    f"stage_budgets length {len(stage_budgets)} must match "
+                    f"len(rungs)={len(rungs)}"
+                )
+            budgets = _scaled_budgets(stage_budgets, total_steps)
+        pairs = list(zip(rungs, budgets))
+        if condition == "reverse":
+            pairs = list(reversed(pairs))  # same per-rung budget, reversed order
+        return FixedScheduleScheduler(pairs, pools, rng_seed)
     if condition == "mixed":
         return MixedSampler(rungs, pools, rng_seed)
     raise ValueError(

@@ -51,7 +51,10 @@ PY="${MARL_VENV:-C:/Users/hugoc/Projects/marl/.venv/Scripts/python.exe}"
 export PYTHONPATH=src
 OUT_DIR="results/curriculum_strategy"
 
-STEPS="${STEPS:-600000}"
+# Empty by default -> do NOT pass --steps, so the runner uses its config
+# default (experiments.curriculum_strategy.configs.TOTAL_STEPS, currently 200k,
+# matching the learnability budget). Set STEPS only to override (e.g. a smoke run).
+STEPS="${STEPS:-}"
 # MAX_PARALLEL is the TOTAL number of concurrent training processes. To run
 # 3 per GPU, set it to 3 * (number of GPUs). Default 3 = 3 on a single GPU.
 MAX_PARALLEL="${MAX_PARALLEL:-3}"
@@ -71,7 +74,7 @@ else
   read -ra GPU_LIST <<< "$GPUS"
 fi
 NGPU=${#GPU_LIST[@]}
-echo "GPUs: ${GPU_LIST[*]:-none (CPU)} | MAX_PARALLEL=$MAX_PARALLEL | STEPS=$STEPS"
+echo "GPUs: ${GPU_LIST[*]:-none (CPU)} | MAX_PARALLEL=$MAX_PARALLEL | STEPS=${STEPS:-config default (TOTAL_STEPS)}"
 
 # Pre-flight: SAT-generate the rung pools once if they are not present. The
 # guard checks the target rung's held-out eval pool (stage 2 = 5x5/2a/1L).
@@ -104,7 +107,7 @@ for cond in $CONDITIONS; do
 
       echo "[${count}/${total}] Launching ${cond}_${algo}_seed${seed}${gpu_index:+ on physical GPU $gpu_index}"
       CUDA_VISIBLE_DEVICES="$gpu_index" "$PY" -m experiments.curriculum_strategy.run_experiment \
-        --condition "$cond" --algo "$algo" --seed "$seed" --steps "$STEPS" &
+        --condition "$cond" --algo "$algo" --seed "$seed" ${STEPS:+--steps $STEPS} &
       pids+=($!)
 
       if [ ${#pids[@]} -ge $MAX_PARALLEL ]; then

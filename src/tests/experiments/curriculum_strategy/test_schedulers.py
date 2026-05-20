@@ -13,7 +13,6 @@ import pytest
 from experiments.curriculum_strategy.configs import RUNGS, TOTAL_STEPS
 from experiments.curriculum_strategy.schedulers import (
     FixedScheduleScheduler,
-    MixedSampler,
     make_strategy,
 )
 

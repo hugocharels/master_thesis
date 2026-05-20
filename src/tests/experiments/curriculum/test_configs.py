@@ -63,7 +63,9 @@ def test_laser_counts_grow_then_plateau():
 
 
 def test_t_max_per_stage_matches_thesis_design():
-    assert tuple(s.t_max for s in CURRICULUM_STAGES) == (12, 16, 18, 21)
+    # ~1.5x the SAT-certified minimum horizons (12, 16, 18, 21) to give
+    # the RL agent discovery slack above the optimal-plan horizon.
+    assert tuple(s.t_max for s in CURRICULUM_STAGES) == (18, 24, 27, 32)
 
 
 def test_generator_names_match_design():

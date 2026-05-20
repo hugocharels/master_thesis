@@ -28,7 +28,13 @@ RUNGS: tuple[StageConfig, ...] = (
         width=5,
         n_agents=2,
         n_lasers=1,
-        t_max=10,
+        # t_max is shared by generation, training, and eval. Set to ~1.5x a
+        # tight solvable horizon so the RL agent has discovery slack (it
+        # needs to find ANY valid plan, not the shortest). Because the
+        # cooperative generator re-certifies the cooperation requirement at
+        # THIS horizon, the larger value cannot silently turn a level into
+        # one solvable by a non-cooperative detour.
+        t_max=15,
         generator_name="cooperative",
         pool_size=50,
         eval_pool_size=0,
@@ -41,7 +47,7 @@ RUNGS: tuple[StageConfig, ...] = (
         width=6,
         n_agents=2,
         n_lasers=1,
-        t_max=12,
+        t_max=18,  # ~1.5x a tight horizon (see stage 1 note on discovery slack)
         generator_name="cooperative",
         pool_size=50,
         eval_pool_size=0,
@@ -54,7 +60,7 @@ RUNGS: tuple[StageConfig, ...] = (
         width=7,
         n_agents=2,
         n_lasers=2,
-        t_max=14,
+        t_max=21,  # ~1.5x a tight horizon (see stage 1 note on discovery slack)
         generator_name="cooperative",
         pool_size=50,
         eval_pool_size=50,

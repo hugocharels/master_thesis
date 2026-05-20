@@ -62,6 +62,12 @@ CONDITIONS="${CONDITIONS:-direct forward reverse mixed}"
 ALGOS="${ALGOS:-IQL VDN QMIX}"
 SEEDS="${SEEDS:-$(seq 0 19)}"   # 20 seeds for a publishable result
 
+# Tolerate comma-separated lists (e.g. SEEDS="0,1,2") in addition to the
+# space-separated form the for-loops expect.
+CONDITIONS="${CONDITIONS//,/ }"
+ALGOS="${ALGOS//,/ }"
+SEEDS="${SEEDS//,/ }"
+
 # Build the list of physical GPU ids to round-robin training across.
 #   GPUS unset   -> auto-detect every GPU nvidia-smi reports
 #   GPUS="0 1"   -> use exactly those ids

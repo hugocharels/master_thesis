@@ -1,13 +1,13 @@
 {
   "algo": "VDN",
   "condition": "B2",
-  "mean_return_held_out_pool": -0.6851998841762543,
-  "mean_return_level6": -1.4199999570846558,
+  "mean_return_held_out_pool": -0.8370998954772949,
+  "mean_return_level6": -0.6299998760223389,
   "n_eval_episodes": 200,
   "seed": 0,
   "success_rate_held_out_pool": 0.0,
   "success_rate_held_out_pool_std": 0.0,
   "success_rate_level6": 0.0,
   "success_rate_level6_std": 0.0,
-  "total_steps_trained": 1500000
+  "total_steps_trained": 2000000
 }

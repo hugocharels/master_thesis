@@ -1,7 +1,7 @@
 {
   "algo": "QMIX",
   "condition": "CURR",
-  "mean_return_held_out_pool": -0.6481998777389526,
+  "mean_return_held_out_pool": -0.6976998847723007,
   "mean_return_level6": -0.6299998760223389,
   "n_eval_episodes": 200,
   "seed": 0,
@@ -9,5 +9,5 @@
   "success_rate_held_out_pool_std": 0.0,
   "success_rate_level6": 0.0,
   "success_rate_level6_std": 0.0,
-  "total_steps_trained": 1395829
+  "total_steps_trained": 1983353
 }

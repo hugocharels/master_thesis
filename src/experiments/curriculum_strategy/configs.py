@@ -70,7 +70,6 @@ TARGET_RUNG: StageConfig = RUNGS[-1]
 # the controlled variable (NOT wall-clock: small grids step faster, so
 # equal wall-clock would hand the curriculum more env steps).
 TOTAL_STEPS: int = 600_000
-PILOT_TOTAL_STEPS: int = 300_000
 
 CONDITIONS: tuple[str, ...] = ("direct", "forward", "reverse", "mixed")
 ALGORITHMS: tuple[str, ...] = ("IQL", "VDN", "QMIX")

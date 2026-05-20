@@ -14,12 +14,23 @@
 #   # Pilot gate: VDN x 4 conditions x 1 seed:
 #   ALGOS="VDN" SEEDS="0" bash scripts/launch_curriculum_strategy.sh
 #
-#   # 3 processes per GPU across 2 GPUs (=6 concurrent):
-#   MAX_PARALLEL=6 bash scripts/launch_curriculum_strategy.sh
+#   # Pin to GPU 2 only, 3 concurrent (3 on that one GPU):
+#   GPUS="2" MAX_PARALLEL=3 bash scripts/launch_curriculum_strategy.sh
+#
+#   # GPUs 0 and 1, 3 per GPU (=6 concurrent), round-robined across them:
+#   GPUS="0 1" MAX_PARALLEL=6 bash scripts/launch_curriculum_strategy.sh
 #
 #   # One condition only, fewer seeds, shorter budget:
 #   CONDITIONS="forward direct" SEEDS="$(seq 0 9)" STEPS=300000 \
 #     bash scripts/launch_curriculum_strategy.sh
+#
+# Knobs (all optional env vars):
+#   GPUS          which physical GPU ids to use, space-separated (e.g. "2" or
+#                 "0 1 3"). Unset = auto-detect all. Empty ("") = CPU.
+#   MAX_PARALLEL  TOTAL concurrent training processes (3 per GPU -> set to
+#                 3 * number-of-GPUs-in-GPUS).
+#   CONDITIONS / ALGOS / SEEDS / STEPS  the sweep dimensions and budget.
+#   MARL_VENV     python interpreter (override on the Linux cluster).
 
 set -e
 
@@ -35,8 +46,19 @@ CONDITIONS="${CONDITIONS:-direct forward reverse mixed}"
 ALGOS="${ALGOS:-IQL VDN QMIX}"
 SEEDS="${SEEDS:-$(seq 0 19)}"   # 20 seeds for a publishable result
 
-# Round-robin training subprocesses across visible GPUs.
-NUM_GPUS=$(nvidia-smi -L 2>/dev/null | wc -l || echo 0)
+# Build the list of physical GPU ids to round-robin training across.
+#   GPUS unset   -> auto-detect every GPU nvidia-smi reports
+#   GPUS="0 1"   -> use exactly those ids
+#   GPUS=""      -> no GPU (CPU)
+if [ -z "${GPUS+x}" ]; then
+  _ndet=$(nvidia-smi -L 2>/dev/null | wc -l || echo 0)
+  GPU_LIST=()
+  for ((i = 0; i < _ndet; i++)); do GPU_LIST+=("$i"); done
+else
+  read -ra GPU_LIST <<< "$GPUS"
+fi
+NGPU=${#GPU_LIST[@]}
+echo "GPUs: ${GPU_LIST[*]:-none (CPU)} | MAX_PARALLEL=$MAX_PARALLEL | STEPS=$STEPS"
 
 # Pre-flight: SAT-generate the rung pools once if they are not present.
 if [ ! -d "$OUT_DIR/levels/stage_3_7x7_2a_2L_cooperative/eval" ]; then
@@ -63,10 +85,10 @@ for cond in $CONDITIONS; do
       fi
 
       gpu_index=""
-      [ "$NUM_GPUS" -gt 0 ] && gpu_index=$(( launched % NUM_GPUS ))
+      [ "$NGPU" -gt 0 ] && gpu_index=${GPU_LIST[$(( launched % NGPU ))]}
       launched=$((launched + 1))
 
-      echo "[${count}/${total}] Launching ${cond}_${algo}_seed${seed}${gpu_index:+ on cuda:$gpu_index}"
+      echo "[${count}/${total}] Launching ${cond}_${algo}_seed${seed}${gpu_index:+ on physical GPU $gpu_index}"
       CUDA_VISIBLE_DEVICES="$gpu_index" "$PY" -m experiments.curriculum_strategy.run_experiment \
         --condition "$cond" --algo "$algo" --seed "$seed" --steps "$STEPS" &
       pids+=($!)

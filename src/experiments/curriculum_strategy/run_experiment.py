@@ -81,6 +81,35 @@ def _epsilon_decay_steps(total_steps: int) -> int:
     return max(100_000, int(0.30 * total_steps))
 
 
+EPS_DECAY_FRACTION: float = 0.30
+
+
+def _set_stage_epsilon(
+    trainer, global_start: int, stage_budget: int,
+    start: float = 1.0, end: float = 0.05,
+) -> int:
+    """Reconfigure the epsilon schedule for a fresh explore->exploit cycle on
+    the current stage; returns the decay length used.
+
+    marl's ``LinearSchedule`` is a pure function of the global step the algo
+    feeds it (``algos/dqn.py``: ``self.policy.update(time_step)``), so a single
+    ramp would span the whole run -- early curriculum rungs would only explore
+    and the final (hardest) rung would never explore. We re-express the ramp in
+    global-step coordinates at each stage boundary: epsilon falls ``start`` ->
+    ``end`` over ``EPS_DECAY_FRACTION`` of this stage's budget, then holds.
+    """
+    decay = max(1, int(EPS_DECAY_FRACTION * stage_budget))
+    sched = trainer.train_policy.epsilon
+    sched.start_value = start
+    sched.end_value = end
+    sched.n_steps = global_start + decay  # clamp to ``end`` once the ramp ends
+    sched.a = (end - start) / decay
+    sched.b = start - sched.a * global_start
+    sched._t = global_start
+    sched._current_value = start
+    return decay
+
+
 def _build_trainer(algo: str, sample_env: ThesisLLEConfig, total_steps: int):
     eps_decay = _epsilon_decay_steps(total_steps)
     common = dict(
@@ -240,6 +269,7 @@ def main() -> None:
     episode_num = 0
     next_eval_at = EVAL_FREQUENCY_STEPS
     prev_stage = strategy.current_rung.stage_id
+    _set_stage_epsilon(trainer, 0, strategy.current_budget)
 
     try:
         while time_step < total_steps and not strategy.is_finished():
@@ -257,6 +287,8 @@ def main() -> None:
                 stage_csv.writerow([time_step, cur_stage])
                 stage_csv_f.flush()
                 prev_stage = cur_stage
+                # fresh explore->exploit cycle for the rung we just entered
+                _set_stage_epsilon(trainer, time_step, strategy.current_budget)
 
             while time_step >= next_eval_at:
                 cur_rung = strategy.current_rung
@@ -282,6 +314,7 @@ def main() -> None:
                 stage_eval_csv_f.flush()
                 print(
                     f"step={next_eval_at:>7d} cond={condition} stage={cur_stage} "
+                    f"eps={float(trainer.train_policy.epsilon.value):.2f} "
                     f"stage_sr={sr_stage:.3f} tgt_train_sr={sr_train:.3f} tgt_test_sr={sr_test:.3f} "
                     f"stage_ret={mr_stage:.2f} tgt_test_ret={mr_test:.2f}",
                     file=sys.stderr,

@@ -56,6 +56,11 @@ class FixedScheduleScheduler:
     def current_rung(self) -> StageConfig:
         return self._schedule[self._idx][0]
 
+    @property
+    def current_budget(self) -> int:
+        """Step budget of the entry currently being trained."""
+        return self._schedule[self._idx][1]
+
     def next_world(self) -> tuple[object, StageConfig]:
         return self._sampler.next(), self.current_rung
 
@@ -95,10 +100,12 @@ class MixedSampler:
         rungs: Sequence[StageConfig],
         pools: dict[int, list],
         rng_seed: int,
+        total_steps: int,
     ) -> None:
         if len(rungs) == 0:
             raise ValueError("rungs must be non-empty")
         self._rungs = list(rungs)
+        self._total_steps = total_steps
         self._rng = random.Random(rng_seed)
         self._samplers = {
             r.stage_id: PoolSampler(pools[r.stage_id], self._rng) for r in rungs
@@ -108,6 +115,11 @@ class MixedSampler:
     def current_rung(self) -> StageConfig:
         # No single "current" rung; report the hardest for logging.
         return self._rungs[-1]
+
+    @property
+    def current_budget(self) -> int:
+        """No staging -- the whole run is one budget for epsilon scheduling."""
+        return self._total_steps
 
     def next_world(self) -> tuple[object, StageConfig]:
         rung = self._rng.choice(self._rungs)
@@ -175,7 +187,7 @@ def make_strategy(
             pairs = list(reversed(pairs))  # same per-rung budget, reversed order
         return FixedScheduleScheduler(pairs, pools, rng_seed)
     if condition == "mixed":
-        return MixedSampler(rungs, pools, rng_seed)
+        return MixedSampler(rungs, pools, rng_seed, total_steps)
     raise ValueError(
         f"Unknown condition {condition!r}; expected one of "
         f"direct/forward/reverse/mixed"

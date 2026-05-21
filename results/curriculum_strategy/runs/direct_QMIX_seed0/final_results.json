@@ -1,0 +1,10 @@
+{
+  "condition": "direct",
+  "algo": "QMIX",
+  "seed": 0,
+  "total_steps_trained": 400000,
+  "success_rate_train": 0.565,
+  "mean_return_train": 2.115,
+  "success_rate_test": 0.17,
+  "mean_return_test": 0.765
+}

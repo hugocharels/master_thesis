@@ -13,25 +13,23 @@ from experiments.curriculum_strategy.configs import (
 )
 
 
-def test_five_rung_ladder_to_8x8():
-    assert len(RUNGS) == 5
+def test_three_rung_ladder_to_6x6():
+    assert len(RUNGS) == 3
     geo = [(r.height, r.width, r.n_agents, r.n_lasers) for r in RUNGS]
     assert geo == [
         (4, 4, 2, 0),   # navigation warmup
-        (5, 5, 2, 1),   # intro cooperation (proven-learnable rung)
-        (6, 6, 2, 1),
-        (7, 7, 2, 2),   # mutual cooperation
-        (8, 8, 2, 2),   # target
+        (5, 5, 2, 1),   # intro cooperation
+        (6, 6, 2, 1),   # target (largest single-laser rung that works)
     ]
-    assert [r.stage_id for r in RUNGS] == [1, 2, 3, 4, 5]
+    assert [r.stage_id for r in RUNGS] == [1, 2, 3]
     assert all(r.n_agents == 2 for r in RUNGS)
     assert RUNGS[0].generator_name == "random"               # 0-laser warmup
     assert all(r.generator_name == "cooperative" for r in RUNGS[1:])
 
 
-def test_target_is_8x8_with_held_out_pool():
+def test_target_is_6x6_with_held_out_pool():
     assert TARGET_RUNG is RUNGS[-1]
-    assert (TARGET_RUNG.height, TARGET_RUNG.width, TARGET_RUNG.n_lasers) == (8, 8, 2)
+    assert (TARGET_RUNG.height, TARGET_RUNG.width, TARGET_RUNG.n_lasers) == (6, 6, 1)
     assert TARGET_RUNG.eval_pool_size > 0
     assert all(r.eval_pool_size == 0 for r in RUNGS[:-1])
 

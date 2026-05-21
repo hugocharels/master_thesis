@@ -83,8 +83,8 @@ NGPU=${#GPU_LIST[@]}
 echo "GPUs: ${GPU_LIST[*]:-none (CPU)} | MAX_PARALLEL=$MAX_PARALLEL | STEPS=${STEPS:-config default (TOTAL_STEPS)}"
 
 # Pre-flight: SAT-generate the rung pools once if they are not present. The
-# guard checks the target rung's held-out eval pool (stage 5 = 8x8/2a/2L).
-if [ ! -d "$OUT_DIR/levels/stage_5_8x8_2a_2L_cooperative/eval" ]; then
+# guard checks the target rung's held-out eval pool (stage 3 = 6x6/2a/1L).
+if [ ! -d "$OUT_DIR/levels/stage_3_6x6_2a_1L_cooperative/eval" ]; then
   echo "Generating rung pools (one-off pre-flight)..."
   "$PY" -m experiments.curriculum_strategy._preflight
 fi

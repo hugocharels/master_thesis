@@ -216,19 +216,25 @@ def main() -> None:
     train_csv_f = open(run_dir / "train_eval.csv", "w", newline="", encoding="utf-8")
     test_csv_f = open(run_dir / "test_eval.csv", "w", newline="", encoding="utf-8")
     stage_csv_f = open(run_dir / "schedule_progress.csv", "w", newline="", encoding="utf-8")
+    stage_eval_csv_f = open(run_dir / "stage_eval.csv", "w", newline="", encoding="utf-8")
     train_csv = csv.writer(train_csv_f)
     test_csv = csv.writer(test_csv_f)
     stage_csv = csv.writer(stage_csv_f)
+    stage_eval_csv = csv.writer(stage_eval_csv_f)
     train_csv.writerow(["step", "success_rate", "mean_return"])
     test_csv.writerow(["step", "success_rate", "mean_return"])
     stage_csv.writerow(["step", "stage_id"])
     stage_csv.writerow([0, strategy.current_rung.stage_id])
+    # success on the rung currently being trained (vs. the always-on-target
+    # train_eval/test_eval), so a per-stage stall is visible during the run.
+    stage_eval_csv.writerow(["step", "stage_id", "success_rate", "mean_return"])
     # Flush after every write below so the CSVs are readable live (for
     # monitoring) and survive a killed run -- the default block buffering
     # otherwise holds all ~30 small rows until the file is closed at the end.
     train_csv_f.flush()
     test_csv_f.flush()
     stage_csv_f.flush()
+    stage_eval_csv_f.flush()
 
     time_step = 0
     episode_num = 0
@@ -253,6 +259,11 @@ def main() -> None:
                 prev_stage = cur_stage
 
             while time_step >= next_eval_at:
+                cur_rung = strategy.current_rung
+                sr_stage, mr_stage = _assess_on_pool(
+                    train_pools[cur_rung.stage_id], cur_rung.t_max, test_agent,
+                    EVAL_EPISODES, eval_rng, target_obs_shape, target_state_shape,
+                )
                 sr_train, mr_train = _assess_on_pool(
                     target_train_pool, TARGET_RUNG.t_max, test_agent,
                     EVAL_EPISODES, eval_rng, target_obs_shape, target_state_shape,
@@ -263,12 +274,16 @@ def main() -> None:
                 )
                 train_csv.writerow([next_eval_at, f"{sr_train:.6f}", f"{mr_train:.6f}"])
                 test_csv.writerow([next_eval_at, f"{sr_test:.6f}", f"{mr_test:.6f}"])
+                stage_eval_csv.writerow(
+                    [next_eval_at, cur_rung.stage_id, f"{sr_stage:.6f}", f"{mr_stage:.6f}"]
+                )
                 train_csv_f.flush()
                 test_csv_f.flush()
+                stage_eval_csv_f.flush()
                 print(
                     f"step={next_eval_at:>7d} cond={condition} stage={cur_stage} "
-                    f"train_sr={sr_train:.3f} test_sr={sr_test:.3f} "
-                    f"train_ret={mr_train:.2f} test_ret={mr_test:.2f}",
+                    f"stage_sr={sr_stage:.3f} tgt_train_sr={sr_train:.3f} tgt_test_sr={sr_test:.3f} "
+                    f"stage_ret={mr_stage:.2f} tgt_test_ret={mr_test:.2f}",
                     file=sys.stderr,
                 )
                 next_eval_at += EVAL_FREQUENCY_STEPS
@@ -276,6 +291,7 @@ def main() -> None:
         train_csv_f.close()
         test_csv_f.close()
         stage_csv_f.close()
+        stage_eval_csv_f.close()
 
     sr_train, mr_train = _assess_on_pool(
         target_train_pool, TARGET_RUNG.t_max, test_agent,

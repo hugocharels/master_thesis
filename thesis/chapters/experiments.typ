@@ -475,7 +475,7 @@ pool and the $500$-level pool contains both. A single held-out test pool of $|ca
 change in held-out success is attributable to the training-pool size alone.
 
 For each pool size we train $|cal(A)| times |cal(S)| = 3 times 20 = 60$ independent agents
-($cal(A) = {"IQL", "VDN", "QMIX"}$, $cal(S) = {0, ..., 19}$) for $300{,}000$ environment steps, and
+($cal(A) = {"IQL", "VDN", "QMIX"}$, $cal(S) = {0, ..., 19}$) for $300","000$ environment steps, and
 report the final $200$-episode greedy success rate on each pool. Aggregates are taken over all
 sixty runs per pool size, summarised as a mean and a $95%$ confidence interval.
 

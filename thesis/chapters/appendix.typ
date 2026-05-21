@@ -428,6 +428,38 @@ in @fig-pool-learnability-train and @fig-pool-learnability-test; the additional 
 generator, representative samples of which are shown in
 @appendix-gallery-constructive-cooperative. They are not reproduced individually here.
 
+The per-pool-size learning curves below mirror @fig-learnability-curves: each panel pair shows the
+train- and test-pool success rate against environment steps for IQL, VDN, and QMIX, with $95%$
+confidence bands over the seeds. Read together, they make the effect of @data-scaling-experiment
+visible step by step — as the training pool grows from 20 to 100 to 500 levels, the test curves
+(right panel of each figure) climb toward the training curves (left panel), i.e. the
+generalisation gap closes.
+
+#figure(
+  image("../../results/datascale_5x5_2a_1L_n20/figures/learning_curves.pdf", width: 100%),
+  caption: [
+    Data scaling with $|cal(D)_("train")| = 20$ levels: mean train- and test-pool success rate
+    versus environment steps, per algorithm, with $95%$ confidence bands over the seeds. The
+    test curves plateau far below the training curves (large gap).
+  ],
+) <fig-datascale-curves-20>
+
+#figure(
+  image("../../results/datascale_5x5_2a_1L_n100/figures/learning_curves.pdf", width: 100%),
+  caption: [
+    Data scaling with $|cal(D)_("train")| = 100$ levels: the training curves drop and the test
+    curves rise relative to the 20-level case, narrowing the gap.
+  ],
+) <fig-datascale-curves-100>
+
+#figure(
+  image("../../results/datascale_5x5_2a_1L_n500/figures/learning_curves.pdf", width: 100%),
+  caption: [
+    Data scaling with $|cal(D)_("train")| = 500$ levels: the train and test curves nearly coincide
+    — the agent generalises to held-out levels about as well as it fits the training pool.
+  ],
+) <fig-datascale-curves-500>
+
 
 == Generator Gallery — Constrained Random Generator <appendix-gallery-constrained-random>
 

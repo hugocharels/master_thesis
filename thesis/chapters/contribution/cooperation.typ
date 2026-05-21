@@ -328,7 +328,13 @@ for some pair $c eq.not c'$. *Example.* Two laser sources of distinct colours, e
 the other agent's path: each agent must truncate its own beam to shield the other at some
 point in the plan (@fig-profile-mutual). Both edges are present, and a level is classified as
 `mutual` even when additional one-way edges between other pairs also exist, as long as the
-agents do not all belong to a single strongly connected component.
+agents do not all belong to a single strongly connected component. Because *fully coupled* takes
+priority in the decision order, the `mutual` label is only reachable with $|C| >= 3$ agents:
+when $|C| = 2$, a reciprocal pair is itself a strongly connected component spanning the whole
+agent set (size $2 = |C| > 1$), so the level is labelled `fully_coupled` and the `mutual` branch
+is never reached. The example in @fig-profile-mutual therefore includes a third agent on an
+independent path, outside the reciprocal pair, which keeps the largest strongly connected
+component at size two while $|C| = 3$.
 
 #figure(
   grid(
@@ -341,9 +347,10 @@ agents do not all belong to a single strongly connected component.
   caption: [
     `mutual`: two stacked beams of distinct colours. Each agent is immune to its own beam
     but must wait for the other to truncate the foreign beam before crossing. A third agent
-    is present so the level has three exits to fill; it has an independent path and does
-    not participate in any helper relationship, hence appears as an isolated vertex in the
-    dependency graph. Edges: ${(0, 1), (1, 0)}$.
+    on an independent path is required to keep the profile distinct from `fully_coupled`: with
+    only the reciprocal pair the two agents would form a strongly connected component spanning
+    the whole agent set. It participates in no helper relationship, hence appears as an isolated
+    vertex in the dependency graph. Edges: ${(0, 1), (1, 0)}$.
   ],
 ) <fig-profile-mutual>
 
@@ -391,10 +398,10 @@ reciprocal edge $(1, 0)$ is absent.)
   ],
 ) <fig-profile-distributed>
 
-*Fully coupled.* The largest strongly connected component of the dependency graph has size
-$|C|$ and $|C| > 1$. *Example.* Three agents in which every pair of agents helps each other,
-yielding a directed cycle on all three agents and a strongly connected component of size three
-(@fig-profile-fully-coupled). This is the strictest profile and is rare on small grids.
+*Fully coupled.* The largest strongly connected component of the dependency graph spans the
+entire agent set: its size equals the number of agents $|C|$ (with $|C| > 1$). *Example.* Three
+agents in which every pair of agents helps each other, yielding a directed cycle on all three
+agents and a strongly connected component of size three $= |C|$ (@fig-profile-fully-coupled). This is the strictest profile and is rare on small grids.
 
 #figure(
   grid(

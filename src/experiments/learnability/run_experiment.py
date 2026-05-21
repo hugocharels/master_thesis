@@ -64,6 +64,10 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--lasers", type=int, default=GRID.n_lasers)
     parser.add_argument("--t-max", type=int, default=GRID.t_max)
     parser.add_argument("--generator", default=GRID.generator_name)
+    # Per-step reward penalty (default 0.0 = unchanged from prior runs). A
+    # small value (e.g. 0.02) restores a learnable gradient on hard settings
+    # where sparse exit reward is never reached under random exploration.
+    parser.add_argument("--step-penalty", type=float, default=0.0)
     return parser
 
 
@@ -257,7 +261,9 @@ def main() -> None:
     try:
         while time_step < total_steps:
             world = train_rng.choice(train_pool)
-            env_cfg = ThesisLLEConfig.from_world(world, t_max=config.t_max)
+            env_cfg = ThesisLLEConfig.from_world(
+                world, t_max=config.t_max, step_penalty=args.step_penalty,
+            )
 
             episode, last_info, time_step = _train_one_episode(
                 env=env_cfg.env,

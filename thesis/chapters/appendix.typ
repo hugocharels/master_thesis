@@ -106,6 +106,8 @@ seed conventions are summarised below.
     [Profile-benchmark seeds],         [Per-generator RNG inside `run_profile_benchmark.py`],
     [Learnability training-pool seed], [20260618],
     [Learnability training seeds],     [$cal(S) = {0, 1, ..., 19}$ (twenty seeds per algorithm)],
+    [Data-scaling pool seeds],         [20260618 (train), 20260619 (test); pools nested, test size 50],
+    [Data-scaling training seeds],     [$cal(S) = {0, 1, ..., 19}$ per algorithm and pool size],
     [Appendix-gallery pool seeds],     [Distinct per pool, listed in each gallery parameter table],
   ),
   caption: [
@@ -118,12 +120,13 @@ seed conventions are summarised below.
 
 == Learnability Hyperparameters <appendix-learnability-hyperparams>
 
-The learnability experiment (@learnability-experiment) and the curriculum-transfer experiment
-(@transfer-experiment) share the same trainer construction in
-`src/experiments/learnability/run_experiment.py` and
+The learnability experiment (@learnability-experiment), the data-scaling experiment
+(@data-scaling-experiment), and the curriculum-transfer experiment (@transfer-experiment) share
+the same trainer construction in `src/experiments/learnability/run_experiment.py` and
 `src/experiments/curriculum/run_experiment.py`. The hyperparameters listed in
-@tab-learnability-hyperparams are identical across the three algorithms (IQL, VDN, QMIX) and
-will be reused unchanged for the curriculum-transfer runs.
+@tab-learnability-hyperparams are identical across the three algorithms (IQL, VDN, QMIX); they
+are reused unchanged for the data-scaling runs and (once its design is locked) for the
+curriculum-transfer runs.
 
 #figure(
   table(
@@ -385,6 +388,45 @@ Held-out cooperative pool used as $cal(D)_("test")$ for @learnability-experiment
   pool_grid("../../results/learnability_5x5/levels/5x5_2a_1L_cooperative/test/images", 20),
   caption: [All 20 levels of the learnability test pool, in pool order.],
 ) <fig-pool-learnability-test>
+
+
+== Data-Scaling Experiment — Configuration <appendix-data-scaling>
+
+The data-scaling experiment (@data-scaling-experiment) reuses the learnability task, generator,
+and hyperparameters (@appendix-learnability-hyperparams) unchanged, and varies only the
+training-pool size. @tab-data-scaling-config lists the full configuration.
+
+#figure(
+  table(
+    columns: 2,
+    stroke: black,
+    inset: 8pt,
+    align: (left, left),
+    table.header([*Field*], [*Value*]),
+    [Grid / agents / lasers],                       [5 × 5 / 2 / 1],
+    [Horizon $T_("max")$],                          [10],
+    [Generator],                                    [Constructive (cooperative mode)],
+    [Training-pool sizes $|cal(D)_("train")|$],     [20, 100, 500 (nested)],
+    [Held-out test-pool size $|cal(D)_("test")|$],  [50 (fixed across all conditions)],
+    [Training-pool seed],                           [20260618],
+    [Test-pool seed],                               [20260619],
+    [Environment steps per run],                    [300,000],
+    [Algorithms],                                   [IQL, VDN, QMIX],
+    [Training seeds],                               [$cal(S) = {0, 1, ..., 19}$],
+    [Runs per pool size],                           [60 (3 algorithms × 20 seeds)],
+  ),
+  caption: [Configuration of the data-scaling experiment (@data-scaling-experiment).],
+) <tab-data-scaling-config>
+
+The three training pools are nested prefixes of a single seeded stream (seed 20260618): the
+20-level pool is exactly the learnability training pool of @appendix-learnability-train, the
+100-level pool contains it, and the 500-level pool contains both. The 50-level held-out test
+pool (seed 20260619) is a superset of the 20-level learnability test pool of
+@appendix-learnability-test. Per-level renderings of the 20-level pool therefore already appear
+in @fig-pool-learnability-train and @fig-pool-learnability-test; the additional levels in the
+100- and 500-level pools are further independent draws from the same constructive cooperative
+generator, representative samples of which are shown in
+@appendix-gallery-constructive-cooperative. They are not reproduced individually here.
 
 
 == Generator Gallery — Constrained Random Generator <appendix-gallery-constrained-random>

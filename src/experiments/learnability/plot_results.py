@@ -110,7 +110,7 @@ def plot_learning_curves(runs_dir: Path, out_path: Path) -> None:
             std = matrix.std(axis=0)
             color = ALGO_COLORS[algo]
 
-            ax.plot(steps_ref, mean, label=f"{algo} (n={n})", color=color)
+            ax.plot(steps_ref, mean, label=algo, color=color)
 
             if n > 1:
                 # CI95 band clipped to [min, max], matching marl style
@@ -177,7 +177,7 @@ def plot_final_bar_chart(runs_dir: Path, out_path: Path) -> None:
                hatch=hatch, label=f"{split} set")
 
     ax.set_xticks(x)
-    ax.set_xticklabels([f"{a}\n(n={len(per_algo[a]['train'])})" for a in present])
+    ax.set_xticklabels(present)
     ax.set_ylabel("exit_rate")
     ax.set_title("Final success rate by algorithm")
     ax.set_ylim(0.0, 1.05)

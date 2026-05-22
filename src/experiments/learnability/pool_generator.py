@@ -38,8 +38,15 @@ def build_pool(
     seed: int,
     n_levels: int,
     max_attempts_per_level: int = 1000,
+    profile: str | None = None,
 ) -> list[World]:
-    """Generate ``n_levels`` cooperative levels deterministically."""
+    """Generate ``n_levels`` cooperative levels deterministically.
+
+    ``profile`` selects a cooperation-profile filter (e.g. ``"mutual"``,
+    ``"fully_coupled"``) for profile-aware generators such as ``cooperative``;
+    it is ignored by generators that have no ``profile`` attribute. When
+    ``None`` the generator keeps its own default, preserving prior behaviour.
+    """
     cls = GENERATOR_REGISTRY[config.generator_name]
     generator = cls(
         size=(config.height, config.width),
@@ -49,6 +56,8 @@ def build_pool(
         seed=seed,
     )
     generator.max_attempts = max_attempts_per_level
+    if profile is not None:
+        generator.profile = profile
     pool: list[World] = []
     for i in range(n_levels):
         try:

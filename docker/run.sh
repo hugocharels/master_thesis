@@ -81,6 +81,7 @@ docker run --rm -it \
     -e CONDITIONS \
     -e ALGOS \
     -e STEPS \
+    -e STEP_PENALTY \
     --memory="$MEM_LIMIT" \
     --memory-swap="$SWAP_LIMIT" \
     -v "$PROJECTS_DIR:/workspace" \

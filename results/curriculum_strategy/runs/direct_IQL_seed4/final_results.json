@@ -1,0 +1,10 @@
+{
+  "condition": "direct",
+  "algo": "IQL",
+  "seed": 4,
+  "total_steps_trained": 400000,
+  "success_rate_train": 0.36,
+  "mean_return_train": 1.685,
+  "success_rate_test": 0.09,
+  "mean_return_test": 0.445
+}

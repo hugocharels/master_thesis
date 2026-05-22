@@ -1,0 +1,10 @@
+{
+  "condition": "forward",
+  "algo": "QMIX",
+  "seed": 4,
+  "total_steps_trained": 400000,
+  "success_rate_train": 0.415,
+  "mean_return_train": 1.815,
+  "success_rate_test": 0.2,
+  "mean_return_test": 0.89
+}

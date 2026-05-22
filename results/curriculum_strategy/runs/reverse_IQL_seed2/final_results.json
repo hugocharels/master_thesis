@@ -1,0 +1,10 @@
+{
+  "condition": "reverse",
+  "algo": "IQL",
+  "seed": 2,
+  "total_steps_trained": 400000,
+  "success_rate_train": 0.115,
+  "mean_return_train": 0.43,
+  "success_rate_test": 0.04,
+  "mean_return_test": -0.025
+}

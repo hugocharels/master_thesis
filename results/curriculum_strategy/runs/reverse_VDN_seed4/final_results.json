@@ -1,0 +1,10 @@
+{
+  "condition": "reverse",
+  "algo": "VDN",
+  "seed": 4,
+  "total_steps_trained": 400000,
+  "success_rate_train": 0.16,
+  "mean_return_train": 0.45,
+  "success_rate_test": 0.17,
+  "mean_return_test": 0.435
+}

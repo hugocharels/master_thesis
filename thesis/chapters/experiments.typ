@@ -534,9 +534,93 @@ and cooperation-requiring (@cooperation-detection) — levels at near-zero rejec
 directly supplies the quantity of training data needed to close the gap, something a fixed library
 of hand-crafted levels cannot. The generator's formal guarantees thus translate into a concrete
 downstream benefit: scaling generated training data converts overfitting into generalisation. This
-also delimits the role of the curriculum studied next (@transfer-experiment): curricula target
-levels too *hard* to learn directly, whereas data scaling targets levels that are learnable but not
-yet *generalised*.
+also delimits the role of the curriculum studied next: curricula target either the *ordering* of
+staged exposure on a target that is already reachable (@curriculum-strategy-experiment) or levels
+too *hard* to learn directly (@transfer-experiment), whereas data scaling targets levels that are
+learnable but not yet *generalised*.
+
+
+== Curriculum Ordering on a Reachable $6 times 6$ Cooperative Target <curriculum-strategy-experiment>
+
+=== Experimental Question
+
+@data-scaling-experiment showed that the learnability ceiling on *reachable* generated levels is
+a data-quantity effect rather than an intrinsic algorithmic limit. RQ6 (@transfer-experiment) asks
+the harder question of whether a staged curriculum transfers to the hand-crafted LLE Level 6, a
+target on which direct training is expected to fail outright. As a controlled precursor we first
+isolate the curriculum *mechanism itself* on a target that direct training can already reach.
+Holding the task, the difficulty ladder, the total training budget, and the held-out evaluation
+fixed, we vary only *how* the budget is allocated across a ladder of growing geometric and
+cooperative complexity, and ask whether the *ordering* of staged exposure changes final
+performance or sample efficiency on the target. Because the target is reachable by the direct
+baseline, any difference between conditions is attributable to scheduling alone rather than to the
+target being unreachable.
+
+=== Protocol
+
+The difficulty ladder has three rungs, each supplied by the generators of @generators: a
+$4 times 4$ / 2-agent / 0-laser navigation warm-up (random generator, $T_("max") = 8$), a
+$5 times 5$ / 2-agent / 1-laser cooperative rung ($T_("max") = 10$), and the $6 times 6$ /
+2-agent / 1-laser cooperative *target* rung ($T_("max") = 12$). The agent count is fixed at two
+across all rungs so the $Q$-network input shape is constant; smaller observations are zero-padded
+to the target geometry. Each rung draws $100$ distinct certified levels for training, and the
+target rung additionally holds out an independent pool of $50$ levels for the generalisation
+metric.
+
+We compare four budget-matched scheduling conditions, each trained for a total of $400","000$
+environment steps:
+
+- *direct* spends the entire budget on the $6 times 6$ target rung;
+- *forward* walks the ladder easy-to-hard, allocating $(50, 150, 200) times 10^3$ steps to the
+  three rungs in order;
+- *reverse* uses the same per-rung budgets but visits the rungs hard-to-easy, so it reaches the
+  target early and ends on the navigation rung, arriving at the held-out evaluation cold;
+- *mixed* draws a rung uniformly at random each episode (domain randomisation) for the whole
+  budget.
+
+Each condition is run with all three algorithms ($cal(A) = {"IQL", "VDN", "QMIX"}$) and a planned
+$20$ seeds. The exploration rate is reset at every stage boundary and decayed independently within
+each rung's budget, so that early rungs are not starved of exploitation nor the target of
+exploration. Evaluation is always performed on the $6 times 6$ target: every $10","000$ steps on
+$50$ episodes during training, and a final $200$-episode greedy success rate on both the training
+and held-out test pools at the end. Aggregates are reported as a mean and a $95%$ confidence
+interval over seeds.
+
+=== Results
+
+#emph[
+  These runs are still in progress: at the time of writing, $5$ of the planned $20$ seeds per
+  (condition, algorithm) cell are available. The figures below are therefore preliminary and are
+  shown without a quantitative summary table; the per-condition success-rate table and the
+  interpretation of the ordering effect will be added once the full seed set has completed.
+]
+
+#figure(
+  image("../../results/curriculum_strategy/figures/test_curves_pooled.pdf", width: 80%),
+  caption: [
+    Held-out test success on the $6 times 6$ / 2-agent / 1-laser target as a function of
+    environment step, one line per scheduling condition (direct, forward, reverse, mixed) pooled
+    over the three algorithms and the available seeds. Shaded bands are $95%$ confidence intervals.
+    Interim: aggregated over $n = 5$ of a planned $20$ seeds.
+  ],
+) <fig-curriculum-strategy-pooled>
+
+#figure(
+  image("../../results/curriculum_strategy/figures/test_curves_by_algo.pdf", width: 100%),
+  caption: [
+    The same held-out test learning curves as @fig-curriculum-strategy-pooled, shown per algorithm
+    (IQL, VDN, QMIX) rather than pooled. Interim: $n = 5$ of a planned $20$ seeds.
+  ],
+) <fig-curriculum-strategy-by-algo>
+
+#figure(
+  image("../../results/curriculum_strategy/figures/final_success.pdf", width: 90%),
+  caption: [
+    Final greedy success rate on the training and held-out test pools at the end of the
+    $400","000$-step budget, grouped by scheduling condition, with one bar per algorithm and
+    $95%$ confidence-interval error bars over seeds. Interim: $n = 5$ of a planned $20$ seeds.
+  ],
+) <fig-curriculum-strategy-final>
 
 
 == Curriculum Transfer to Level-6-Style Targets <transfer-experiment>

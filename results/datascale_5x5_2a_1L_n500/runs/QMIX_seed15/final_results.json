@@ -1,0 +1,11 @@
+{
+  "algo": "QMIX",
+  "seed": 15,
+  "total_steps_trained": 300000,
+  "success_rate_train": 0.515,
+  "success_rate_train_std": 0.4997749493522059,
+  "mean_return_train": 2.005,
+  "success_rate_test": 0.535,
+  "success_rate_test_std": 0.49877349568717055,
+  "mean_return_test": 1.915
+}

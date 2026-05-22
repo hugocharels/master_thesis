@@ -1,0 +1,10 @@
+{
+  "condition": "mixed",
+  "algo": "IQL",
+  "seed": 2,
+  "total_steps_trained": 400000,
+  "success_rate_train": 0.195,
+  "mean_return_train": 1.315,
+  "success_rate_test": 0.1,
+  "mean_return_test": 0.925
+}

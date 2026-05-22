@@ -114,7 +114,8 @@ for algo in $ALGOS; do
     CUDA_VISIBLE_DEVICES="$gpu_index" "$PY" -m experiments.learnability.run_experiment \
       --algo "$algo" --seed "$seed" --steps "$STEPS" \
       --height "$HEIGHT" --width "$WIDTH" --agents "$AGENTS" --lasers "$LASERS" \
-      --t-max "$TMAX" --out-dir "$OUT_DIR" --step-penalty "$STEP_PENALTY" &
+      --t-max "$TMAX" --generator "$GENERATOR" --out-dir "$OUT_DIR" \
+      --step-penalty "$STEP_PENALTY" &
     pids+=($!)
 
     if [ ${#pids[@]} -ge $MAX_PARALLEL ]; then

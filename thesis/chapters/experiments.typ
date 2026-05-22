@@ -493,13 +493,13 @@ sixty runs per pool size, summarised as a mean and a $95%$ confidence interval.
 ) <fig-data-scaling>
 
 @fig-data-scaling and @tab-data-scaling show a clear monotone effect. Held-out test success rises
-from $0.14$ at twenty levels to $0.29$ at one hundred and $0.44$ at five hundred — roughly a
-threefold improvement — while training success *falls* from $0.64$ to $0.43$ over the same range.
+from $0.14$ at twenty levels to $0.28$ at one hundred and $0.43$ at five hundred — roughly a
+threefold improvement — while training success *falls* from $0.65$ to $0.43$ over the same range.
 The train–test gap therefore collapses from $0.50$ to $0.19$ to approximately zero: at five hundred
 levels the agent performs essentially identically on training and held-out levels, i.e. it has
 stopped memorising the training pool and learned a policy that transfers across the level
 distribution. The monotone increase in held-out success holds for each algorithm individually (IQL
-$0.16 -> 0.25 -> 0.38$; VDN $0.13 -> 0.27 -> 0.45$; QMIX $0.13 -> 0.35 -> 0.48$), so the effect is a
+$0.16 -> 0.26 -> 0.38$; VDN $0.14 -> 0.26 -> 0.42$; QMIX $0.13 -> 0.31 -> 0.49$), so the effect is a
 property of the data regime rather than of any single credit-assignment scheme.
 
 #figure(
@@ -513,9 +513,9 @@ property of the data regime rather than of any single credit-assignment scheme.
       [*Train mean $plus.minus$ CI95*], [*Test mean $plus.minus$ CI95*],
       [*Train $-$ test gap*],
     ),
-    [20],  [60], [$0.64 plus.minus 0.05$], [$0.14 plus.minus 0.02$], [$0.50$],
-    [100], [60], [$0.48 plus.minus 0.04$], [$0.29 plus.minus 0.04$], [$0.19$],
-    [500], [60], [$0.43 plus.minus 0.03$], [$0.44 plus.minus 0.03$], [$-0.01$],
+    [20],  [60], [$0.65 plus.minus 0.02$], [$0.14 plus.minus 0.01$], [$0.50$],
+    [100], [60], [$0.47 plus.minus 0.02$], [$0.28 plus.minus 0.02$], [$0.19$],
+    [500], [60], [$0.43 plus.minus 0.02$], [$0.43 plus.minus 0.03$], [$0.00$],
   ),
   caption: [
     Final success rates on the $5 times 5$ cooperative task as the training-pool size grows, with a

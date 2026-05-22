@@ -41,26 +41,6 @@ mean +- CI95 table). The base result = does **forward/mixed beat direct on held-
 
 ---
 
-## 2. Data scaling — remaining seeds (5..19, to reach 20)  [secondary]
-
-Seeds 0-4 are done; the thesis section is written with provisional 5-seed numbers.
-Nested pools are reused, finished cells are skipped.
-
-```bash
-SEEDS="$(seq 5 19)" GPU_DEVICES="0,1,2,3,4,5,6,7" MAX_PARALLEL=24 \
-  bash docker/run.sh -- bash scripts/data_scaling_sweep.sh
-```
-- 15 seeds x 3 sizes (20/100/500) x 3 algos = **135 runs**, 300k steps each.
-
-**After it finishes:**
-```bash
-git add results/datascale_* && git commit -m "new results: data-scaling 20 seeds" && git push
-```
--> tell Claude to re-run `experiments.learnability.plot_data_scaling` and update the
-thesis table/figure to the final 20-seed numbers.
-
----
-
 ## Later (not built yet) — CL where direct fails
 
 The base proves CL helps on a reachable target. The follow-up experiment points CL at

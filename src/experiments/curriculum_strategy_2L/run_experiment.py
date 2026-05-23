@@ -66,6 +66,17 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--seed", required=True, type=int)
     parser.add_argument("--steps", type=int, default=TOTAL_STEPS)
     parser.add_argument("--out-dir", type=Path, default=DEFAULT_OUT_DIR)
+    parser.add_argument(
+        "--target-train-subsample",
+        type=int,
+        default=0,
+        help=(
+            "If > 0, truncate the 2-laser target TRAIN pool to its first N levels "
+            "(the held-out eval pool is untouched). N=1 is a single-level overfit "
+            "probe -- the capacity gate for whether the learner can represent a "
+            "mutual-coordination solution at all."
+        ),
+    )
     return parser
 
 
@@ -98,6 +109,13 @@ def main() -> None:
 
     train_pools = _load_train_pools(out_dir)
     target_eval_pool = _load_target_eval_pool(out_dir)
+    if args.target_train_subsample > 0:
+        n = min(args.target_train_subsample, len(train_pools[TARGET_RUNG.stage_id]))
+        train_pools[TARGET_RUNG.stage_id] = train_pools[TARGET_RUNG.stage_id][:n]
+        print(
+            f"Subsampled target train pool to {n} level(s) (overfit probe)",
+            file=sys.stderr,
+        )
     target_train_pool = train_pools[TARGET_RUNG.stage_id]
     print(
         f"Loaded train pools {[len(train_pools[r.stage_id]) for r in RUNGS]} + "

@@ -28,6 +28,8 @@
 #                 Unset = auto-detect all exposed. "" = CPU.
 #   MAX_PARALLEL  TOTAL concurrent training processes (3 per GPU is a good rule).
 #   CONDITIONS / ALGOS / SEEDS / STEPS   the sweep dimensions and budget.
+#   EXTRA_ARGS    extra flags appended verbatim to every run_experiment call,
+#                 e.g. "--target-train-subsample 1" for a single-level overfit.
 #   MARL_VENV     python interpreter (same convention as the other launch_*.sh).
 
 set -e
@@ -39,6 +41,10 @@ OUT_DIR="results/curriculum_strategy_2L"
 # Empty by default -> do NOT pass --steps, so the runner uses its config default
 # (experiments.curriculum_strategy_2L.configs.TOTAL_STEPS, currently 600k).
 STEPS="${STEPS:-}"
+# Extra flags appended verbatim to every run_experiment call. Intentionally
+# word-split (unquoted at the call site) so multi-token values pass through,
+# e.g. EXTRA_ARGS="--target-train-subsample 1" for a single-level overfit probe.
+EXTRA_ARGS="${EXTRA_ARGS:-}"
 MAX_PARALLEL="${MAX_PARALLEL:-3}"
 CONDITIONS="${CONDITIONS:-direct forward reverse mixed}"
 ALGOS="${ALGOS:-IQL VDN QMIX}"
@@ -91,7 +97,7 @@ for cond in $CONDITIONS; do
 
       echo "[${count}/${total}] Launching ${cond}_${algo}_seed${seed}${gpu_index:+ on physical GPU $gpu_index}"
       CUDA_VISIBLE_DEVICES="$gpu_index" "$PY" -m experiments.curriculum_strategy_2L.run_experiment \
-        --condition "$cond" --algo "$algo" --seed "$seed" ${STEPS:+--steps $STEPS} &
+        --condition "$cond" --algo "$algo" --seed "$seed" ${STEPS:+--steps $STEPS} ${EXTRA_ARGS:-} &
       pids+=($!)
 
       if [ ${#pids[@]} -ge $MAX_PARALLEL ]; then

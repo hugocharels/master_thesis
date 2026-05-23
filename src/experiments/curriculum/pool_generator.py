@@ -81,7 +81,7 @@ def pool_path(base_dir: Path | str, stage: StageConfig, split: Split) -> Path:
 # ----- Generator factory ----------------------------------------------------
 
 
-def _build_generator(stage: StageConfig, seed: int):
+def _build_generator(stage: StageConfig, seed: int, profile: str | None = None):
     """Instantiate the registered generator for ``stage`` with ``seed``.
 
     All thesis generators currently in the registry share the
@@ -97,13 +97,18 @@ def _build_generator(stage: StageConfig, seed: int):
             f"Known: {sorted(GENERATOR_REGISTRY)}"
         )
     cls = GENERATOR_REGISTRY[stage.generator_name]
-    return cls(
+    generator = cls(
         size=(stage.height, stage.width),
         agents=stage.n_agents,
         lasers=stage.n_lasers,
         t_max=stage.t_max,
         seed=seed,
     )
+    # Profile-aware generators (e.g. ``cooperative``) expose a ``profile``
+    # attribute used as an acceptance filter; non-profile generators ignore it.
+    if profile is not None:
+        generator.profile = profile
+    return generator
 
 
 # ----- Pool builder ---------------------------------------------------------
@@ -114,6 +119,7 @@ def build_pool(
     seed: int,
     n_levels: int,
     max_attempts_per_level: int = 1000,
+    profile: str | None = None,
 ) -> list[World]:
     """Generate ``n_levels`` solvable levels deterministically from ``seed``.
 
@@ -130,7 +136,7 @@ def build_pool(
     """
     if n_levels <= 0:
         raise ValueError(f"n_levels must be positive, got {n_levels}")
-    generator = _build_generator(stage, seed=seed)
+    generator = _build_generator(stage, seed=seed, profile=profile)
     # Allow per-level retry budget without breaking the public default.
     generator.max_attempts = max_attempts_per_level
     pool: list[World] = []

@@ -1,0 +1,10 @@
+{
+  "condition": "mixed",
+  "algo": "VDN",
+  "seed": 7,
+  "total_steps_trained": 400000,
+  "success_rate_train": 0.31,
+  "mean_return_train": 1.555,
+  "success_rate_test": 0.145,
+  "mean_return_test": 0.895
+}

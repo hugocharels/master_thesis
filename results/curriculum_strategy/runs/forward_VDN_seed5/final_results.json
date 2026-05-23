@@ -1,0 +1,10 @@
+{
+  "condition": "forward",
+  "algo": "VDN",
+  "seed": 5,
+  "total_steps_trained": 400000,
+  "success_rate_train": 0.555,
+  "mean_return_train": 2.095,
+  "success_rate_test": 0.22,
+  "mean_return_test": 1.125
+}

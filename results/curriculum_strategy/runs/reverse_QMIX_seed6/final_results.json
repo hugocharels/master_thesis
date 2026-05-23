@@ -1,0 +1,10 @@
+{
+  "condition": "reverse",
+  "algo": "QMIX",
+  "seed": 6,
+  "total_steps_trained": 400000,
+  "success_rate_train": 0.205,
+  "mean_return_train": 0.865,
+  "success_rate_test": 0.23,
+  "mean_return_test": 0.645
+}

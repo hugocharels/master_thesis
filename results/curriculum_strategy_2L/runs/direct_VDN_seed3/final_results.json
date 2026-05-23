@@ -1,0 +1,10 @@
+{
+  "condition": "direct",
+  "algo": "VDN",
+  "seed": 3,
+  "total_steps_trained": 1500000,
+  "success_rate_train": 0.07,
+  "mean_return_train": 0.62,
+  "success_rate_test": 0.0,
+  "mean_return_test": -0.26
+}

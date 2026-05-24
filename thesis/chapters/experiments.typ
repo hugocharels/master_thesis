@@ -1,14 +1,16 @@
-The empirical evaluation has four parts. The first measures the effect of one modelling choice
-inside the SAT solver — the local versus global formulation of the agent-uniqueness constraint
-— on four benchmark levels. The second characterises the generator family's *efficiency* by
-measuring per-generator rejection rates and the number of attempts needed to obtain one
-accepted level. The third characterises the family's *output diversity* by classifying the
-cooperation profiles of accepted cooperative levels. The fourth asks whether off-the-shelf
-value-decomposition MARL agents can *learn* cooperative levels emitted by the generator, on a
-small grid where the training budget is comfortably sufficient. The curriculum-transfer
-experiment of @transfer-experiment is the fifth piece; it is in design at the time of writing
-and reported as a skeleton. Software versions and seed conventions for every experiment in
-this chapter are summarised in @appendix-reproducibility.
+The empirical evaluation proceeds in six parts. The first measures the effect of one modelling
+choice inside the SAT solver — the local versus global formulation of the agent-uniqueness
+constraint — on four benchmark levels. The second characterises the generator family's
+*efficiency* through per-generator rejection rates, and the third its *output diversity* through
+the cooperation-profile distribution of accepted levels. The fourth asks whether off-the-shelf
+value-decomposition MARL agents can *learn* cooperative levels emitted by the generator on a
+small grid, and the fifth shows that enlarging the generated training pool restores
+generalisation. The sixth turns to curriculum learning: we first isolate the curriculum
+*mechanism* on a target that direct training can already reach (@curriculum-strategy-experiment),
+then ask whether a curriculum can cross the *mutual*-cooperation boundary up to the hand-crafted
+LLE Level 6 (@transfer-experiment) — and find that it cannot, for reasons we trace to the base
+task rather than to the curriculum itself. Software versions and seed conventions for every
+experiment in this chapter are summarised in @appendix-reproducibility.
 
 
 == Experimental Question
@@ -96,8 +98,7 @@ The timing results show the same qualitative pattern. On the smallest synthetic 
 methods solve essentially instantaneously and the difference is negligible. Once the levels become
 moderately large, however, the local formulation is consistently faster both to generate and to
 solve. The contrast is especially visible on the $8 times 8$ level and on LLE Level 6, where the
-much larger global CNF induces a clear runtime penalty. Both axes are plotted in logarithmic scale
-because clause counts and runtimes span more than three orders of magnitude across the four levels.
+much larger global CNF induces a clear runtime penalty.
 
 One subtlety deserves comment. On LLE Level 6 the global formulation produces about 7 times more
 clauses than on the synthetic $8 times 8$ instance, yet its mean solve time is *lower*. This is not
@@ -337,7 +338,7 @@ The experiment fixes a single small-grid configuration that exercises the cooper
 end-to-end while remaining within reach of a 200,000-step budget: a $5 times 5$ grid with two
 agents and one laser, horizon $T_("max") = 10$, and the Constructive cooperative generator. The
 configuration is summarised in @tab-learnability-config. An earlier $8 times 8$, three-agent, two-laser
-configuration produced $0%$ success across all sixty (algorithm, seed) cells, leaving open
+configuration produced $0%$ success for every algorithm and seed we ran, leaving open
 whether the algorithms are fundamentally unable or whether the task simply exceeds the budget.
 The $5 times 5$ rerun isolates the former question.
 
@@ -397,7 +398,7 @@ algorithms reach a non-trivial success rate on the training pool well before the
 budget is exhausted, confirming that the $5 times 5$ cooperative task is learnable in
 principle. The held-out test pool is markedly harder for every algorithm: the test curves
 plateau below the corresponding training curves, with a train–test gap of $0.37$ for IQL,
-$0.40$ for QMIX, and $0.52$ for VDN at the end of training (@tab-learnability-final, and the
+$0.39$ for QMIX, and $0.52$ for VDN at the end of training (@tab-learnability-final, and the
 per-seed numbers in @tab-learnability-perseed).
 
 #figure(
@@ -440,7 +441,7 @@ twenty training levels rather than abstracting the cooperation pattern across th
     ),
     [IQL],  [20], [$0.60 plus.minus 0.03$], [$0.23 plus.minus 0.03$], [$0.37$],
     [VDN],  [20], [$0.70 plus.minus 0.05$], [$0.18 plus.minus 0.03$], [$0.52$],
-    [QMIX], [20], [$0.59 plus.minus 0.03$], [$0.20 plus.minus 0.03$], [$0.40$],
+    [QMIX], [20], [$0.59 plus.minus 0.03$], [$0.20 plus.minus 0.03$], [$0.39$],
   ),
   caption: [
     Per-algorithm final success rates on the $5 times 5$ cooperative pools, aggregated over
@@ -578,8 +579,8 @@ environment steps:
 - *mixed* draws a rung uniformly at random each episode (domain randomisation) for the whole
   budget.
 
-Each condition is run with all three algorithms ($cal(A) = {"IQL", "VDN", "QMIX"}$) and a planned
-$20$ seeds. The exploration rate is reset at every stage boundary and decayed independently within
+Each condition is run with all three algorithms ($cal(A) = {"IQL", "VDN", "QMIX"}$) and eight
+seeds, for $96$ runs in total. The exploration rate is reset at every stage boundary and decayed independently within
 each rung's budget, so that early rungs are not starved of exploitation nor the target of
 exploration. Evaluation is always performed on the $6 times 6$ target: every $10","000$ steps on
 $50$ episodes during training, and a final $200$-episode greedy success rate on both the training
@@ -588,20 +589,50 @@ interval over seeds.
 
 === Results
 
-#emph[
-  These runs are still in progress: at the time of writing, $5$ of the planned $20$ seeds per
-  (condition, algorithm) cell are available. The figures below are therefore preliminary and are
-  shown without a quantitative summary table; the per-condition success-rate table and the
-  interpretation of the ordering effect will be added once the full seed set has completed.
-]
+@tab-curriculum-strategy summarises the final greedy success rate of each scheduling condition,
+pooled over the three algorithms and the eight seeds per cell ($n = 24$ runs per condition). On
+the held-out $6 times 6$ target the ranking is *mixed* ($0.22 plus.minus 0.04$), then *direct*
+($0.17 plus.minus 0.03$), then *forward* ($0.15 plus.minus 0.03$), and last *reverse*
+($0.07 plus.minus 0.02$). The ordered easy-to-hard curriculum (*forward*) does not beat the
+*direct* baseline; the only condition that improves on direct is *mixed*, which exposes all three
+rungs in random order throughout training.
+
+#figure(
+  table(
+    columns: 5,
+    stroke: black,
+    inset: 8pt,
+    align: horizon,
+    table.header(
+      [*Condition*], [*$n$*],
+      [*Train mean $plus.minus$ CI95*], [*Test mean $plus.minus$ CI95*],
+      [*Train $-$ test gap*],
+    ),
+    [direct],  [24], [$0.41 plus.minus 0.05$], [$0.17 plus.minus 0.03$], [$0.24$],
+    [forward], [24], [$0.39 plus.minus 0.06$], [$0.15 plus.minus 0.03$], [$0.24$],
+    [mixed],   [24], [$0.39 plus.minus 0.07$], [$0.22 plus.minus 0.04$], [$0.17$],
+    [reverse], [24], [$0.10 plus.minus 0.02$], [$0.07 plus.minus 0.02$], [$0.03$],
+  ),
+  caption: [
+    Final greedy success rate on the $6 times 6$ / 2-agent / 1-laser target per scheduling
+    condition, aggregated over three algorithms and eight seeds ($n = 24$ runs per condition).
+    The 200-episode greedy evaluation is summarised as a mean and a $95%$ confidence interval
+    ($plus.minus t_(23,0.025) sigma / sqrt(24)$, $t_(23,0.025) approx 2.07$). Per-(condition,
+    algorithm) numbers are in @appendix-curriculum-strategy-detail.
+  ],
+) <tab-curriculum-strategy>
+
+The learning curves and the per-algorithm final success rates are shown in
+@fig-curriculum-strategy-pooled, @fig-curriculum-strategy-by-algo, and
+@fig-curriculum-strategy-final; they confirm that the ordering above holds within each
+algorithm, not only in the pooled aggregate.
 
 #figure(
   image("../../results/curriculum_strategy/figures/test_curves_pooled.pdf", width: 80%),
   caption: [
     Held-out test success on the $6 times 6$ / 2-agent / 1-laser target as a function of
     environment step, one line per scheduling condition (direct, forward, reverse, mixed) pooled
-    over the three algorithms and the available seeds. Shaded bands are $95%$ confidence intervals.
-    Interim: aggregated over $n = 5$ of a planned $20$ seeds.
+    over the three algorithms and the eight seeds. Shaded bands are $95%$ confidence intervals.
   ],
 ) <fig-curriculum-strategy-pooled>
 
@@ -609,7 +640,7 @@ interval over seeds.
   image("../../results/curriculum_strategy/figures/test_curves_by_algo.pdf", width: 100%),
   caption: [
     The same held-out test learning curves as @fig-curriculum-strategy-pooled, shown per algorithm
-    (IQL, VDN, QMIX) rather than pooled. Interim: $n = 5$ of a planned $20$ seeds.
+    (IQL, VDN, QMIX) rather than pooled.
   ],
 ) <fig-curriculum-strategy-by-algo>
 
@@ -618,43 +649,185 @@ interval over seeds.
   caption: [
     Final greedy success rate on the training and held-out test pools at the end of the
     $400","000$-step budget, grouped by scheduling condition, with one bar per algorithm and
-    $95%$ confidence-interval error bars over seeds. Interim: $n = 5$ of a planned $20$ seeds.
+    $95%$ confidence-interval error bars over the eight seeds.
   ],
 ) <fig-curriculum-strategy-final>
 
+=== Interpretation
 
-== Curriculum Transfer to Level-6-Style Targets <transfer-experiment>
+Two mechanisms explain why ordering does not help on a reachable target. First, under a fixed
+budget every step *forward* spends on the easier rungs is a step it does not spend on the target;
+when the target is directly learnable, that target experience dominates any transfer benefit, so
+moving budget to warm-up rungs can only match or cost final performance. Second, *reverse* —
+which reaches the target early and then trains on the easier rungs — collapses to near the floor:
+its training-pool success ($0.10$) is far below the others, the signature of catastrophic
+forgetting, since the network overwrites the target competence acquired early while fine-tuning on
+the navigation rung. The one condition that helps, *mixed*, is domain randomisation rather than a
+curriculum: its benefit comes from the *diversity* of exposure, not from any easy-to-hard
+ordering, and it is the same data-variety effect already isolated in @data-scaling-experiment.
+
+The practical conclusion is that on a target the agent can already reach, scheduling the *order*
+of staged exposure offers no advantage over training directly on the target, and a poorly chosen
+order (reverse) is actively harmful. This leaves open the case that curriculum learning is
+actually designed for — a target the agent *cannot* reach directly — which @transfer-experiment
+addresses.
+
+
+== The Limits of Curriculum Learning on Mutually-Cooperative Targets <transfer-experiment>
 
 This section addresses RQ6 of @introduction.
 
 === Experimental Question
 
-The learnability experiment of @learnability-experiment shows that off-the-shelf cooperative
-MARL agents can solve $5 times 5$ levels drawn from the constructive cooperative generator
-within a modest training budget but plateau well below $1.0$ on a held-out pool. The canonical
-hand-crafted target of this thesis — LLE Level 6 — is qualitatively harder: a $12 times 13$
-corridor-like map with four agents and three lasers in which all agents must traverse a shared
-corridor. Direct training on a single level of that size and structure is known to be brittle
-for value-decomposition methods.
+@curriculum-strategy-experiment isolated the curriculum *mechanism* on a target that direct
+training can already reach, and found that ordering confers no advantage. The motivating promise
+of curriculum learning is different, however: that staged exposure can make *reachable* a target
+that direct training cannot solve at all. The canonical such target in this thesis is the
+hand-crafted LLE Level 6 — a $12 times 13$ map with four agents and three lasers whose solution
+requires *mutual* cooperation, the dependency pattern in which several agents must each truncate a
+beam for the others before anyone can exit (@cooperation-detection). We therefore ask whether a
+curriculum of generated levels of growing cooperative complexity enables value-decomposition
+agents to solve Level 6, and, more generally, whether such agents can cross the
+mutual-cooperation boundary at all.
 
-We therefore ask whether *staged exposure* through a curriculum of generated levels of growing
-geometric and cooperative complexity transfers to the Level-6 target better than baselines
-that skip the curriculum. The curriculum stages are drawn from the generator family of
-@generators, used here as a controlled source of training instances rather than as standalone
-artefacts.
+=== Protocol
 
-=== Status and Planned Outputs
+We approached the question in three stages of increasing ambition, each reusing the trainer,
+hyperparameters (@appendix-learnability-hyperparams), and greedy 200-episode evaluation of the
+preceding experiments.
 
-The curriculum design is still being iterated at the time of writing. The number of stages,
-the geometry and cooperation ramp between consecutive stages, the choice of generator per
-stage, the MARL algorithm under test, the per-stage training budget, and the set of comparison
-conditions are not yet locked. This section will be expanded once the design is finalised and
-the runs are complete.
++ *Frontier probe.* Direct training from scratch on a fixed $6 times 6$ grid with two agents and
+  two lasers — the smallest instance whose solution requires *mutual* cooperation — for IQL, VDN,
+  and QMIX. This isolates whether the mutual target carries any learnable signal at all before a
+  curriculum is layered on top, holding the grid fixed so that the laser count is the only change
+  from the reachable asymmetric target of @curriculum-strategy-experiment.
 
-The headline metric will be the greedy success rate on the hand-crafted Level 6 — mean and a
-95 % confidence interval over multiple seeds, evaluated under a fully greedy policy at the end
-of training. The secondary view will be the per-condition learning curves over the full
-training budget. The result that would constitute a positive curriculum-transfer finding is a
-strict ordering in which the staged curriculum reaches a higher Level-6 success rate than the
-non-curriculum baselines at the same total training budget; a weaker but still informative
-result is a curriculum condition that reaches its asymptote in fewer environment steps.
++ *Two-laser curriculum.* The four scheduling conditions of @curriculum-strategy-experiment
+  (direct, forward, reverse, mixed) on a fixed $6 times 6$ grid, with a three-rung ladder that
+  ramps only the cooperation requirement — zero, one, then two lasers — toward the mutual
+  two-laser target, under a budget-matched $600","000$-step budget.
+
++ *Level-6 transfer.* A four-stage curriculum of generated levels growing in both geometry and
+  cooperation ($6 times 6$/1 laser $arrow.r$ $8 times 8$/2 lasers $arrow.r$ $10 times 10$/3 lasers
+  $arrow.r$ a $12 times 13$ Level-6-style stage), with four agents throughout, evaluated on the
+  hand-crafted Level 6. The curriculum condition (CURR) is compared against three baselines that
+  isolate the contribution of staging: training only on the hardest stage (B1), an anti-curriculum
+  hard-to-easy ordering (B2), and direct training on Level 6 (B3). Runs use up to $2","000","000$
+  environment steps — an order of magnitude beyond the reachable-target budget.
+
+Because every preliminary condition returned zero success (below), and because a single run at the
+Level-6 budget is computationally expensive, we deliberately limited each sweep to a small number
+of seeds rather than expanding to the eight or twenty seeds used for the reachable targets. As the
+results show, the conclusion rests on the *uniformity* of the zero across grids, pool sizes,
+algorithms, budgets, and schedules, not on seed-level precision. Full per-run numbers and the
+exact stage configurations are tabulated in @appendix-transfer-detail.
+
+=== Results
+
+Across all three stages, no configuration learned to solve a mutually-cooperative target.
+@tab-cliff places these outcomes next to the *reachable* results of the preceding sections on a
+single axis of increasing cooperation difficulty. The contrast is the result: success is
+non-trivial as long as cooperation is *asymmetric* — a one-way blocking action — and collapses to
+zero the moment the target requires *mutual* blocking, and it stays at zero even when the training
+budget is increased tenfold.
+
+#figure(
+  table(
+    columns: 5,
+    stroke: black,
+    inset: 8pt,
+    align: horizon,
+    table.header(
+      [*Task (grid / agents / lasers)*], [*Cooperation*], [*Budget*], [*Train*], [*Test*],
+    ),
+    [5×5 / 2 / 1],             [asymmetric], [200k], [$0.63$], [$0.20$],
+    [6×6 / 2 / 1],             [asymmetric], [400k], [$0.41$], [$0.17$],
+    [6×6 / 2 / 2],             [*mutual*],   [600k], [$0.08$], [$0.00$],
+    [5×5 / 2 / 2],             [*mutual*],   [200k], [$0.00$], [$0.00$],
+    [12×13 / 4 / 3 (Level 6)], [*mutual*],   [2M],   [$0.00$], [$0.00$],
+  ),
+  caption: [
+    Greedy success rate as the cooperation requirement increases, pooled over algorithms and
+    seeds. "Train" is success on the levels seen during training (the held-out *generated* pool for
+    the Level-6 row); "Test" is success on the held-out target (Level 6 for the last row). The
+    first two rows are the reachable asymmetric targets of @learnability-experiment and
+    @curriculum-strategy-experiment; the last three are the mutual targets of this section. For the
+    mutual rows the value is the mean over the available algorithm and seed runs (the
+    $6 times 6$ / 2-laser row is the direct-training frontier probe); for the Level-6 row it is the
+    best achieved over the four conditions (B1, B2, B3, CURR). In every case held-out success is
+    zero. Per-run numbers are in @appendix-transfer-detail.
+  ],
+) <tab-cliff>
+
+On the *frontier probe*, all three algorithms occasionally solved a *training* level (a peak
+greedy success of $0.06$–$0.09$) but never generalised: held-out success was exactly zero for
+every algorithm and seed. Shrinking the grid to $5 times 5$ did not help — two lasers suffice to
+drive success to zero regardless of grid size. Two diagnostic checks confirm that this is a
+learnability wall rather than a budget shortfall: training on a *single* fixed mutual level
+(removing the need to generalise entirely) still plateaued below $0.12$ success, and extending the
+budget to $1","500","000$ steps left success flat, with the success curve peaking early and then
+*decaying* rather than climbing.
+
+On the *two-laser curriculum*, every scheduling condition — including forward staging — finished
+at essentially zero held-out success (the best condition reached $0.01$). Ordering a curriculum
+toward a target that carries no learnable signal does not create one.
+
+On the *Level-6 transfer*, every condition reached $0.0$ success on Level 6 and, tellingly, $0.0$
+success on the in-distribution held-out *generated* pool as well, even after $2","000","000$
+steps. The full four-stage curriculum (CURR) was no better than direct training on Level 6 (B3),
+and the agents' mean episode return stayed negative throughout — they accumulated step penalties
+without ever assembling the coordinated double-blocking sequence the level requires.
+
+=== Why Curriculum Learning Does Not Help Here
+
+The two regimes of @curriculum-strategy-experiment and this section fail for complementary
+reasons. On a *reachable* target, a curriculum is unnecessary: ordering trades budget away from
+the target and, hard-to-easy, induces catastrophic forgetting, so it can only match or
+underperform direct training. On an *unreachable* mutual target, a curriculum is powerless, for
+three reasons that the experiments above separate.
+
+- *There is no signal to amplify.* A curriculum works by transporting a policy with non-zero value
+  from an easy stage to a harder one, where it stumbles onto reward more often and bootstraps. The
+  mutual target returns reward only after a long, jointly-gated sequence — both lasers must be
+  truncated before any agent can exit — so a from-scratch or warm-started policy receives
+  identically zero reward (the negative returns above). A curriculum can make a faint signal
+  louder; it cannot manufacture one from zero.
+
+- *The missing skill is absent from every easier stage.* The easier rungs teach navigation and
+  *asymmetric* cooperation, in which one agent blocks and the other passes — a pattern with a
+  partial-credit path, since the passing agent can be rewarded before coordination is perfect. The
+  mutual target requires a *deadlock-style* interdependency in which neither agent can make
+  progress first. This is a discontinuity, not a ramp: no easy-to-hard ordering of asymmetric
+  stages gradually constructs the mutual behaviour, because that behaviour is qualitatively absent
+  below the final rung.
+
+- *The algorithm cannot represent the solution.* Value-decomposition methods (VDN, QMIX) assume
+  the joint action-value factorises monotonically into per-agent utilities. Mutual cooperation
+  requires both agents to take individually-costly actions simultaneously — standing in a beam so
+  the other may pass — the canonical case that monotonic factorisation cannot represent. The
+  nonzero *training* but zero *held-out* success on the frontier probe is the fingerprint: the rare
+  successes are memorised joint trajectories, not a generalisable coordination policy. Reordering
+  the training data does not change the function class, so the representational bottleneck is left
+  untouched.
+
+The decisive observation is the zero held-out *generated*-pool success in the Level-6 transfer:
+the failure is not one of *transfer* or distribution shift between generated levels and the
+hand-crafted target — the agents never learned the base mutually-cooperative task at all. The
+failure of curriculum learning here is therefore not a failure of curriculum design but a
+consequence of the target lying beyond the reach of the underlying MARL method.
+
+=== Scope and Threats to Validity
+
+We are careful not to overclaim. These experiments establish that the value-decomposition
+algorithms evaluated here (IQL, VDN, QMIX), under a fixed set of hyperparameters and a sparse
+joint-exit reward, do not solve mutually-cooperative LLE targets, and that no curriculum over
+generated levels changes this — *not* that curriculum learning can never succeed on such targets.
+Three caveats bound the claim. First, the algorithm family is narrow; centralised-critic
+actor-critic methods and approaches with explicit coordinated exploration were not tested and
+might cross the wall (@conclusion). Second, the reward is sparse and unshaped; a dense or intrinsic
+signal that credits partial coordination would change the very signal whose absence we identify as
+the bottleneck. Third, the seed counts on the mutual targets are small — a deliberate choice given
+the cost of each run and the uniformity of the zero outcome; they suffice to establish that
+success is zero, but not to measure small effects between equally-failing conditions. Directions
+that target the actual bottleneck — base learnability rather than curriculum ordering — are
+discussed in @conclusion.

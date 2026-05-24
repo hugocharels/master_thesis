@@ -62,14 +62,16 @@
 
 #v(10pt)
 
-// Alternative title without curriculum learning, in case the transfer
-// experiments do not produce conclusive results:
+// The curriculum-transfer experiments did not produce a positive result
+// (see @transfer-experiment), so the title reflects the certified-generation
+// contribution rather than curriculum learning. The curriculum-in-the-title
+// variant is kept here for reference:
 //
 //   Procedural Generation of Solvable Cooperative Levels
-//   for the Laser Learning Environment
+//   for Curriculum Learning in the Laser Learning Environment
 #align(center, text(18pt)[
   *Procedural Generation of Solvable Cooperative Levels \
-  for Curriculum Learning in the Laser Learning Environment*
+  for the Laser Learning Environment*
 ])
 
 #v(10pt)
@@ -115,8 +117,12 @@ Constructive, Level-6-Style) that emit only solver-certified levels with the req
 properties. The empirical evaluation compares two SAT encodings, characterises per-generator
 rejection rates and cooperation-profile distributions, and shows that off-the-shelf
 value-decomposition MARL algorithms (IQL, VDN, QMIX) can learn certified cooperative levels at
-$5 times 5$. A curriculum-transfer experiment toward the hand-crafted LLE Level 6 is in
-design at the time of writing.
+$5 times 5$ and that enlarging the generated training pool restores generalisation. A final set
+of curriculum experiments finds that curriculum *ordering* offers no advantage over direct
+training on a reachable target, and that no curriculum — including a staged budget of two million
+steps — lets these algorithms solve the mutually-cooperative LLE Level 6, on which direct training
+also scores zero; we trace this negative result to the base task being unlearnable by
+value-decomposition methods rather than to a failure of curriculum design.
 
 #v(20pt)
 *Keywords:* multi-agent reinforcement learning, procedural content generation, SAT solving,

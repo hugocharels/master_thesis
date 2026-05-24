@@ -1,0 +1,15 @@
+{
+  "generator": "random",
+  "profile": null,
+  "size": [
+    6,
+    6
+  ],
+  "agents": 2,
+  "lasers": 0,
+  "t_max": 12,
+  "num_walls": 3,
+  "seed": 20260623,
+  "n_levels": 100,
+  "split": "train"
+}

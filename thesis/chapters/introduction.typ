@@ -46,7 +46,7 @@ intuition into a decidable property, refined into a five-label profile taxonomy;
 solver-in-the-loop generator family that accepts only certified levels and exposes the
 structural axes above as user-facing parameters. The empirical study covers SAT-encoding
 cost, generator acceptance rates and profile distributions, learnability of generated
-cooperative levels for off-the-shelf MARL, and a curriculum-transfer pilot toward LLE Level 6.
+cooperative levels for off-the-shelf MARL, and a curriculum-transfer study toward LLE Level 6.
 
 
 == Research Questions and Scope
@@ -99,5 +99,5 @@ advertised properties.
 
 @experiments reports the empirical evaluation: the SAT encoding comparison, generator acceptance
 rates and cooperation-profile distributions, the learnability of generated cooperative levels
-for off-the-shelf MARL algorithms, and the curriculum-transfer pilot toward the hand-crafted LLE
+for off-the-shelf MARL algorithms, and the curriculum-transfer study toward the hand-crafted LLE
 Level 6. @conclusion concludes with a summary and directions for future work.

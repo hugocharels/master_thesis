@@ -122,6 +122,18 @@ def collect_final(runs_dir: Path) -> dict[tuple[str, str], dict[str, list[float]
     return buckets
 
 
+def aggregate_final(runs_dir: Path) -> dict[tuple[str, str], dict[str, float]]:
+    """Map ``(condition, algo)`` -> {'train','test','n'} mean success over seeds."""
+    out: dict[tuple[str, str], dict[str, float]] = {}
+    for key, b in collect_final(runs_dir).items():
+        out[key] = {
+            "train": float(np.mean(b["train"])) if b["train"] else 0.0,
+            "test": float(np.mean(b["test"])) if b["test"] else 0.0,
+            "n": len(b["test"]),
+        }
+    return out
+
+
 def plot_final(runs_dir: Path, out_path: Path) -> None:
     buckets = collect_final(runs_dir)
     if not buckets:

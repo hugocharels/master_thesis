@@ -1,0 +1,15 @@
+{
+  "generator": "cooperative",
+  "profile": "cooperative",
+  "size": [
+    5,
+    5
+  ],
+  "agents": 2,
+  "lasers": 1,
+  "t_max": 10,
+  "num_walls": 2,
+  "seed": 20260721,
+  "n_levels": 100,
+  "split": "train"
+}

@@ -26,8 +26,8 @@ through the PySAT interface. The benchmarking script can evaluate the six hand-c
 levels distributed with the environment, each paired with a horizon known to be sufficient for
 solvability. It can also benchmark custom levels constructed programmatically.
 
-The experiment reported in @experiments uses four representative levels: three synthetic instances
-of increasing size and one original benchmark level. This combination exposes both scaling
+The SAT encoding comparison reported in the following sections uses four representative levels:
+three synthetic instances of increasing size and one original benchmark level. This combination exposes both scaling
 behaviour and the behaviour of the solver on a realistic cooperative puzzle.
 
 
@@ -48,5 +48,5 @@ hardware-independent absolute performance claims.
 
 The benchmarking pipeline produces a console summary table, a JSON file containing aggregated
 benchmark statistics, and a set of plots for clause counts, per-constraint clause breakdowns, and
-timing statistics. The results section (@experiments) draws on these outputs to interpret the
+timing statistics. The results reported in the following sections draw on these outputs to interpret the
 trade-off between the two movement formulations.

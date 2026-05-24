@@ -103,7 +103,7 @@ horizons reproduces all three failure modes at once (@tab-horizon-demo).
     stroke: black,
     inset: 8pt,
     align: horizon,
-    table.header([*$T_("max")$*], [*Standard SAT*], [*Profile label*]),
+    table.header([*$T_("max")$*], [*Solver result (standard / strict)*], [*Profile label*]),
     [2],  [UNSAT],         [— (rejected as unsolvable)],
     [3],  [SAT, strict UNSAT], [`asymmetric`, edges ${(0, 1)}$],
     [9], [SAT, strict SAT],   [`independent`],
@@ -181,7 +181,7 @@ The decision procedure produces one of eight labels:
 - *fully coupled*: every agent belongs to a single strongly connected component of the
   dependency graph.
 
-Every label is constructible within LLE's $1 <= n_a <= 4$ regime: `mutual` and `fully coupled`
+Every label is constructible within LLE's $1 <= n_a <= 4$ regime: `mutual` and `fully_coupled`
 need at least two agents; `chain` and `distributed` need at least three; the remaining labels
 are reachable from two agents upward. The taxonomy therefore does not require any structural
 configuration that LLE cannot host.
@@ -207,7 +207,10 @@ untouched. Selective-strict is the SAT lever that lets us single out one helper 
 without affecting the other beams.
 
 The same argument used in the proof of #fref(<thm-5-1>, [Theorem 5.1]) generalises to this
-intermediate encoding: $Phi$ with the selective-strict encoding parameterised by $K$ is
+intermediate encoding — the selective-strict clauses for the colours in $K$ are exactly the strict
+clauses of @sat-reduction restricted to those colours, while every other colour keeps its standard
+clauses, so the model-transfer construction of the theorem applies colour by colour. Concretely,
+$Phi$ with the selective-strict encoding parameterised by $K$ is
 satisfiable if and only if $L$ admits a successful standard trajectory in which no agent of
 colour $c in K$ ever stands on the unblocked beam path of the source of colour $c$. We
 therefore use the selective-strict encoding as a sound decision oracle for "$L$ remains
@@ -435,7 +438,7 @@ specific mechanism studied in this benchmark, and the formal guarantee is scoped
 LLE grids, not to partition every directed graph one could imagine. Graphs that combine weaker
 structures without satisfying any stronger criterion fall into the residual `asymmetric` class.
 For instance, a 3-cycle among three of four agents (a strict 3-SCC that does not span every
-agent) is labelled `asymmetric`, not `fully coupled`, because the SCC is smaller than $|C|$.
+agent) is labelled `asymmetric`, not `fully_coupled`, because the SCC is smaller than $|C|$.
 Such pathological shapes have not appeared in our experiments, but the catch-all behaviour of
 `asymmetric` is by design rather than an oversight.
 

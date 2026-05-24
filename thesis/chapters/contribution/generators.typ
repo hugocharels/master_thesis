@@ -88,18 +88,27 @@ random layouts quickly become dominated by unsolvable or trivial instances.
 
 == Constrained Random Generator
 
-A structured variant that biases generation toward solvable configurations before any SAT
-call is made. Relative to the random generator, it rejects candidates that are already
+A structured variant that biases generation toward well-formed, solvable configurations before
+any SAT call is made. Relative to the random generator, it rejects candidates that are already
 geometrically degenerate — for example a laser that points immediately outside the grid, a
 laser with zero beam length, a laser on the bottom edge oriented downward, or an exit lying
 on an unavoidable beam segment.
 
-These filters do not themselves prove solvability or cooperation, but they remove a large
-class of obviously bad candidates before invoking the solver. The generator therefore offers
-the same formal guarantees as the random generator (solvable, optionally cooperative with
-profile filter) at a typically much lower rejection rate. The constrained random variant is
-the default we use when the experiments call for "random sampling" of solvable or cooperative
-levels. Example pools at three grid sizes are shown in @appendix-gallery-constrained-random.
+These degeneracies are not merely cosmetic. A laser whose beam has zero length, or that points
+off the grid, emits *no active beam*: its source then behaves like an inert wall tile, and the
+level presents none of the beam-crossing structure the laser was meant to introduce. Crucially,
+the base random generator still *accepts* such a level whenever it is solvable — a level reduced
+to plain navigation usually is — so its solvable output is dominated by these laser-free
+instances. The geometric filters do not themselves prove solvability or cooperation, but by
+discarding inert-laser and beam-stranded layouts they ensure that accepted levels actually
+contain the laser interactions the experiments depend on; and in the cooperative setting, where
+an active beam is a *prerequisite* for the same-colour truncation mechanism, they also avoid a
+large number of SAT calls that could never have yielded a cooperative level. The generator
+otherwise offers the same formal guarantees as the random generator (solvable, optionally
+cooperative with profile filter), and is the default we use when the experiments call for
+"random sampling" of solvable or cooperative levels. The effect is visible by comparing the
+unfiltered pools of @appendix-gallery-random with the filtered pools of
+@appendix-gallery-constrained-random at the same grid, agent, laser, and wall settings.
 
 
 == Constructive Generator

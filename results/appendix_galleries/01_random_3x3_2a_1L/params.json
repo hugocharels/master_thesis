@@ -1,0 +1,20 @@
+{
+  "generator": "random",
+  "profile": null,
+  "params": {
+    "size": [
+      3,
+      3
+    ],
+    "agents": 2,
+    "lasers": 1,
+    "t_max": 6,
+    "num_walls": 1,
+    "validate_geometry": false,
+    "max_attempts": 2000
+  },
+  "seed": 20260601,
+  "n_samples_requested": 16,
+  "n_samples_generated": 16,
+  "elapsed_seconds": 0.06273388862609863
+}

@@ -102,12 +102,14 @@ seed conventions are summarised below.
     [MARL trainer],                    [`marl` framework, called from `src/experiments/learnability/run_experiment.py`],
     [Plotting backend],                [`matplotlib`],
     [Solver-comparison seeds],         [None (deterministic CNF; only timings vary across runs)],
-    [Rejection-benchmark seeds],       [Per-generator RNG inside `run_rejection_benchmark.py`],
-    [Profile-benchmark seeds],         [Per-generator RNG inside `run_profile_benchmark.py`],
+    [Rejection benchmark],             [Unseeded (`seed=None`); reported as means over 200 trials ($3 times 3$, $5 times 5$) or 20 trials ($8 times 8$)],
+    [Profile benchmark],               [Unseeded (`seed=None`); reported as counts over 100 ($5 times 5$) or 50 ($8 times 8$) accepted levels],
     [Learnability training-pool seed], [20260618],
     [Learnability training seeds],     [$cal(S) = {0, 1, ..., 19}$ (twenty seeds per algorithm)],
     [Data-scaling pool seeds],         [20260618 (train), 20260619 (test); pools nested, test size 50],
     [Data-scaling training seeds],     [$cal(S) = {0, 1, ..., 19}$ per algorithm and pool size],
+    [Curriculum-strategy seeds],       [$cal(S) = {0, 1, ..., 7}$ (eight seeds per condition and algorithm)],
+    [Curriculum two-laser / Level-6 seeds], [Small per-condition sets ($1$–$6$ seeds); see @appendix-transfer-detail],
     [Appendix-gallery pool seeds],     [Distinct per pool, listed in each gallery parameter table],
   ),
   caption: [
@@ -121,12 +123,13 @@ seed conventions are summarised below.
 == Learnability Hyperparameters <appendix-learnability-hyperparams>
 
 The learnability experiment (@learnability-experiment), the data-scaling experiment
-(@data-scaling-experiment), and the curriculum-transfer experiment (@transfer-experiment) share
-the same trainer construction in `src/experiments/learnability/run_experiment.py` and
-`src/experiments/curriculum/run_experiment.py`. The hyperparameters listed in
-@tab-learnability-hyperparams are identical across the three algorithms (IQL, VDN, QMIX); they
-are reused unchanged for the data-scaling runs and (once its design is locked) for the
-curriculum-transfer runs.
+(@data-scaling-experiment), and the curriculum experiments (@curriculum-strategy-experiment,
+@transfer-experiment) share the same trainer construction in
+`src/experiments/learnability/run_experiment.py` and the curriculum runners under
+`src/experiments/`. The hyperparameters listed in @tab-learnability-hyperparams are identical
+across the three algorithms (IQL, VDN, QMIX) and are reused unchanged for the data-scaling and
+curriculum runs; the only addition is the per-stage exploration reset used by the curriculum runs,
+described in @curriculum-strategy-experiment.
 
 #figure(
   table(
@@ -151,9 +154,9 @@ curriculum-transfer runs.
     [Independent $Q$-network heads (QMIX)],       [no (shared)],                [`qnetworks.from_env(...)` default],
   ),
   caption: [
-    Hyperparameters used in the learnability experiment (@learnability-experiment) and to be
-    reused for the curriculum-transfer experiment (@transfer-experiment) once its design is
-    locked.
+    Hyperparameters used in the learnability experiment (@learnability-experiment) and reused
+    unchanged for the data-scaling (@data-scaling-experiment) and curriculum
+    (@curriculum-strategy-experiment, @transfer-experiment) experiments.
   ],
 ) <tab-learnability-hyperparams>
 
@@ -461,13 +464,345 @@ generalisation gap closes.
 ) <fig-datascale-curves-500>
 
 
+== Curriculum-Strategy Experiment — Configuration and Per-Cell Results <appendix-curriculum-strategy-detail>
+
+The curriculum-strategy experiment (@curriculum-strategy-experiment) compares four budget-matched
+scheduling conditions on a $6 times 6$ / 2-agent / 1-laser cooperative target reachable by the
+direct baseline. @tab-curriculum-strategy-config gives the full configuration and
+@tab-curriculum-strategy-perchart the per-(condition, algorithm) final success rates behind the
+pooled summary of @tab-curriculum-strategy.
+
+#figure(
+  table(
+    columns: 2,
+    stroke: black,
+    inset: 8pt,
+    align: (left, left),
+    table.header([*Field*], [*Value*]),
+    [Difficulty ladder],          [$4 times 4$/0L (random, $T_("max")=8$) $arrow.r$ $5 times 5$/1L (cooperative, $T_("max")=10$) $arrow.r$ $6 times 6$/1L target (cooperative, $T_("max")=12$)],
+    [Agents],                     [2 (fixed across rungs; smaller observations zero-padded)],
+    [Train pool per rung],        [100 certified levels],
+    [Held-out target pool],       [50 levels],
+    [Conditions],                 [direct, forward $(50,150,200) times 10^3$, reverse (same per-rung budgets, reversed), mixed (uniform rung per episode)],
+    [Total budget per run],       [400,000 environment steps],
+    [Algorithms],                 [IQL, VDN, QMIX],
+    [Seeds],                      [$cal(S) = {0, 1, ..., 7}$ (eight per condition and algorithm)],
+    [Exploration],                [$epsilon$ reset to $1.0$ at each stage boundary, decayed to $0.05$ over $30%$ of that rung's budget],
+    [Evaluation],                 [greedy, on the $6 times 6$ target; 50 episodes every 10,000 steps and 200 episodes at the end],
+  ),
+  caption: [Configuration of the curriculum-strategy experiment (@curriculum-strategy-experiment).],
+) <tab-curriculum-strategy-config>
+
+#figure(
+  table(
+    columns: 5,
+    stroke: black,
+    inset: 6pt,
+    align: (left, center, center, center, center),
+    table.header(
+      [*Condition*], [*Algorithm*], [*$n$*],
+      [*Train mean $plus.minus$ CI95*], [*Test mean $plus.minus$ CI95*],
+    ),
+    [direct],  [IQL],  [8], [$0.30 plus.minus 0.06$], [$0.13 plus.minus 0.03$],
+    [direct],  [VDN],  [8], [$0.43 plus.minus 0.08$], [$0.16 plus.minus 0.04$],
+    [direct],  [QMIX], [8], [$0.50 plus.minus 0.05$], [$0.22 plus.minus 0.05$],
+    [forward], [IQL],  [8], [$0.22 plus.minus 0.04$], [$0.08 plus.minus 0.03$],
+    [forward], [VDN],  [8], [$0.49 plus.minus 0.06$], [$0.17 plus.minus 0.06$],
+    [forward], [QMIX], [8], [$0.47 plus.minus 0.07$], [$0.20 plus.minus 0.06$],
+    [mixed],   [IQL],  [8], [$0.19 plus.minus 0.06$], [$0.12 plus.minus 0.05$],
+    [mixed],   [VDN],  [8], [$0.51 plus.minus 0.08$], [$0.29 plus.minus 0.08$],
+    [mixed],   [QMIX], [8], [$0.47 plus.minus 0.08$], [$0.27 plus.minus 0.05$],
+    [reverse], [IQL],  [8], [$0.06 plus.minus 0.03$], [$0.03 plus.minus 0.02$],
+    [reverse], [VDN],  [8], [$0.12 plus.minus 0.04$], [$0.09 plus.minus 0.04$],
+    [reverse], [QMIX], [8], [$0.12 plus.minus 0.04$], [$0.09 plus.minus 0.06$],
+  ),
+  caption: [
+    Final greedy success rate per (condition, algorithm) on the $6 times 6$ / 2-agent / 1-laser
+    target, each aggregated over eight seeds. Means with $95%$ confidence intervals
+    ($plus.minus t_(7,0.025) sigma / sqrt(8)$, $t_(7,0.025) approx 2.365$). Source:
+    `results/curriculum_strategy/runs/`.
+  ],
+) <tab-curriculum-strategy-perchart>
+
+=== Generated training pools
+
+Each rung is SAT-generated once from the master seed `RNG_SEED = 20260521`; the per-rung training
+pool uses the derived seed $20260521 + 100 times "stage"$ and the held-out target pool the same
+expression $+ 1$, so every draw is reproducible and the target's train and eval pools never
+coincide. Unspecified wall budgets fall back to the generator default $floor("grid area" \/ 10)$.
+@tab-cs-pools lists the per-rung parameters; @fig-cs-pool-s1, @fig-cs-pool-s2, and
+@fig-cs-pool-s3 show sixteen representative training levels from each rung.
+
+#figure(
+  table(
+    columns: 9,
+    stroke: black,
+    inset: 6pt,
+    align: horizon,
+    table.header(
+      [*Rung*], [*Grid*], [*Agents*], [*Lasers*], [*$T_("max")$*], [*Walls*],
+      [*Generator*], [*Train*], [*Eval*],
+    ),
+    [S1], [4×4], [2], [0], [8],  [1], [Random (solvable)],       [100], [0],
+    [S2], [5×5], [2], [1], [10], [2], [Constructive (cooperative)], [100], [0],
+    [S3], [6×6], [2], [1], [12], [3], [Constructive (cooperative)], [100], [50],
+  ),
+  caption: [
+    Per-rung generation parameters for the curriculum-strategy pools
+    (@curriculum-strategy-experiment). Source: `src/experiments/curriculum_strategy/configs.py`;
+    pools rendered by `src/scripts/render_curriculum_strategy_pools.py`.
+  ],
+) <tab-cs-pools>
+
+#figure(
+  pool_grid("../../results/curriculum_strategy/levels/stage_1_4x4_2a_0L_random/train/images", 16, cols: 4),
+  caption: [Sixteen S1 training levels: $4 times 4$, 2 agents, 0 lasers (navigation warm-up).],
+) <fig-cs-pool-s1>
+
+#figure(
+  pool_grid("../../results/curriculum_strategy/levels/stage_2_5x5_2a_1L_cooperative/train/images", 16, cols: 4),
+  caption: [Sixteen S2 training levels: $5 times 5$, 2 agents, 1 laser (asymmetric cooperation).],
+) <fig-cs-pool-s2>
+
+#figure(
+  pool_grid("../../results/curriculum_strategy/levels/stage_3_6x6_2a_1L_cooperative/train/images", 16, cols: 4),
+  caption: [Sixteen S3 (target) training levels: $6 times 6$, 2 agents, 1 laser (asymmetric cooperation).],
+) <fig-cs-pool-s3>
+
+
+== Curriculum-Transfer Experiments — Configurations and Results <appendix-transfer-detail>
+
+This appendix collects the configurations and per-run results behind the three stages of
+@transfer-experiment: the frontier probe, the two-laser curriculum, and the Level-6 transfer.
+Across all three, held-out success on the mutually-cooperative target is uniformly zero; the
+tables below give the supporting numbers and the exact stage geometries.
+
+=== Frontier Probe and Diagnostic Checks
+
+Direct training from scratch on a fixed $6 times 6$ / 2-agent / 2-laser *mutual* target
+($T_("max") = 18$, constructive cooperative generator constrained to the `fully_coupled` profile,
+a 20-level training pool and a 20-level held-out pool), 600,000 steps, three seeds per algorithm.
+@tab-frontier-probe reports the final greedy success rates: every algorithm reaches a small
+nonzero *training* success and exactly zero *held-out* success. Sixteen of the training levels are
+shown in @fig-frontier-pool.
+
+#figure(
+  table(
+    columns: 4,
+    stroke: black,
+    inset: 6pt,
+    align: (left, center, center, center),
+    table.header([*Algorithm*], [*$n$*], [*Train (mean)*], [*Test (mean)*]),
+    [IQL],  [3], [$0.09$], [$0.00$],
+    [VDN],  [3], [$0.06$], [$0.00$],
+    [QMIX], [3], [$0.08$], [$0.00$],
+  ),
+  caption: [
+    Frontier probe: final greedy success on the $6 times 6$ / 2-agent / 2-laser mutual target,
+    direct training from scratch. Source: `results/learnability_6x6_2L/runs/`.
+  ],
+) <tab-frontier-probe>
+
+#figure(
+  pool_grid("../../results/learnability_6x6_2L/levels_png/train", 16, cols: 4),
+  caption: [
+    Sixteen of the twenty frontier-probe training levels: $6 times 6$, 2 agents, 2 lasers,
+    `fully_coupled` cooperation profile. Source:
+    `results/learnability_6x6_2L/levels_png/train`.
+  ],
+) <fig-frontier-pool>
+
+Two diagnostic checks rule out a budget shortfall rather than a learnability wall. An *overfit
+gate* trains a single algorithm (QMIX) on one fixed mutual level for 600,000 steps — removing the
+need to generalise entirely — and still plateaus below $0.12$ training success with zero held-out
+success. A *budget-bump gate* extends the budget to $1{,}500{,}000$ steps (VDN, 100-level pool):
+success stays flat, peaking early (around $0.10$) and then decaying to zero rather than climbing.
+Finally, shrinking the grid to $5 times 5$ / 2-laser (VDN, 200,000 steps) yields $0.00$ on both
+train and test pools — two lasers drive success to zero independently of grid size.
+
+=== Two-Laser Curriculum
+
+The four scheduling conditions of @curriculum-strategy-experiment, on a fixed $6 times 6$ grid
+with a zero-, one-, then two-laser ladder to the mutual two-laser target, budget-matched at
+600,000 steps. Owing to the cost of the runs and the uniformly zero outcome, coverage is partial:
+*direct* was run with VDN (six seeds) and QMIX (three seeds); *forward*, *reverse*, and *mixed*
+with VDN (three seeds each). @tab-2laser-curriculum reports the final held-out success.
+
+#figure(
+  table(
+    columns: 4,
+    stroke: black,
+    inset: 6pt,
+    align: (left, left, center, center),
+    table.header([*Condition*], [*Algorithms (seeds)*], [*Held-out test (mean)*], [*Train (mean)*]),
+    [direct],  [VDN (6), QMIX (3)], [$0.00$], [$0.08$],
+    [forward], [VDN (3)],           [$0.00$], [$0.05$],
+    [mixed],   [VDN (3)],           [$0.01$], [$0.01$],
+    [reverse], [VDN (3)],           [$0.00$], [$0.00$],
+  ),
+  caption: [
+    Two-laser curriculum: final greedy success on the $6 times 6$ / 2-agent / 2-laser mutual
+    target per scheduling condition. Source: `results/curriculum_strategy_2L/runs/`.
+  ],
+) <tab-2laser-curriculum>
+
+The fixed-grid ladder is SAT-generated once from `RNG_SEED = 20260523` (per-rung seed
+$20260523 + 100 times "stage"$, $+ 1$ for the held-out target pool). Only the two-laser target
+rung (S3) is constrained to the `fully_coupled` cooperation profile; the lower rungs accept any
+solvable (S1) or cooperative (S2) level. @tab-cs2l-pools lists the per-rung parameters and
+@fig-cs2l-pool-s1, @fig-cs2l-pool-s2, and @fig-cs2l-pool-s3 show sixteen representative training
+levels from each rung.
+
+#figure(
+  table(
+    columns: 10,
+    stroke: black,
+    inset: 6pt,
+    align: horizon,
+    table.header(
+      [*Rung*], [*Grid*], [*Agents*], [*Lasers*], [*$T_("max")$*], [*Walls*],
+      [*Generator*], [*Profile*], [*Train*], [*Eval*],
+    ),
+    [S1], [6×6], [2], [0], [12], [3], [Random (solvable)],          [—],             [100], [0],
+    [S2], [6×6], [2], [1], [14], [3], [Constructive (cooperative)], [any],           [100], [0],
+    [S3], [6×6], [2], [2], [18], [3], [Constructive (cooperative)], [`fully_coupled`], [100], [50],
+  ),
+  caption: [
+    Per-rung generation parameters for the two-laser curriculum pools (@transfer-experiment).
+    Source: `src/experiments/curriculum_strategy_2L/configs.py`; pools rendered by
+    `src/scripts/render_curriculum_strategy_2L_pools.py`.
+  ],
+) <tab-cs2l-pools>
+
+#figure(
+  pool_grid("../../results/curriculum_strategy_2L/levels/stage_1_6x6_2a_0L_random/train/images", 16, cols: 4),
+  caption: [Sixteen S1 training levels: $6 times 6$, 2 agents, 0 lasers (navigation warm-up).],
+) <fig-cs2l-pool-s1>
+
+#figure(
+  pool_grid("../../results/curriculum_strategy_2L/levels/stage_2_6x6_2a_1L_cooperative/train/images", 16, cols: 4),
+  caption: [Sixteen S2 training levels: $6 times 6$, 2 agents, 1 laser (asymmetric cooperation).],
+) <fig-cs2l-pool-s2>
+
+#figure(
+  pool_grid("../../results/curriculum_strategy_2L/levels/stage_3_6x6_2a_2L_cooperative/train/images", 16, cols: 4),
+  caption: [
+    Sixteen S3 (target) training levels: $6 times 6$, 2 agents, 2 lasers, `fully_coupled` profile
+    (the mutual two-laser target).
+  ],
+) <fig-cs2l-pool-s3>
+
+=== Level-6 Transfer
+
+A four-stage curriculum of generated levels growing in geometry and cooperation, four agents
+throughout, with the gem reward set to zero in every environment so that the reward structure is
+consistent between the gem-free generated levels and the gem-bearing Level 6. @tab-level6-stages
+gives the stage ladder and @tab-level6-results the per-condition outcomes. Every condition —
+including the full curriculum at two million steps — scores zero on Level 6 *and* on the
+in-distribution held-out generated pool; mean Level-6 return stays negative throughout. The stage
+pools are SAT-generated from master seed `RNG_SEED = 20260514`, and the runs were produced against
+`marl` commit `23c4d233`. The stage pools themselves were not retained on disk; representative
+levels for the four stage generators at comparable grid sizes appear in
+@appendix-gallery-constrained-random (stage 1), @appendix-gallery-constructive-cooperative
+(stages 2–3), and @appendix-gallery-level6 (stage 4, the $12 times 13$ Level-6 footprint).
+
+#figure(
+  table(
+    columns: 4,
+    stroke: black,
+    inset: 6pt,
+    align: (center, center, center, left),
+    table.header([*Stage*], [*Grid*], [*Lasers*], [*Generator*]),
+    [1], [$6 times 6$],   [1], [Random (solvable)],
+    [2], [$8 times 8$],   [2], [Constructive (cooperative)],
+    [3], [$10 times 10$], [3], [Constructive (cooperative)],
+    [4], [$12 times 13$], [3], [Level-6-Style],
+  ),
+  caption: [
+    Level-6 transfer curriculum stages (condition CURR). Four agents throughout. Source:
+    `src/experiments/curriculum/configs.py`.
+  ],
+) <tab-level6-stages>
+
+#figure(
+  table(
+    columns: 5,
+    stroke: black,
+    inset: 6pt,
+    align: (left, left, center, center, center),
+    table.header(
+      [*Condition*], [*Description*], [*Steps*],
+      [*SR Level 6*], [*SR generated pool*],
+    ),
+    [B1],   [Hardest stage only],          [750k],      [$0.00$], [$0.00$],
+    [B2],   [Anti-curriculum (hard→easy)], [750k–2M],   [$0.00$], [$0.00$],
+    [B3],   [Direct on Level 6],           [750k],      [$0.00$], [$0.00$],
+    [CURR], [Four-stage curriculum],       [up to 2M],  [$0.00$], [$0.00$],
+  ),
+  caption: [
+    Level-6 transfer: greedy success rate (200 episodes) on the hand-crafted Level 6 and on the
+    in-distribution held-out generated pool, per condition. Runs use QMIX and VDN with one to four
+    seeds per condition. Mean Level-6 return is negative for all trained conditions (agents accrue
+    step penalties without exiting). Source: `results/curriculum_experiment/runs/`.
+  ],
+) <tab-level6-results>
+
+
+== Generator Gallery — Base Random Generator <appendix-gallery-random>
+
+Pure random sampling with *no* geometric validation: the generator places agents, exits, walls,
+and laser sources uniformly at random and accepts any layout the SAT oracle certifies as
+solvable, regardless of laser geometry. Every level shown here is therefore solvable — the
+contrast with the Constrained Random generator of the next section is one of geometric *quality*,
+not of solvability.
+
+The characteristic artefact is visible throughout the pools below: most levels contain a laser
+source that emits *no active beam*, because the source points immediately off the grid or sits
+flush against a wall or edge. Such a source is inert — it behaves like an ordinary wall tile
+rather than a laser — so the level presents none of the beam-crossing structure the laser was
+meant to introduce. Exits and agent starts may likewise fall on beam tiles (the LLE engine
+silently relocates an agent start that would be killed on spawn). These are exactly the
+degeneracies that the geometric filters of the Constrained Random generator
+(@appendix-gallery-constrained-random) are designed to reject. The same grid, agent, laser, and
+wall parameters are used here as in that section, so the two galleries can be read side by side.
+Pools are generated by `src/scripts/generate_appendix_galleries.py`.
+
+=== Base Random — 3×3, 2 agents, 1 laser
+
+#let _g01 = json("../../results/appendix_galleries/01_random_3x3_2a_1L/params.json")
+#figure(gallery_params(_g01), caption: [Parameters and seed for the Base Random 3×3 gallery pool.])
+#figure(
+  pool_grid("../../results/appendix_galleries/01_random_3x3_2a_1L/images", 16, cols: 4),
+  caption: [16 Base Random 3×3 (2 agents, 1 laser) levels, no geometric validation.],
+)
+
+=== Base Random — 5×5, 3 agents, 2 lasers
+
+#let _g02 = json("../../results/appendix_galleries/02_random_5x5_3a_2L/params.json")
+#figure(gallery_params(_g02), caption: [Parameters and seed for the Base Random 5×5 gallery pool.])
+#figure(
+  pool_grid("../../results/appendix_galleries/02_random_5x5_3a_2L/images", 16, cols: 4),
+  caption: [16 Base Random 5×5 (3 agents, 2 lasers) levels, no geometric validation.],
+)
+
+=== Base Random — 7×7, 4 agents, 2 lasers
+
+#let _g03 = json("../../results/appendix_galleries/03_random_7x7_4a_2L/params.json")
+#figure(gallery_params(_g03), caption: [Parameters and seed for the Base Random 7×7 gallery pool.])
+#figure(
+  pool_grid("../../results/appendix_galleries/03_random_7x7_4a_2L/images", 16, cols: 4),
+  caption: [16 Base Random 7×7 (4 agents, 2 lasers) levels, no geometric validation.],
+)
+
+
 == Generator Gallery — Constrained Random Generator <appendix-gallery-constrained-random>
 
 Random sampling plus geometric filters (no laser pointing immediately out of bounds, no
-zero-length beam, no exit on an unavoidable beam segment, etc.). The unconstrained Random
-generator is not shown: with no geometric pre-filter it accepts many cosmetically degenerate
-layouts (lasers pointing immediately off-grid, exits stranded on beam tiles), which obscures
-the patterns the experiments rely on. Pools are generated by
+zero-length beam, no exit on an unavoidable beam segment, etc.). Compared with the Base Random
+generator of @appendix-gallery-random — which uses the identical grid, agent, laser, and wall
+parameters but no geometric pre-filter — these filters remove the cosmetically degenerate layouts
+(inert laser sources that emit no beam, exits stranded on beam tiles) so that accepted levels
+actually exhibit the beam-crossing structure the experiments rely on. Pools are generated by
 `src/scripts/generate_appendix_galleries.py`.
 
 === Constrained Random — 3×3, 2 agents, 1 laser

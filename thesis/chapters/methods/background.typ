@@ -41,7 +41,8 @@ solvability and cooperation within a bounded time horizon.
 
 Boolean Satisfiability (SAT) is the problem of deciding whether a propositional formula has a
 satisfying assignment — a mapping from Boolean variables to true or false that makes the formula
-evaluate to true. It is the canonical NP-complete decision problem @Cook1971.
+evaluate to true. It is the canonical NP-complete decision problem @Cook1971, where NP is the
+class of decision problems whose yes-instances admit a polynomial-time-checkable certificate.
 
 In practice, SAT solvers operate on formulas in _Conjunctive Normal Form_ (CNF). A CNF formula
 is a conjunction of _clauses_, where each clause is a disjunction of _literals_ and a literal is
@@ -54,8 +55,9 @@ $
 is a CNF formula over three variables. It is satisfied by setting $x_1 = "true"$, $x_2 = "false"$,
 $x_3 = "true"$, among other assignments.
 
-Modern SAT solvers based on the DPLL procedure and Conflict-Driven Clause Learning (CDCL) can
-handle industrial instances with millions of variables and clauses @Davis1962. Given a CNF
+Modern SAT solvers based on the DPLL procedure @Davis1962 and Conflict-Driven Clause Learning
+(CDCL) @EenSorensson2003 can handle industrial instances with millions of variables and clauses.
+Given a CNF
 formula, a solver either:
 
 - returns a _satisfying assignment_ that witnesses the formula is satisfiable (SAT), or

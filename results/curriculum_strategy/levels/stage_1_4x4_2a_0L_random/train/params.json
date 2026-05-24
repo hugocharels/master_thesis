@@ -1,0 +1,15 @@
+{
+  "generator": "random",
+  "profile": "cooperative",
+  "size": [
+    4,
+    4
+  ],
+  "agents": 2,
+  "lasers": 0,
+  "t_max": 8,
+  "num_walls": 1,
+  "seed": 20260621,
+  "n_levels": 100,
+  "split": "train"
+}

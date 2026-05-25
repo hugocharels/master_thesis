@@ -94,7 +94,9 @@
   Academic year 2025-2026
 ])
 
-#pagebreak()
+// Blank verso after the title page so the abstract starts on a recto
+// (right-hand) page when printed double-sided (recto-verso).
+#pagebreak(to: "odd")
 
 // ---------------------------------------------------------------------------
 // Abstract

@@ -48,14 +48,19 @@ structural axes above as user-facing parameters. The empirical study covers SAT-
 cost, generator acceptance rates and profile distributions, learnability of generated
 cooperative levels for off-the-shelf MARL, and a curriculum-transfer study toward LLE Level 6.
 
+Beyond the thesis itself, the SAT-based solver, the cooperation detector, and the procedural
+generator family have been contributed upstream to the official `laser-learning-environment`
+library (released on PyPI as `laser-learning-environment[generator]`, version 2.9.0 and onwards),
+where they are exposed as the public functions `lle.solve`, `lle.is_cooperative`,
+`lle.cooperation_level`, and `lle.generate`.
+
 
 == Research questions and scope
 
-This thesis addresses the following question: how can we automatically generate levels for a
+This thesis addresses one overarching question: how can we automatically generate levels for a
 cooperative MARL environment that are provably solvable and provably require the target
-cooperative interaction, and how can such levels be used to support MARL training?
-
-More precisely, the work is organised around six research questions:
+cooperative interaction, and how can such levels be used to support MARL training? We decompose
+this question into six research questions:
 
 - *RQ1:* How can we formally verify that a level is solvable by the agents?
 - *RQ2:* How can we formally verify that solving a level genuinely requires cooperation between
@@ -72,21 +77,21 @@ More precisely, the work is organised around six research questions:
   trained directly on Level 6 (or on the union of all stage pools) at the same total training
   budget?
 
-The thesis instantiates this framework on LLE, focusing on a restricted but explicit subset of
-its mechanics. The formal model covers agent movement, inter-agent blocking interactions, and a
-bounded-horizon solvability criterion. LLE additionally supports collectible gems and an
-incentive-scoring layer on top of plain exit-reaching, as well as void tiles distinct from
-walls; gems and the incentive layer are outside the scope of this thesis, and void tiles are
-treated as walls (impassable to agents) rather than as a separate tile type. These restrictions
-are deferred to future work.
+The thesis instantiates this framework on LLE, focusing on the *exit-reaching task*: each agent
+must reach an exit tile. The formal model covers agent movement, inter-agent blocking interactions,
+and a bounded-horizon solvability criterion. Collectible gems and the incentive-scoring layer that
+rewards them are outside the scope of this thesis. Void tiles are not handled in our model either;
+to use the solver on a level containing void tiles, the user must first replace each void tile with
+a wall, which yields the same verdict. These restrictions are deferred to future work.
 
 
 == Thesis structure
 
 The remainder of this thesis is organised as follows. @related-work positions the work relative
 to cooperative MARL benchmarks, procedural content generation, and compilation-based planning
-literature. @background fixes the technical setting: the LLE mechanics, the SAT background, and
-the formal model of bounded-horizon solvability and the cooperation requirement.
+literature. @background fixes the technical setting: the LLE mechanics, the Boolean satisfiability
+background, and the formal problem statement that defines bounded-horizon solvability as well as
+the cooperation requirement.
 
 The three contribution chapters then develop the original technical content of the thesis in
 logical order. @sat-reduction introduces the SAT-based solver: a propositional encoding of
@@ -99,5 +104,5 @@ advertised properties.
 
 @experiments reports the empirical evaluation: the SAT encoding comparison, generator acceptance
 rates and cooperation-profile distributions, the learnability of generated cooperative levels
-for off-the-shelf MARL algorithms, and the curriculum-transfer study toward the hand-crafted LLE
-Level 6. @conclusion concludes with a summary and directions for future work.
+for off-the-shelf MARL algorithms, the effect of training-pool size on generalisation, and the
+curriculum-transfer study toward the hand-crafted LLE Level 6. @conclusion concludes with a summary and directions for future work.

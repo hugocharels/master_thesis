@@ -18,14 +18,8 @@ helper agent receives no direct benefit from blocking its own beam. The reward i
 when all agents simultaneously occupy their exits, which requires the full team to coordinate
 successfully.
 
-#figure(
-  image("../../../assets/lvl6-annotated.png", width: 70%),
-  caption: [
-    LLE Level 6, the canonical hard target used throughout this thesis. Agents must reach the
-    exit tiles. Laser beams block movement for non-immune agents, but an immune agent can
-    truncate its own beam by occupying a cell along its path, opening a route for a teammate.
-  ],
-)
+An annotated rendering of LLE Level 6 (the canonical hard target used throughout this thesis)
+is shown in @figure-lvl6.
 
 LLE additionally supports collectible gems and void tiles. Neither is used in this thesis: gems
 and the incentive-scoring layer they enable are out of scope, and the formal model developed

@@ -41,7 +41,46 @@ introduced precisely to study coordination-critical multi-agent tasks @LLE. It s
 other cooperative-MARL benchmarks such as SMAC @Samvelyan2019SMAC (StarCraft micro-management
 with partially observable team play) and Overcooked @Carroll2019Overcooked (a constrained
 cooperative kitchen with temporal synchronisation), but differs in that its hardness comes from
-explicit *inter-agent blocking* rather than from partial observability or large action spaces. The LLE paper identifies three
+explicit *inter-agent blocking* rather than from partial observability or large action spaces.
+
+#let _lvl6_w = 9cm
+#let _lvl6_tile = _lvl6_w / 13
+#let _lvl6_box(c) = box(fill: white, stroke: 0.6pt + black, inset: 4pt, text(11pt, c))
+
+#figure(
+  box(width: _lvl6_w, {
+    image("../../assets/lvl6-clean.png", width: _lvl6_w)
+    // Rectangles highlighting key features
+    // Start tiles (row 0, cols 4-7)
+    place(top + left, dx: 4 * _lvl6_tile, dy: 0 * _lvl6_tile,
+      rect(stroke: 2.5pt + black, width: 4 * _lvl6_tile, height: _lvl6_tile, fill: none))
+    // Red laser source (row 4, col 0)
+    place(top + left, dx: 0 * _lvl6_tile, dy: 4 * _lvl6_tile,
+      rect(stroke: 2.5pt + black, width: _lvl6_tile, height: _lvl6_tile, fill: none))
+    // Red laser beam (row 4, cols 1-6)
+    place(top + left, dx: 1 * _lvl6_tile, dy: 4 * _lvl6_tile,
+      rect(stroke: 2.5pt + black, width: 6 * _lvl6_tile, height: _lvl6_tile, fill: none))
+    // Gem (row 10, col 4)
+    place(top + left, dx: 4 * _lvl6_tile, dy: 10 * _lvl6_tile,
+      rect(stroke: 2.5pt + black, width: _lvl6_tile, height: _lvl6_tile, fill: none))
+    // Exit tiles (rows 10-11, cols 10-11)
+    place(top + left, dx: 10 * _lvl6_tile, dy: 10 * _lvl6_tile,
+      rect(stroke: 2.5pt + black, width: 2 * _lvl6_tile, height: 2 * _lvl6_tile, fill: none))
+    // Labels
+    place(top + left, dx: 8.5 * _lvl6_tile, dy: 0.2 * _lvl6_tile, _lvl6_box[Start tiles])
+    place(top + left, dx: 7.3 * _lvl6_tile, dy: 4.1 * _lvl6_tile, _lvl6_box[Red laser])
+    place(top + left, dx: 7.3 * _lvl6_tile, dy: 5.1 * _lvl6_tile, _lvl6_box[Laser source])
+    place(top + left, dx: 4.5 * _lvl6_tile, dy: 8.6 * _lvl6_tile, _lvl6_box[Gem])
+    place(top + left, dx: 7.5 * _lvl6_tile, dy: 10.5 * _lvl6_tile, _lvl6_box[Exit tiles])
+  }),
+  caption: [
+    LLE Level 6, the canonical hard target used throughout this thesis. Agents must reach the
+    exit tiles. Laser beams block movement for non-immune agents, but an immune agent can
+    truncate its own beam by occupying a cell along its path, opening a route for a teammate.
+  ],
+) <figure-lvl6>
+
+ The LLE paper identifies three
 properties that make the benchmark difficult for value-based MARL methods: *perfect
 coordination*, *interdependence*, and *zero-incentive dynamics*. Together, these properties
 create bottlenecks in which one agent must perform a locally unrewarded action that enables

@@ -80,13 +80,13 @@
   columns: (1fr, 1fr),
   align(center)[
     *Author:* \
-    Charels Hugo \
+    Hugo Charels \
     #link("mailto:hugo.charels@ulb.be")
   ],
   align(center)[
     *Supervisors:* \
-    Lenaerts Tom \
-    Molinghen Yannick
+    Tom Lenaerts \
+    Yannick Molinghen
   ],
 )
 
@@ -111,16 +111,16 @@ cooperative levels for the Laser Learning Environment (LLE), a multi-agent reinf
 learning benchmark. We formalise bounded-horizon LLE solvability as a propositional
 satisfiability decision problem and prove the reduction correct; we introduce a
 strict-beam-semantics counterfactual that turns the *cooperation-required* property into a
-second decidable problem on the same level; and we refine the resulting binary criterion into
-a profile taxonomy that classifies the dependency structure of a cooperative level into one of
-five patterns (asymmetric, mutual, chain, distributed, fully coupled). These decision
+second decidable problem on the same level; and we further classify cooperative levels by
+the structure of their inter-agent dependencies into five profiles: asymmetric, mutual,
+chain, distributed, and fully coupled. These decision
 procedures are embedded inside a family of procedural generators (Random, Constrained Random,
-Constructive, Level-6-Style) that emit only solver-certified levels with the requested
-properties. The empirical evaluation compares two SAT encodings, characterises per-generator
+Constructive, Level-6-Style) that emit only levels certified by the solver to be solvable
+and, on demand, to require cooperation, possibly of a specific profile (one of the five above). The empirical evaluation compares two SAT encodings, characterises per-generator
 rejection rates and cooperation-profile distributions, and shows that off-the-shelf
-value-decomposition MARL algorithms (IQL, VDN, QMIX) can learn certified cooperative levels at
+value-based cooperative-MARL algorithms (IQL, VDN, QMIX) can learn certified cooperative levels at
 $5 times 5$ and that enlarging the generated training pool restores generalisation. A final set
-of curriculum experiments finds that curriculum *ordering* offers no advantage over direct
+of curriculum experiments finds that curriculum *scheduling* offers no advantage over direct
 training on a reachable target, and that no curriculum — including a staged budget of two million
 steps — lets these algorithms solve the mutually-cooperative LLE Level 6, on which direct training
 also scores zero; we trace this negative result to the base task being unlearnable by
@@ -175,6 +175,9 @@ cooperative levels, Laser Learning Environment, curriculum learning.
 
 #include "chapters/conclusion.typ"
 
+#pagebreak()
+#bibliography("bibliography.bib", full: true)
+
 #[
   // The `Appendix` heading inside appendix.typ uses `numbering: none`, so it
   // does NOT advance the depth-1 counter. We therefore reset the counter to 1
@@ -190,6 +193,3 @@ cooperative levels, Laser Learning Environment, curriculum learning.
   })
   #include "chapters/appendix.typ"
 ]
-
-#pagebreak()
-#bibliography("bibliography.bib", full: true)

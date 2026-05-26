@@ -1,4 +1,4 @@
-== Evaluation Protocol <benchmarking>
+== Evaluation protocol <benchmarking>
 
 The first benchmark implemented in this project isolates the SAT solver rather than the generators.
 Its goal is to compare the two movement formulations used in the encoding: the *local* formulation,
@@ -19,7 +19,7 @@ The implementation also stores per-constraint method profiles for the movement c
 allows us to inspect the part of the final CNF generated inside the movement-constraint module.
 
 
-=== Solver and Level Sets
+=== Solver and level sets
 
 All benchmark runs use the same SAT backend as the main solver implementation, namely `Minisat22`
 through the PySAT interface. The benchmarking script can evaluate the six hand-crafted benchmark

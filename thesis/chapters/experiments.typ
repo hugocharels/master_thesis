@@ -13,7 +13,7 @@ task rather than to the curriculum itself. Software versions and seed convention
 experiment in this chapter are summarised in @appendix-reproducibility.
 
 
-== Experimental Question
+== Experimental question
 
 The experiment asks whether the *global* and *local* movement formulations introduced in
 @sat-reduction differ materially in CNF size and runtime on levels of increasing complexity.
@@ -24,7 +24,7 @@ subpart of it. The protocol itself is defined in @benchmarking; the present chap
 the level set, the observed results, and their interpretation.
 
 
-== Benchmark Instances
+== Benchmark instances
 
 Four levels of increasing size and complexity were used:
 
@@ -59,7 +59,7 @@ included to assess solver behaviour on a realistic cooperative instance. Per-lev
 
 == Results
 
-=== Clause Count
+=== Clause count
 
 #figure(
   image("../../results/MLG-Student-Day/clauses_per_level.pdf", width: 90%),
@@ -83,7 +83,7 @@ global formulation introduces pairwise exclusions across the full position set. 
 per-constraint-family decomposition behind these totals is reported in @appendix-sat-clauses.
 
 
-=== Solving Time
+=== Solving time
 
 #figure(
   image("../../results/MLG-Student-Day/times_per_level.pdf", width: 90%),
@@ -113,7 +113,7 @@ for the solver developed in this thesis. Raw per-(level, method) gen/solve timin
 in @appendix-sat-times.
 
 
-== Interpretation and Scope
+== Interpretation and scope
 
 The current results support one claim strongly and several others only weakly.
 
@@ -128,9 +128,9 @@ following two sections address the first two of these open questions; the downst
 question is addressed in @learnability-experiment and @transfer-experiment.
 
 
-== Generator Rejection Rates <generator-rejection-rates>
+== Generator rejection rates <generator-rejection-rates>
 
-=== Experimental Question
+=== Experimental question
 
 Acceptance rates determine the practical cost of the rejection-sampling strategy used by the
 generators. A generator with a 1 % acceptance rate requires approximately one hundred solver
@@ -223,9 +223,9 @@ for the richer cooperation profile reported in @profile-distribution. Detailed p
 grid) numbers are tabulated in @appendix-rejection-detail.
 
 
-== Cooperation Profile Distribution <profile-distribution>
+== Cooperation profile distribution <profile-distribution>
 
-=== Experimental Question
+=== Experimental question
 
 The binary cooperation detector of @cooperation-detection certifies that every accepted
 cooperative level requires at least one same-colour beam-truncation step, but it does not
@@ -314,9 +314,9 @@ remains an open empirical question, addressed in @learnability-experiment and
 @transfer-experiment.
 
 
-== Learnability of Generated Cooperative Levels <learnability-experiment>
+== Learnability of generated cooperative levels <learnability-experiment>
 
-=== Experimental Question
+=== Experimental question
 
 We now ask whether off-the-shelf MARL agents can learn to solve levels produced by the
 Constructive generator in cooperative mode, and whether the choice of MARL algorithm matters as
@@ -452,9 +452,9 @@ twenty training levels rather than abstracting the cooperation pattern across th
 ) <tab-learnability-final>
 
 
-== Training-Pool Scaling Restores Generalisation <data-scaling-experiment>
+== Training-pool scaling restores generalisation <data-scaling-experiment>
 
-=== Experimental Question
+=== Experimental question
 
 The learnability experiment of @learnability-experiment isolated *generalisation*, rather than
 credit assignment, as the dominant failure mode: all three algorithms reached a non-trivial
@@ -541,9 +541,9 @@ too *hard* to learn directly (@transfer-experiment), whereas data scaling target
 learnable but not yet *generalised*.
 
 
-== Curriculum Ordering on a Reachable $6 times 6$ Cooperative Target <curriculum-strategy-experiment>
+== Curriculum ordering on a reachable $6 times 6$ cooperative target <curriculum-strategy-experiment>
 
-=== Experimental Question
+=== Experimental question
 
 @data-scaling-experiment showed that the learnability ceiling on *reachable* generated levels is
 a data-quantity effect rather than an intrinsic algorithmic limit. RQ6 (@transfer-experiment) asks
@@ -673,11 +673,11 @@ actually designed for — a target the agent *cannot* reach directly — which @
 addresses.
 
 
-== The Limits of Curriculum Learning on Mutually-Cooperative Targets <transfer-experiment>
+== The limits of curriculum Learning on mutually-cooperative targets <transfer-experiment>
 
 This section addresses RQ6 of @introduction.
 
-=== Experimental Question
+=== Experimental question
 
 @curriculum-strategy-experiment isolated the curriculum *mechanism* on a target that direct
 training can already reach, and found that ordering confers no advantage. The motivating promise
@@ -778,7 +778,7 @@ steps. The full four-stage curriculum (CURR) was no better than direct training 
 and the agents' mean episode return stayed negative throughout — they accumulated step penalties
 without ever assembling the coordinated double-blocking sequence the level requires.
 
-=== Why Curriculum Learning Does Not Help Here
+=== Why curriculum Learning does not help here
 
 The two regimes of @curriculum-strategy-experiment and this section fail for complementary
 reasons. On a *reachable* target, a curriculum is unnecessary: ordering trades budget away from
@@ -816,7 +816,7 @@ hand-crafted target — the agents never learned the base mutually-cooperative t
 failure of curriculum learning here is therefore not a failure of curriculum design but a
 consequence of the target lying beyond the reach of the underlying MARL method.
 
-=== Scope and Threats to Validity
+=== Scope and threats to validity
 
 We are careful not to overclaim. These experiments establish that the value-decomposition
 algorithms evaluated here (IQL, VDN, QMIX), under a fixed set of hyperparameters and a sparse

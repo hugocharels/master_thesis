@@ -18,7 +18,7 @@ solver. This is the central contribution of the thesis: procedural generation co
 plausibility.
 
 
-== Answering the Research Questions
+== Answering the research questions
 
 We restate the six research questions of @introduction and assess what each chapter delivers.
 
@@ -69,7 +69,7 @@ We restate the six research questions of @introduction and assess what each chap
   learnability of mutual coordination — not curriculum design — as the lever for future work.
 
 
-== Future Work
+== Future work
 
 Several directions extend the present work naturally.
 

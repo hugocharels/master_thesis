@@ -143,29 +143,29 @@ cooperative levels, Laser Learning Environment, curriculum learning.
 
 #include "chapters/introduction.typ"
 
-= Related Work <related-work>
+= Related work <related-work>
 
 #include "chapters/related_work.typ"
 
-= Background and Formalization <background>
+= Background and formalization <background>
 
 #include "chapters/methods/background.typ"
 
 #include "chapters/methods/formalization.typ"
 
-= SAT-based Solver <sat-reduction>
+= SAT-based solver <sat-reduction>
 
 #include "chapters/contribution/sat_reduction.typ"
 
-= Cooperation Detection <cooperation-detection>
+= Cooperation detection <cooperation-detection>
 
 #include "chapters/contribution/cooperation.typ"
 
-= Procedural Generators <generators>
+= Procedural generators <generators>
 
 #include "chapters/contribution/generators.typ"
 
-= Empirical Evaluation <experiments>
+= Empirical evaluation <experiments>
 
 #include "chapters/contribution/benchmarking.typ"
 

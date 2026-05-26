@@ -37,7 +37,7 @@ chapter makes the mechanics precise through a formal model suitable for reasonin
 solvability and cooperation within a bounded time horizon.
 
 
-== Boolean Satisfiability <sat-background>
+== Boolean satisfiability <sat-background>
 
 Boolean Satisfiability (SAT) is the problem of deciding whether a propositional formula has a
 satisfying assignment — a mapping from Boolean variables to true or false that makes the formula

@@ -1,6 +1,6 @@
 #import "../../macros.typ": formalbox, proofbox, fref
 
-== Strict SAT Encoding
+== Strict SAT encoding
 
 Recall from #fref(<def-3-6>, [Definition 3.6]) that strict beam semantics changes only one aspect of the dynamics:
 same-colour occupancy no longer truncates the corresponding beam. Same-colour immunity is
@@ -26,7 +26,7 @@ denote the resulting CNF formula by $Phi_("strict")(L, T_("max"))$ and the corre
 $"StrictSolver"$.
 
 
-== Why This Captures Cooperation
+== Why this captures cooperation
 
 Under the LLE mechanics studied here, the cooperative action of interest is for an agent to occupy
 a cell that would otherwise allow its own beam to continue, thereby making another agent's path
@@ -37,7 +37,7 @@ semantics, every successful standard solution must rely on at least one same-col
 step.
 
 
-== Formal Theorem and Proof
+== Formal theorem and proof
 
 #formalbox([Theorem 5.1 (Cooperation Detection Criterion)], [
   Let $L$ be an LLE level and $T_("max")$ a time horizon. Then $L$ requires cooperation with
@@ -68,7 +68,7 @@ step.
 ])
 
 
-== Horizon-Dependence of the Cooperation Criterion <horizon-dependence>
+== Horizon-dependence of the cooperation criterion <horizon-dependence>
 
 #fref(<thm-5-1>, [Theorem 5.1]) binds cooperation to a fixed horizon $T_("max")$. This is not an artefact of the SAT
 encoding: it is the only sense in which cooperation is decidable in this framework. Solvability
@@ -140,7 +140,7 @@ beam-truncation behaviour at their stated horizon, and loose enough that the und
 solver does not spuriously reject solvable instances.
 
 
-== Practical Algorithm
+== Practical algorithm
 
 The cooperation detector runs two SAT calls on the same level:
 
@@ -155,7 +155,7 @@ benchmark levels, the horizon can be chosen from known solution lengths; for gen
 is the user-supplied generation parameter $T_("max")$.
 
 
-== Cooperation Profiles <cooperation-profiles>
+== Cooperation profiles <cooperation-profiles>
 
 #fref(<thm-5-1>, [Theorem 5.1]) yields a *binary* answer: a level either requires cooperation or it does not. Once the
 binary criterion holds, however, several qualitatively different cooperation structures fall under
@@ -189,7 +189,7 @@ configuration that LLE cannot host.
 The remainder of this section makes each underlying object precise and gives one geometric example
 per family.
 
-=== Selective-Strict Semantics
+=== Selective-strict semantics
 
 Some profile decisions require asking whether a single agent is *individually* indispensable as a
 helper. To support this, the SAT encoding offers a *selective-strict* laser mode, parameterised
@@ -217,7 +217,7 @@ therefore use the selective-strict encoding as a sound decision oracle for "$L$ 
 solvable when each colour in $K$ is individually barred from truncating its own beam", which
 is exactly what the necessary-helper analysis below requires.
 
-=== Helper Events from a SAT Model
+=== Helper events from a SAT model
 
 Given a satisfying assignment of $Phi(L, T_("max"))$, the analyzer recovers the joint trajectory
 $sigma = (p_0, ..., p_(T_("max"))).$ For each time step $t$ and each ordered pair of distinct
@@ -233,7 +233,7 @@ Helper events are an *observable of the chosen joint plan*, not an invariant of 
 cooperative level typically admits many joint plans, and different plans may yield different
 helper-event sets.
 
-=== Necessary Helpers
+=== Necessary helpers
 
 The *necessary-helper set* is, by contrast, a property of the level itself. For every colour
 $c in C_("src")$ the analyzer runs one selective-strict SAT call with $K = {c}$. If the call
@@ -245,7 +245,7 @@ The necessary-helper set does not depend on which standard model the solver retu
 counterfactual is its own one-shot satisfiability check, independent of the joint plan chosen
 elsewhere.
 
-=== Dependency Graph
+=== Dependency graph
 
 Helper events induce a directed graph $G_L = (V, E)$ on the set of agents:
 
@@ -259,7 +259,7 @@ otherwise discarded; a separate scalar, the *synchronous width*, records the max
 distinct helpers active at the same time step and is exposed alongside the profile label without
 entering the classification decision.
 
-=== Profile Families
+=== Profile families
 
 The profile label is the output of a small decision procedure applied to $G_L$, with the binary
 cooperation requirement as a hard precondition. The priority order over the cooperation-required

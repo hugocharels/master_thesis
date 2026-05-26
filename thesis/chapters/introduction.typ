@@ -6,10 +6,10 @@ is not a neutral container: it determines which coordination patterns are possib
 necessary, and how difficult they are to discover.
 
 This dependence on environment structure is especially strong in sparse-reward cooperative tasks.
-When reward is issued only after the team objective has been achieved, a training level is useful
-only if it exposes a meaningful coordination challenge while remaining actually solvable.
-Unsolvable levels provide no valid signal, and levels that admit independent solutions fail to test
-the cooperative mechanism they are meant to study.
+When reward is issued only after the team objective has been achieved, two failure modes make a
+training level useless. An unsolvable level provides no learning signal at all. A level solvable
+without cooperation defeats the purpose, since we are training the agents precisely to learn how
+to cooperate.
 
 We instantiate this work on the Laser Learning Environment (LLE), a cooperative MARL benchmark
 whose mechanics are formalised in @lle-background; its hand-crafted Level 6 serves as the
@@ -22,7 +22,7 @@ evaluate it on LLE only and leave broader transfer to future work.
 == Motivation
 
 In cooperative environments whose mechanics create explicit inter-agent dependencies, level design
-is particularly challenging. A useful training level should not merely appear cooperative — it
+is particularly challenging. A useful training level should not merely appear cooperative, it
 should provably contain the intended coordination structure.
 
 Procedural Content Generation (PCG) offers a way to scale level creation beyond what manual design
@@ -34,7 +34,7 @@ training objective.
 
 Generated levels are also useful beyond standalone training: the same configuration knobs that
 control individual levels — grid size, number of agents, number of lasers, wall budget,
-cooperation profile, horizon — also define a natural difficulty axis. A formally-verified
+cooperation profile, time horizon (the bounded number of joint steps allowed for a solution) — also define a natural difficulty axis. A formally-verified
 generator is therefore a candidate building block for *curriculum learning*: rather than train
 directly on a hard hand-crafted target, an agent can be trained on a sequence of progressively
 harder generated levels.
@@ -42,14 +42,14 @@ harder generated levels.
 The thesis delivers three contributions and an empirical study. The contributions are a
 bounded-horizon SAT encoding of LLE solvability with a correctness proof and complexity
 placement; a strict-semantics counterfactual that turns the informal "cooperation required"
-intuition into a decidable property, refined into a five-label profile taxonomy; and a
+intuition into a decidable property, refined into five increasingly rich cooperation profiles; and a
 solver-in-the-loop generator family that accepts only certified levels and exposes the
 structural axes above as user-facing parameters. The empirical study covers SAT-encoding
 cost, generator acceptance rates and profile distributions, learnability of generated
 cooperative levels for off-the-shelf MARL, and a curriculum-transfer study toward LLE Level 6.
 
 
-== Research Questions and Scope
+== Research questions and scope
 
 This thesis addresses the following question: how can we automatically generate levels for a
 cooperative MARL environment that are provably solvable and provably require the target
@@ -81,7 +81,7 @@ treated as walls (impassable to agents) rather than as a separate tile type. The
 are deferred to future work.
 
 
-== Thesis Structure
+== Thesis structure
 
 The remainder of this thesis is organised as follows. @related-work positions the work relative
 to cooperative MARL benchmarks, procedural content generation, and compilation-based planning

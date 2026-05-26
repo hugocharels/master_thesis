@@ -49,7 +49,7 @@
 #heading(numbering: none, level: 1)[Appendix]
 
 
-== Benchmark Levels for SAT Encoding Comparison <appendix-benchmark-levels>
+== Benchmark levels for SAT encoding comparison <appendix-benchmark-levels>
 
 The four levels used in the SAT encoding comparison (@experiments) are shown below with their
 exact parameters.
@@ -84,7 +84,7 @@ exact parameters.
 )
 
 
-== Reproducibility — Software and Seed Conventions <appendix-reproducibility>
+== Reproducibility — software and seed conventions <appendix-reproducibility>
 
 All experiments are reproducible from a single Python source tree. The relevant versions and
 seed conventions are summarised below.
@@ -120,7 +120,7 @@ seed conventions are summarised below.
 )
 
 
-== Learnability Hyperparameters <appendix-learnability-hyperparams>
+== Learnability hyperparameters <appendix-learnability-hyperparams>
 
 The learnability experiment (@learnability-experiment), the data-scaling experiment
 (@data-scaling-experiment), and the curriculum experiments (@curriculum-strategy-experiment,
@@ -161,7 +161,7 @@ described in @curriculum-strategy-experiment.
 ) <tab-learnability-hyperparams>
 
 
-== SAT Encoding — Per-Family Clause Counts <appendix-sat-clauses>
+== SAT encoding — per-family clause counts <appendix-sat-clauses>
 
 The figures of @experiments report total CNF size for the four benchmark levels under the two
 movement formulations. @tab-sat-clauses gives the per-constraint-family decomposition behind
@@ -193,7 +193,7 @@ those totals.
 ) <tab-sat-clauses>
 
 
-== SAT Encoding — Generation and Solve Times <appendix-sat-times>
+== SAT encoding — generation and solve times <appendix-sat-times>
 
 @tab-sat-times reports the mean CNF generation time and mean SAT solve time for each
 (level, method) pair, averaged over the 100 timing runs of the benchmark protocol described
@@ -226,7 +226,7 @@ in @benchmarking. Standard deviations follow the mean in parentheses.
 ) <tab-sat-times>
 
 
-== Generator Rejection — Detailed Numbers <appendix-rejection-detail>
+== Generator rejection — detailed numbers <appendix-rejection-detail>
 
 The figures of @generator-rejection-rates report per-generator rejection rates and mean
 attempts. @tab-rejection-detail gives the full numbers behind those plots, including the
@@ -270,7 +270,7 @@ mean number of attempts per accepted level.
 ) <tab-rejection-detail>
 
 
-== Cooperation Profile Distribution — Detailed Counts <appendix-profile-detail>
+== Cooperation profile distribution — detailed counts <appendix-profile-detail>
 
 The figure of @profile-distribution shows the cooperation-profile breakdown of accepted
 cooperative levels for three generator settings and two grid sizes. @tab-profile-detail gives
@@ -303,7 +303,7 @@ the raw counts.
 ) <tab-profile-detail>
 
 
-== Learnability — Per-Seed Final Success Rates <appendix-learnability-detail>
+== Learnability — per-seed final success rates <appendix-learnability-detail>
 
 @tab-learnability-perseed lists the final greedy success rate of every (algorithm, seed) cell
 in the learnability experiment of @learnability-experiment. Each row is one trained agent;
@@ -335,7 +335,7 @@ in the learnability experiment of @learnability-experiment. Each row is one trai
 ) <tab-learnability-perseed>
 
 
-== Learnability — Training Pool <appendix-learnability-train>
+== Learnability — training pool <appendix-learnability-train>
 
 Cooperative pool used as $cal(D)_("train")$ for @learnability-experiment.
 
@@ -364,7 +364,7 @@ Cooperative pool used as $cal(D)_("train")$ for @learnability-experiment.
 ) <fig-pool-learnability-train>
 
 
-== Learnability — Test Pool <appendix-learnability-test>
+== Learnability — test pool <appendix-learnability-test>
 
 Held-out cooperative pool used as $cal(D)_("test")$ for @learnability-experiment.
 
@@ -393,7 +393,7 @@ Held-out cooperative pool used as $cal(D)_("test")$ for @learnability-experiment
 ) <fig-pool-learnability-test>
 
 
-== Data-Scaling Experiment — Configuration <appendix-data-scaling>
+== Data-scaling experiment — configuration <appendix-data-scaling>
 
 The data-scaling experiment (@data-scaling-experiment) reuses the learnability task, generator,
 and hyperparameters (@appendix-learnability-hyperparams) unchanged, and varies only the
@@ -464,7 +464,7 @@ generalisation gap closes.
 ) <fig-datascale-curves-500>
 
 
-== Curriculum-Strategy Experiment — Configuration and Per-Cell Results <appendix-curriculum-strategy-detail>
+== Curriculum-strategy experiment — configuration and per-cell results <appendix-curriculum-strategy-detail>
 
 The curriculum-strategy experiment (@curriculum-strategy-experiment) compares four budget-matched
 scheduling conditions on a $6 times 6$ / 2-agent / 1-laser cooperative target reachable by the
@@ -570,14 +570,14 @@ coincide. Unspecified wall budgets fall back to the generator default $floor("gr
 ) <fig-cs-pool-s3>
 
 
-== Curriculum-Transfer Experiments — Configurations and Results <appendix-transfer-detail>
+== Curriculum-transfer experiments — configurations and results <appendix-transfer-detail>
 
 This appendix collects the configurations and per-run results behind the three stages of
 @transfer-experiment: the frontier probe, the two-laser curriculum, and the Level-6 transfer.
 Across all three, held-out success on the mutually-cooperative target is uniformly zero; the
 tables below give the supporting numbers and the exact stage geometries.
 
-=== Frontier Probe and Diagnostic Checks
+=== Frontier probe and diagnostic checks
 
 Direct training from scratch on a fixed $6 times 6$ / 2-agent / 2-laser *mutual* target
 ($T_("max") = 18$, constructive cooperative generator constrained to the `fully_coupled` profile,
@@ -620,7 +620,7 @@ success stays flat, peaking early (around $0.10$) and then decaying to zero rath
 Finally, shrinking the grid to $5 times 5$ / 2-laser (VDN, 200,000 steps) yields $0.00$ on both
 train and test pools — two lasers drive success to zero independently of grid size.
 
-=== Two-Laser Curriculum
+=== Two-laser curriculum
 
 The four scheduling conditions of @curriculum-strategy-experiment, on a fixed $6 times 6$ grid
 with a zero-, one-, then two-laser ladder to the mutual two-laser target, budget-matched at
@@ -692,7 +692,7 @@ levels from each rung.
   ],
 ) <fig-cs2l-pool-s3>
 
-=== Level-6 Transfer
+=== Level-6 transfer
 
 A four-stage curriculum of generated levels growing in geometry and cooperation, four agents
 throughout, with the gem reward set to zero in every environment so that the reward structure is
@@ -748,7 +748,7 @@ levels for the four stage generators at comparable grid sizes appear in
 ) <tab-level6-results>
 
 
-== Generator Gallery — Base Random Generator <appendix-gallery-random>
+== Generator gallery — base random generator <appendix-gallery-random>
 
 Pure random sampling with *no* geometric validation: the generator places agents, exits, walls,
 and laser sources uniformly at random and accepts any layout the SAT oracle certifies as
@@ -767,7 +767,7 @@ degeneracies that the geometric filters of the Constrained Random generator
 wall parameters are used here as in that section, so the two galleries can be read side by side.
 Pools are generated by `src/scripts/generate_appendix_galleries.py`.
 
-=== Base Random — 3×3, 2 agents, 1 laser
+=== Base random — 3×3, 2 agents, 1 laser
 
 #let _g01 = json("../../results/appendix_galleries/01_random_3x3_2a_1L/params.json")
 #figure(gallery_params(_g01), caption: [Parameters and seed for the Base Random 3×3 gallery pool.])
@@ -776,7 +776,7 @@ Pools are generated by `src/scripts/generate_appendix_galleries.py`.
   caption: [16 Base Random 3×3 (2 agents, 1 laser) levels, no geometric validation.],
 )
 
-=== Base Random — 5×5, 3 agents, 2 lasers
+=== Base random — 5×5, 3 agents, 2 lasers
 
 #let _g02 = json("../../results/appendix_galleries/02_random_5x5_3a_2L/params.json")
 #figure(gallery_params(_g02), caption: [Parameters and seed for the Base Random 5×5 gallery pool.])
@@ -785,7 +785,7 @@ Pools are generated by `src/scripts/generate_appendix_galleries.py`.
   caption: [16 Base Random 5×5 (3 agents, 2 lasers) levels, no geometric validation.],
 )
 
-=== Base Random — 7×7, 4 agents, 2 lasers
+=== Base random — 7×7, 4 agents, 2 lasers
 
 #let _g03 = json("../../results/appendix_galleries/03_random_7x7_4a_2L/params.json")
 #figure(gallery_params(_g03), caption: [Parameters and seed for the Base Random 7×7 gallery pool.])
@@ -795,7 +795,7 @@ Pools are generated by `src/scripts/generate_appendix_galleries.py`.
 )
 
 
-== Generator Gallery — Constrained Random Generator <appendix-gallery-constrained-random>
+== Generator gallery — constrained random generator <appendix-gallery-constrained-random>
 
 Random sampling plus geometric filters (no laser pointing immediately out of bounds, no
 zero-length beam, no exit on an unavoidable beam segment, etc.). Compared with the Base Random
@@ -805,7 +805,7 @@ parameters but no geometric pre-filter — these filters remove the cosmetically
 actually exhibit the beam-crossing structure the experiments rely on. Pools are generated by
 `src/scripts/generate_appendix_galleries.py`.
 
-=== Constrained Random — 3×3, 2 agents, 1 laser
+=== Constrained random — 3×3, 2 agents, 1 laser
 
 #let _g04 = json("../../results/appendix_galleries/04_constrained_random_3x3_2a_1L/params.json")
 #figure(gallery_params(_g04), caption: [Parameters and seed for the Constrained Random 3×3 gallery pool.])
@@ -814,7 +814,7 @@ actually exhibit the beam-crossing structure the experiments rely on. Pools are 
   caption: [16 Constrained Random 3×3 (2 agents, 1 laser) levels.],
 )
 
-=== Constrained Random — 5×5, 3 agents, 2 lasers
+=== Constrained random — 5×5, 3 agents, 2 lasers
 
 #let _g05 = json("../../results/appendix_galleries/05_constrained_random_5x5_3a_2L/params.json")
 #figure(gallery_params(_g05), caption: [Parameters and seed for the Constrained Random 5×5 gallery pool.])
@@ -823,7 +823,7 @@ actually exhibit the beam-crossing structure the experiments rely on. Pools are 
   caption: [16 Constrained Random 5×5 (3 agents, 2 lasers) levels.],
 )
 
-=== Constrained Random — 7×7, 4 agents, 2 lasers
+=== Constrained random — 7×7, 4 agents, 2 lasers
 
 #let _g06 = json("../../results/appendix_galleries/06_constrained_random_7x7_4a_2L/params.json")
 #figure(gallery_params(_g06), caption: [Parameters and seed for the Constrained Random 7×7 gallery pool.])
@@ -833,13 +833,13 @@ actually exhibit the beam-crossing structure the experiments rely on. Pools are 
 )
 
 
-== Generator Gallery — Constructive Generator (Solvable) <appendix-gallery-constructive-solvable>
+== Generator gallery — constructive generator (solvable) <appendix-gallery-constructive-solvable>
 
 Lane-based construction (one disjoint lane per agent) followed by random wall placement on
 the remaining cells. Cooperation is not required at generation time; only solvability is
 certified by the SAT oracle.
 
-=== Constructive Solvable — 5×5, 3 agents, 1 laser
+=== Constructive solvable — 5×5, 3 agents, 1 laser
 
 #let _g07 = json("../../results/appendix_galleries/07_constructive_5x5_3a_1L/params.json")
 #figure(gallery_params(_g07), caption: [Parameters and seed for the Constructive Solvable 5×5 gallery pool.])
@@ -848,7 +848,7 @@ certified by the SAT oracle.
   caption: [16 Constructive Solvable 5×5 (3 agents, 1 laser) levels.],
 )
 
-=== Constructive Solvable — 7×7, 4 agents, 2 lasers
+=== Constructive solvable — 7×7, 4 agents, 2 lasers
 
 #let _g08 = json("../../results/appendix_galleries/08_constructive_7x7_4a_2L/params.json")
 #figure(gallery_params(_g08), caption: [Parameters and seed for the Constructive Solvable 7×7 gallery pool.])
@@ -857,7 +857,7 @@ certified by the SAT oracle.
   caption: [16 Constructive Solvable 7×7 (4 agents, 2 lasers) levels.],
 )
 
-=== Constructive Solvable — 9×9, 4 agents, 3 lasers
+=== Constructive solvable — 9×9, 4 agents, 3 lasers
 
 #let _g09 = json("../../results/appendix_galleries/09_constructive_9x9_4a_3L/params.json")
 #figure(gallery_params(_g09), caption: [Parameters and seed for the Constructive Solvable 9×9 gallery pool.])
@@ -867,13 +867,13 @@ certified by the SAT oracle.
 )
 
 
-== Generator Gallery — Constructive Generator (Cooperative) <appendix-gallery-constructive-cooperative>
+== Generator gallery — constructive generator (cooperative) <appendix-gallery-constructive-cooperative>
 
 Lane-based construction with planted same-colour structural lasers, certified to satisfy the
 binary cooperation criterion of #fref(<thm-5-1>, [Theorem 5.1]). No profile filter is applied;
 the gallery shows what the generator produces when any cooperation profile is admissible.
 
-=== Constructive Cooperative — 5×5, 2 agents, 1 laser
+=== Constructive cooperative — 5×5, 2 agents, 1 laser
 
 #let _g10 = json("../../results/appendix_galleries/10_cooperative_5x5_2a_1L/params.json")
 #figure(gallery_params(_g10, profile: "cooperative"), caption: [Parameters and seed for the Constructive Cooperative 5×5 gallery pool.])
@@ -882,7 +882,7 @@ the gallery shows what the generator produces when any cooperation profile is ad
   caption: [16 Constructive Cooperative 5×5 (2 agents, 1 laser) levels.],
 )
 
-=== Constructive Cooperative — 7×7, 3 agents, 2 lasers
+=== Constructive cooperative — 7×7, 3 agents, 2 lasers
 
 #let _g11 = json("../../results/appendix_galleries/11_cooperative_7x7_3a_2L/params.json")
 #figure(gallery_params(_g11, profile: "cooperative"), caption: [Parameters and seed for the Constructive Cooperative 7×7 gallery pool.])
@@ -891,7 +891,7 @@ the gallery shows what the generator produces when any cooperation profile is ad
   caption: [16 Constructive Cooperative 7×7 (3 agents, 2 lasers) levels.],
 )
 
-=== Constructive Cooperative — 9×9, 4 agents, 3 lasers
+=== Constructive cooperative — 9×9, 4 agents, 3 lasers
 
 #let _g12 = json("../../results/appendix_galleries/12_cooperative_9x9_4a_3L/params.json")
 #figure(gallery_params(_g12, profile: "cooperative"), caption: [Parameters and seed for the Constructive Cooperative 9×9 gallery pool.])
@@ -901,12 +901,12 @@ the gallery shows what the generator produces when any cooperation profile is ad
 )
 
 
-== Generator Gallery — Constructive Cooperative with Profile Filter <appendix-gallery-constructive-profile>
+== Generator gallery — constructive cooperative with profile filter <appendix-gallery-constructive-profile>
 
 Same Constructive Cooperative generator as the previous section, but with an explicit profile
 filter so accepted levels match a single label (e.g. *mutual* or *distributed*).
 
-=== Constructive Cooperative — 8×8, 3 agents, 2 lasers, profile = `mutual`
+=== Constructive cooperative — 8×8, 3 agents, 2 lasers, profile = `mutual`
 
 #let _g13 = json("../../results/appendix_galleries/13_cooperative_mutual_8x8_3a_2L/params.json")
 #figure(gallery_params(_g13, profile: "mutual"), caption: [Parameters and seed for the profile-filtered (mutual) 8×8 gallery pool.])
@@ -915,7 +915,7 @@ filter so accepted levels match a single label (e.g. *mutual* or *distributed*).
   caption: [16 profile-filtered (mutual) 8×8 (3 agents, 2 lasers) levels.],
 )
 
-=== Constructive Cooperative — 10×10, 4 agents, 3 lasers, profile = `distributed`
+=== Constructive cooperative — 10×10, 4 agents, 3 lasers, profile = `distributed`
 
 #let _g14 = json("../../results/appendix_galleries/14_cooperative_distributed_10x10_4a_3L/params.json")
 #figure(gallery_params(_g14, profile: "distributed"), caption: [Parameters and seed for the profile-filtered (distributed) 10×10 gallery pool.])
@@ -925,12 +925,12 @@ filter so accepted levels match a single label (e.g. *mutual* or *distributed*).
 )
 
 
-== Generator Gallery — Level-6-Style Generator <appendix-gallery-level6>
+== Generator gallery — Level-6-style generator <appendix-gallery-level6>
 
 Clustered starts and exits on opposing sides of the grid with a corridor of lasers in between,
 inspired by the hand-crafted LLE Level 6.
 
-=== Level-6-Style — 8×8, 4 agents, 2 lasers
+=== Level-6-style — 8×8, 4 agents, 2 lasers
 
 #let _g15 = json("../../results/appendix_galleries/15_level6_style_8x8_4a_2L/params.json")
 #figure(gallery_params(_g15), caption: [Parameters and seed for the Level-6-Style 8×8 gallery pool.])
@@ -939,7 +939,7 @@ inspired by the hand-crafted LLE Level 6.
   caption: [16 Level-6-Style 8×8 (4 agents, 2 lasers) levels.],
 )
 
-=== Level-6-Style — 10×10, 4 agents, 3 lasers
+=== Level-6-style — 10×10, 4 agents, 3 lasers
 
 #let _g16 = json("../../results/appendix_galleries/16_level6_style_10x10_4a_3L/params.json")
 #figure(gallery_params(_g16), caption: [Parameters and seed for the Level-6-Style 10×10 gallery pool.])
@@ -948,7 +948,7 @@ inspired by the hand-crafted LLE Level 6.
   caption: [16 Level-6-Style 10×10 (4 agents, 3 lasers) levels.],
 )
 
-=== Level-6-Style — 12×13, 4 agents, 3 lasers (Level 6 footprint)
+=== Level-6-style — 12×13, 4 agents, 3 lasers (Level 6 footprint)
 
 #let _g17 = json("../../results/appendix_galleries/17_level6_style_12x13_4a_3L/params.json")
 #figure(gallery_params(_g17), caption: [Parameters and seed for the Level-6-Style 12×13 gallery pool.])

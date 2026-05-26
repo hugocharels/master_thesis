@@ -1,4 +1,4 @@
-== Cooperative MARL and Coordination-Critical Benchmarks
+== Cooperative MARL and coordination-critical benchmarks
 
 This thesis is motivated by a benchmark-design question within cooperative Multi-Agent
 Reinforcement Learning (MARL): how can one generate training instances whose coordination structure
@@ -58,7 +58,7 @@ cooperation: the key object is not generic teamwork, but a concrete interdepende
 created by coloured lasers and same-colour blocking.
 
 
-== Dependency Structures in Cooperative MARL
+== Dependency structures in cooperative MARL
 
 The same-colour beam-truncation mechanism on which LLE relies admits a "cooperation required /
 not required" verdict per level, but cooperative behaviour at finer granularity can vary
@@ -82,7 +82,7 @@ interact, while our profile tells the *level designer* what kind of cooperation 
 instance contains.
 
 
-== Procedural Generation Under Structural Constraints
+== Procedural generation under structural constraints
 
 Procedural Content Generation (PCG) is useful in reinforcement-learning settings because it can
 replace a small fixed benchmark set with a larger and more diverse stream of instances
@@ -114,7 +114,7 @@ coupled to a formal decision procedure, and the solver acts as an acceptance ora
 as a post-hoc descriptive tool.
 
 
-== Curriculum Learning and Generated Environments
+== Curriculum Learning and generated environments
 
 The general idea of training on a sequence of progressively harder tasks predates the modern
 deep-learning era; #cite(<Bengio2009>, form: "prose") formalised *curriculum learning* as a meta-learning
@@ -142,7 +142,7 @@ profile) at a chosen difficulty configuration. The curriculum used in @experimen
 staged — four manually ordered configurations of growing grid size and cooperation requirement.
 
 
-== SAT-based Planning
+== SAT-based planning
 
 A second compilation lineage directly relevant to this thesis is *SAT-based planning* (we recall
 the propositional satisfiability background in @sat-background).
@@ -155,7 +155,7 @@ in the same conceptual family: a state-transition decision problem reduced to SA
 choices materially affecting solver performance.
 
 
-== Compilation-Based Multi-Agent Path Finding
+== Compilation-based multi-agent path finding
 
 The closest methodological precedent is not PCG for MARL, but compilation-based Multi-Agent Path
 Finding (MAPF). In standard MAPF, agents move on a discrete graph from start vertices to goal
@@ -190,7 +190,7 @@ used to define cooperation. The MAPF literature therefore supplies a methodologi
 not a drop-in solution.
 
 
-== Formal Methods Coupled to Reinforcement Learning
+== Formal methods coupled to reinforcement Learning
 
 A separate line of work uses formal methods as an explicit component of the reinforcement
 learning loop rather than as a post-hoc analysis. The canonical example is *shielded RL*
@@ -208,7 +208,7 @@ technique, but it does demonstrate that "formal-methods filter on top of an RL s
 working pattern.
 
 
-== Positioning of the Thesis
+== Positioning of the thesis
 
 Taken together, the MARL benchmarking literature, the PCG and curriculum-learning literature,
 and the SAT-planning / compilation-based MAPF literature mark the conceptual neighbourhood of

@@ -1,6 +1,6 @@
 #import "../../macros.typ": fref
 
-== Design Pattern
+== Design pattern
 
 All generators follow a common architecture built around three principles:
 
@@ -24,7 +24,7 @@ generator classes — *what* the generator constructs and *which extra propertie
 are independent axes.
 
 
-== Generation Targets
+== Generation targets
 
 Viewed through the solvability and cooperation definitions of @formalization, the generator
 family targets the three level categories shown in @fig-generator-categories. Every accepted
@@ -49,7 +49,7 @@ so only category (c) survives.
 ) <fig-generator-categories>
 
 
-== Cooperation Profile Targeting <profile-targeting>
+== Cooperation profile targeting <profile-targeting>
 
 Every generator in this chapter certifies *solvability* for every accepted level — that is
 the role of the SAT oracle and it is always on. On top of that always-on guarantee, the user
@@ -69,7 +69,7 @@ budget, horizon $T_("max")$ — are independent knobs and can be combined freely
 choice on the cooperation axis.
 
 
-== Random Generator
+== Random generator
 
 The random generator samples every layout component uniformly: agent start positions, exits,
 wall positions, and laser source positions are drawn pairwise-distinct from the grid, and each
@@ -86,7 +86,7 @@ is rejection rate. As the grid grows and the number of interacting entities incr
 random layouts quickly become dominated by unsolvable or trivial instances.
 
 
-== Constrained Random Generator
+== Constrained random generator
 
 A structured variant that biases generation toward well-formed, solvable configurations before
 any SAT call is made. Relative to the random generator, it rejects candidates that are already
@@ -111,7 +111,7 @@ unfiltered pools of @appendix-gallery-random with the filtered pools of
 @appendix-gallery-constrained-random at the same grid, agent, laser, and wall settings.
 
 
-== Constructive Generator
+== Constructive generator
 
 The constructive generator replaces blind sampling with a partial-by-construction layout. On
 a grid of $H$ rows and $W$ columns with $n_a$ agents, it picks a random orientation, samples
@@ -159,7 +159,7 @@ generated under an explicit profile filter (mutual, distributed) are shown in
 @appendix-gallery-constructive-profile.
 
 
-== Level-6-Style Generator
+== Level-6-style generator
 
 The level-6-style generator is a specialised constructive variant targeting the layout shape
 of LLE Level 6 (see @lle-background): clustered agent starts and clustered exits placed on

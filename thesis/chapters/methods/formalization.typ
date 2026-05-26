@@ -1,6 +1,6 @@
 #import "../../macros.typ": formalbox, fref
 
-== Problem Formalization <formalization>
+== Problem formalization <formalization>
 
 We now define the semantic objects and decision problems used throughout the thesis. Two
 properties are central: *solvability* — whether there exists a valid joint trajectory bringing

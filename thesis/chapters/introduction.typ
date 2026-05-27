@@ -29,7 +29,7 @@ Procedural Content Generation (PCG) offers a way to scale level creation beyond 
 allows, but only if the generated instances satisfy the properties that matter for training. Two
 properties are central. First, a level must be *solvable*. Second, success should *require
 cooperation* in the specific sense induced by the environment's mechanics. Without those
-guarantees, generation risks producing levels that are invalid, trivial, or misaligned with the
+guarantees, PCG risks producing levels that are invalid, trivial, or misaligned with the
 training objective.
 
 Generated levels are also useful beyond standalone training: the same configuration knobs that
@@ -50,9 +50,9 @@ cooperative levels for off-the-shelf MARL, and a curriculum-transfer study towar
 
 Beyond the thesis itself, the SAT-based solver, the cooperation detector, and the procedural
 generator family have been contributed upstream to the official `laser-learning-environment`
-library (released on PyPI as `laser-learning-environment[generator]`, version 2.9.0 and onwards),
-where they are exposed as the public functions `lle.solve`, `lle.is_cooperative`,
-`lle.cooperation_level`, and `lle.generate`.
+library#footnote[#link("https://pypi.org/project/laser-learning-environment/")] (released on PyPI
+as `laser-learning-environment[generator]`, version 2.9.0 and onwards), where they are exposed as
+the public functions `lle.solve`, `lle.is_cooperative`, `lle.cooperation_level`, and `lle.generate`.
 
 
 == Research questions and scope

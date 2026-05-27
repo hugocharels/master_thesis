@@ -21,8 +21,9 @@ allows us to inspect the part of the final CNF generated inside the movement-con
 
 === Solver and level sets
 
-All benchmark runs use the same SAT backend as the main solver implementation, namely `Minisat22`
-through the PySAT interface. The benchmarking script can evaluate the six hand-crafted benchmark
+All benchmark runs use the same SAT backend as the main solver implementation, namely `Minisat22`,
+a descendant of the MiniSat solver of Eén and Sörensson @EenSorensson2003, accessed through the
+PySAT interface @Ignatiev2018. The benchmarking script can evaluate the six hand-crafted benchmark
 levels distributed with the environment, each paired with a horizon known to be sufficient for
 solvability. It can also benchmark custom levels constructed programmatically.
 

@@ -10,6 +10,9 @@
 #set text(lang: "en")
 #set par(justify: true)
 
+// Figure and table captions are left-aligned (academic convention).
+#show figure.caption: set align(left)
+
 // Make `@label` to a depth-1 heading render as "Chapter N" instead of the
 // default "Section N", so cross-references between chapters click through
 // to the right place and read naturally.
@@ -120,7 +123,7 @@ and, on demand, to require cooperation, possibly of a specific profile (one of t
 rejection rates and cooperation-profile distributions, and shows that off-the-shelf
 value-based cooperative-MARL algorithms (IQL, VDN, QMIX) can learn certified cooperative levels at
 $5 times 5$ and that enlarging the generated training pool restores generalisation. A final set
-of curriculum experiments finds that curriculum *scheduling* offers no advantage over direct
+of curriculum experiments finds that curriculum scheduling offers no advantage over direct
 training on a reachable target, and that no curriculum — including a staged budget of two million
 steps — lets these algorithms solve the mutually-cooperative LLE Level 6, on which direct training
 also scores zero; we trace this negative result to the base task being unlearnable by

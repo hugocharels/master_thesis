@@ -34,7 +34,7 @@ solvability and cooperation within a bounded time horizon.
 == Boolean satisfiability <sat-background>
 
 Boolean Satisfiability (SAT) is the problem of deciding whether a propositional formula has a
-satisfying assignment — a mapping from Boolean variables to true or false that makes the formula
+satisfying assignment, i.e. a mapping from Boolean variables to true or false that makes the formula
 evaluate to true. It is the canonical NP-complete decision problem @Cook1971, where NP is the
 class of decision problems whose yes-instances admit a polynomial-time-checkable certificate.
 
@@ -49,7 +49,7 @@ $
 is a CNF formula over three variables. It is satisfied by setting $x_1 = "true"$, $x_2 = "false"$,
 $x_3 = "true"$, among other assignments.
 
-Modern SAT solvers based on the DPLL procedure @Davis1962 and Conflict-Driven Clause Learning
+Modern SAT solvers based on the Davis-Putnam-Logemann-Loveland (DPLL) procedure @Davis1962 and Conflict-Driven Clause Learning
 (CDCL) @EenSorensson2003 can handle industrial instances with millions of variables and clauses.
 Given a CNF
 formula, a solver either:
@@ -64,7 +64,6 @@ solution exists without the cooperative interaction.
 
 In this thesis, propositional variables are introduced to represent agent positions, laser beam
 states, and laser activity at each time step. The constraints of the bounded-horizon solvability
-problem are then encoded as CNF clauses, and a SAT solver is used as a decision oracle. The
-solver used throughout is Minisat22, a descendant of the MiniSat solver of Eén and Sörensson
-@EenSorensson2003, accessed through the PySAT interface @Ignatiev2018. The full encoding —
-variables, clauses, and the correctness argument — is developed in @sat-reduction.
+problem are then encoded as CNF clauses, and a SAT solver is used as a decision oracle. The full
+encoding — variables, clauses, and the correctness argument — is developed in @sat-reduction;
+the concrete solver used for every empirical run is specified in @benchmarking.

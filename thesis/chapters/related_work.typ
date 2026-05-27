@@ -82,7 +82,7 @@ explicit *inter-agent blocking* rather than from partial observability or large 
 
  The LLE paper identifies three
 properties that make the benchmark difficult for value-based MARL methods: *perfect
-coordination*, *interdependence*, and *zero-incentive dynamics*. Together, these properties
+coordination*, *interdependence*, and *zero-incentive dynamics* @Molinghen2025ZeroIncentive. Together, these properties
 create bottlenecks in which one agent must perform a locally unrewarded action that enables
 another agent to progress.
 
@@ -106,7 +106,7 @@ one-way edge, a mutual pair, a directed chain, a fan-in (one beneficiary, multip
 a fully connected graph. The cooperation profile analyzer of @cooperation-detection extracts
 this dependency graph from a SAT model of a solution and labels it as, respectively,
 *asymmetric*, *mutual*, *chain*, *distributed*, or *fully coupled*. The structural categories themselves are
-standard graph-theory vocabulary; to our knowledge, this is the first taxonomy that *recovers*
+standard graph-theory vocabulary; to our knowledge, this is the first taxonomy that recovers
 such structures from a SAT certificate of solvability in LLE. The prior MARL literature
 considers related but distinct structural notions.
 
@@ -120,6 +120,15 @@ notions are therefore complementary: a coordination graph tells the *learner* wh
 interact, while our profile tells the *level designer* what kind of cooperation a generated
 instance contains.
 
+A more recent line of work by #cite(<Biswas2025InterDependencies>, form: "prose") operates in
+the same spirit: they define *constructive interdependence*, a metric that measures how much
+agents rely on each other's actions to achieve a shared goal, over a STRIPS planning formalism,
+and use it to evaluate cooperation in human-AI teams on the Overcooked domain. Like our
+cooperation-profile taxonomy, their metric is recovered from a formal model rather than
+assumed; unlike ours, it scores the cooperative behaviour that emerges between trained agents
+and humans on a fixed task, rather than classifying the structural dependency a generated level
+requires.
+
 
 == Procedural generation under structural constraints
 
@@ -128,14 +137,14 @@ replace a small fixed benchmark set with a larger and more diverse stream of ins
 @Shaker2016. Within PCG, search-based methods — surveyed by #cite(<Togelius2011>, form: "prose") — phrase
 content creation as an optimisation problem over a content space, which is conceptually close to the
 solver-driven acceptance loop adopted in this thesis. The closest precedent for the present
-declarative-constraint approach is the Answer Set Programming generator of
+declarative-constraint approach is the Answer Set Programming (ASP) generator of
 #cite(<SmithMateas2011>, form: "prose"), which uses an ASP solver as the acceptance oracle for game content. A
-complementary line of work surveyed under the PCGML banner @Summerville2018PCGML uses
+complementary line of work surveyed under the *Procedural Content Generation via Machine Learning* (PCGML) banner @Summerville2018PCGML uses
 machine-learned generators trained on existing levels, but typically provides no formal guarantee
 on the produced output. The difficulty for the present problem is not merely to produce varied
 levels, but to produce levels that satisfy logically defined properties.
 
-PCG has been increasingly developed *for* reinforcement learning, where the role of the
+PCG has been increasingly developed for reinforcement learning, where the role of the
 generated content is not to entertain a human player but to provide training material for a
 learning agent. #cite(<RisiTogelius2020>, form: "prose") survey this line and argue that PCG is
 a natural lever for moving beyond fixed-benchmark RL toward generalisation across infinite
@@ -177,8 +186,8 @@ environments rather than reuse a fixed test set, and we use those environments a
 toward a hard target. Unlike POET and PAIRED, the generator here is not adversarial and not
 adaptive to the learner's current policy: it is a *static* solver-in-the-loop generator that
 emits levels certified to satisfy fixed structural properties (solvability, cooperation,
-profile) at a chosen difficulty configuration. The curriculum used in @experiments is hand-
-staged — four manually ordered configurations of growing grid size and cooperation requirement.
+profile) at a chosen difficulty configuration. The curriculum used in @experiments is hand-staged
+with four manually ordered configurations of growing grid size and cooperation requirement.
 
 
 == SAT-based planning
@@ -197,8 +206,8 @@ choices materially affecting solver performance.
 == Compilation-based multi-agent path finding
 
 The closest methodological precedent is not PCG for MARL, but compilation-based Multi-Agent Path
-Finding (MAPF). In standard MAPF, agents move on a discrete graph from start vertices to goal
-vertices while avoiding collisions. The computational difficulty comes from the interaction
+Finding (MAPF) @Stern2019MAPF. In standard MAPF, agents move on a discrete graph from start vertices to goal
+vertices while avoiding collisions. The computational complexity comes from the interaction
 between multiple agents and the optimality criterion imposed on the solution.
 
 The survey by #cite(<Surynek2022CompilationMAPF>, form: "prose") shows that MAPF has become a
@@ -222,7 +231,7 @@ only by the underlying decision problem; it also depends on how the problem is e
 how the resulting CNF interacts with the chosen SAT solver. The empirical chapter of this thesis
 (@experiments) compares two alternative uniqueness encodings in the same spirit.
 
-At the same time, the distance from standard MAPF must be stated explicitly. Standard MAPF
+At the same time, the distance of this work to standard MAPF must be stated explicitly. Standard MAPF
 encodings reason about graph motion and collisions. The present thesis must additionally encode
 time-dependent laser propagation, same-colour immunity, and a strict-counterfactual semantics
 used to define cooperation. The MAPF literature therefore supplies a methodological template,

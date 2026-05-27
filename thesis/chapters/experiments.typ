@@ -228,7 +228,7 @@ grid) numbers are tabulated in @appendix-rejection-detail.
 === Experimental question
 
 The binary cooperation detector of @cooperation-detection certifies that every accepted
-cooperative level requires at least one same-colour beam-truncation step, but it does not
+cooperative level requires at least one same-colour beam-blocking step, but it does not
 distinguish *which* structural pattern of inter-agent dependency the level exhibits. This
 experiment measures the distribution of cooperation profiles among accepted levels, using the
 cooperation profile analyzer also introduced in @cooperation-detection.
@@ -322,7 +322,7 @@ We now ask whether off-the-shelf MARL agents can learn to solve levels produced 
 Constructive generator in cooperative mode, and whether the choice of MARL algorithm matters as
 the cooperation requirement scales up in grid size and agent count. The cooperative generator certifies every
 accepted level under the binary criterion of @cooperation-detection: standard SAT and strict
-UNSAT, so every training and evaluation level requires at least one same-colour beam-truncation
+UNSAT, so every training and evaluation level requires at least one same-colour beam-blocking
 step. The learnability question is therefore not whether the levels are solvable in principle
 (they are, by construction), but whether the joint policy that solves them is reachable by
 common value-decomposition methods within a modest training budget.
@@ -684,7 +684,7 @@ training can already reach, and found that ordering confers no advantage. The mo
 of curriculum learning is different, however: that staged exposure can make *reachable* a target
 that direct training cannot solve at all. The canonical such target in this thesis is the
 hand-crafted LLE Level 6 — a $12 times 13$ map with four agents and three lasers whose solution
-requires *mutual* cooperation, the dependency pattern in which several agents must each truncate a
+requires *mutual* cooperation, the dependency pattern in which several agents must each block a
 beam for the others before anyone can exit (@cooperation-detection). We therefore ask whether a
 curriculum of generated levels of growing cooperative complexity enables value-decomposition
 agents to solve Level 6, and, more generally, whether such agents can cross the
@@ -789,7 +789,7 @@ three reasons that the experiments above separate.
 - *There is no signal to amplify.* A curriculum works by transporting a policy with non-zero value
   from an easy stage to a harder one, where it stumbles onto reward more often and bootstraps. The
   mutual target returns reward only after a long, jointly-gated sequence — both lasers must be
-  truncated before any agent can exit — so a from-scratch or warm-started policy receives
+  blocked before any agent can exit — so a from-scratch or warm-started policy receives
   identically zero reward (the negative returns above). A curriculum can make a faint signal
   louder; it cannot manufacture one from zero.
 

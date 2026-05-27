@@ -8,10 +8,10 @@ colour and must reach an exit tile.
 The central mechanic is the laser beam. Each source emits a directional beam that propagates
 cell by cell until it reaches a wall or the grid boundary. An agent whose colour matches the
 beam is _immune_ to it: it may occupy a cell the beam traverses without being harmed, but its
-physical presence truncates the beam at that cell. Agents of other colours cannot occupy a
+physical presence blocks the beam at that cell. Agents of other colours cannot occupy a
 cell crossed by an active beam.
 
-This truncation is the source of the cooperative structure studied in this thesis. By occupying
+This blocking is the source of the cooperative structure studied in this thesis. By occupying
 a position along its own beam, an agent shortens the beam and opens cells beyond it for
 teammates who are not immune to that colour. Crucially, this action is locally unrewarded: the
 helper agent receives no direct benefit from blocking its own beam. The reward is issued only
@@ -65,5 +65,5 @@ solution exists without the cooperative interaction.
 In this thesis, propositional variables are introduced to represent agent positions, laser beam
 states, and laser activity at each time step. The constraints of the bounded-horizon solvability
 problem are then encoded as CNF clauses, and a SAT solver is used as a decision oracle. The full
-encoding — variables, clauses, and the correctness argument — is developed in @sat-reduction;
+encoding (variables, clauses, and the correctness argument) is developed in @sat-reduction;
 the concrete solver used for every empirical run is specified in @benchmarking.

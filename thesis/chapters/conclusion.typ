@@ -113,7 +113,7 @@ Several directions extend the present work naturally.
   under a sparse joint-exit reward, not in the ordering of training levels: no curriculum can
   amplify a learning signal that is identically zero. The natural levers therefore act on the
   reward and the algorithm rather than on the curriculum. A dense or intrinsic reward that credits
-  partial coordination — for instance, an agent successfully truncating a beam for another — would
+  partial coordination — for instance, an agent successfully blocking a beam for another — would
   supply the signal whose absence we identify as the bottleneck, and the centralised-critic or
   coordinated-exploration methods listed above could supply the representational capacity that
   monotonic value decomposition lacks. With a base learner able to acquire mutual coordination in

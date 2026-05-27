@@ -3,7 +3,7 @@
 == Strict SAT encoding
 
 Recall from #fref(<def-3-6>, [Definition 3.6]) that strict beam semantics changes only one aspect of the dynamics:
-same-colour occupancy no longer truncates the corresponding beam. Same-colour immunity is
+same-colour occupancy no longer blocks the corresponding beam. Same-colour immunity is
 unchanged.
 
 Accordingly, the strict SAT encoding keeps the standard laser-safety clauses and replaces only the
@@ -30,10 +30,10 @@ $"StrictSolver"$.
 
 Under the LLE mechanics studied here, the cooperative action of interest is for an agent to occupy
 a cell that would otherwise allow its own beam to continue, thereby making another agent's path
-safe. Standard solvability allows this beam-truncation mechanism; strict solvability removes it.
+safe. Standard solvability allows this beam-blocking mechanism; strict solvability removes it.
 
 Therefore, if a level is solvable under the standard semantics but unsatisfiable under the strict
-semantics, every successful standard solution must rely on at least one same-colour beam-truncation
+semantics, every successful standard solution must rely on at least one same-colour beam-blocking
 step.
 
 
@@ -50,20 +50,20 @@ step.
   $L$ is solvable under the standard semantics, so $Phi(L, T_("max"))$ is satisfiable. Suppose for
   contradiction that $Phi_("strict")(L, T_("max"))$ is also satisfiable. Then there exists a strict
   trajectory whose final positions occupy all exit tiles. Since strict beam semantics differs from
-  the standard one only by removing same-colour beam truncation, such a trajectory is also a valid
+  the standard one only by removing same-colour beam-blocking, such a trajectory is also a valid
   standard trajectory that succeeds without using that mechanism. This contradicts #fref(<def-3-7>, [Definition 3.7]).
   Therefore $Phi_("strict")(L, T_("max"))$ is unsatisfiable.
 
   $(arrow.l)$ Assume that $Phi(L, T_("max"))$ is satisfiable and
   $Phi_("strict")(L, T_("max"))$ is unsatisfiable. The first condition implies that $L$ is solvable
   under the standard semantics. Suppose, for contradiction, that some successful standard
-  trajectory uses no same-colour beam-truncation step — that is, no agent $c$ ever stands on a
+  trajectory uses no same-colour beam-blocking step — that is, no agent $c$ ever stands on a
   cell of the unblocked beam path of the source of colour $c$. Under that hypothesis the two semantics produce identical beam
-  states for this trajectory: the standard rule truncates the beam of colour $c$ only at a cell
+  states for this trajectory: the standard rule blocks the beam of colour $c$ only at a cell
   occupied by agent $c$, and by assumption no such occupancy occurs, so each beam reaches the
   same wall or grid boundary as it would under the strict rule. The same variable assignment
   therefore satisfies $Phi_("strict")(L, T_("max"))$, contradicting unsatisfiability. Hence every
-  successful standard trajectory must use at least one same-colour beam-truncation step, so $L$
+  successful standard trajectory must use at least one same-colour beam-blocking step, so $L$
   requires cooperation with horizon $T_("max")$. $square.stroked$
 ])
 
@@ -77,7 +77,7 @@ requirement (#fref(<def-3-7>, [Definition 3.7])). The horizon is therefore a tru
 and the same level can switch classification when $T_("max")$ changes.
 
 The mechanism behind this sensitivity is straightforward. The strict SAT encoding refuses
-same-colour beam truncation but leaves every other movement and timing constraint identical to the
+same-colour beam-blocking but leaves every other movement and timing constraint identical to the
 standard one. Hence the strict solver can find a satisfying trajectory simply because there exists
 a path long enough to walk *around* the laser geometry rather than *through* it, even though the
 short, natural solution would step into the beam and shield another agent. As soon as the horizon
@@ -113,7 +113,7 @@ horizons reproduces all three failure modes at once (@tab-horizon-demo).
     $T_("max") = 2$ no agent has time to reach an exit, so the standard solver returns UNSAT
     and cooperation is never tested. With $T_("max") = 3$ — the tightest horizon at which the
     level is solvable — cooperation is required: the only feasible plan uses red same-colour
-    truncation. With $T_("max") = 9$ — the smallest horizon admitting a detour around the beam
+    blocking. With $T_("max") = 9$ — the smallest horizon admitting a detour around the beam
     — the strict solver finds a trajectory in which the blue agent walks around the beam, so
     cooperation is no longer flagged.
   ],
@@ -121,7 +121,7 @@ horizons reproduces all three failure modes at once (@tab-horizon-demo).
 
 The same level therefore receives three qualitatively different labels depending on the chosen
 horizon — *unsolvable*, *cooperative*, or *non-cooperative* — without the level itself changing.
-The phenomenon generalises: any level whose natural short solution uses beam truncation can be
+The phenomenon generalises: any level whose natural short solution uses beam-blocking can be
 made to look non-cooperative by raising $T_("max")$ until a geometric detour fits, and can be
 made to look unsolvable by lowering $T_("max")$ until even the natural solution does not.
 
@@ -136,7 +136,7 @@ representative short solution of the geometry is expected to fit, with a small a
 the parameter configurations of @experiments this means horizons proportional to the grid
 diameter (concrete values are listed alongside each experimental configuration). Under that
 choice, the criterion is tight enough that accepted levels reliably exhibit the intended
-beam-truncation behaviour at their stated horizon, and loose enough that the underlying standard
+beam-blocking behaviour at their stated horizon, and loose enough that the underlying standard
 solver does not spuriously reject solvable instances.
 
 
@@ -148,7 +148,7 @@ The cooperation detector runs two SAT calls on the same level:
   so it is rejected before cooperation is considered.
 + Otherwise, run $"StrictSolver"(L, T_("max"))$. If this call is UNSAT, the level requires
   cooperation for the same horizon; if it is SAT, a strict trajectory exists, so the level is
-  solvable without any same-colour beam-truncation step and is therefore non-cooperative.
+  solvable without any same-colour beam-blocking step and is therefore non-cooperative.
 
 Both calls share the same bounded horizon and differ only in the beam-propagation clauses. For
 benchmark levels, the horizon can be chosen from known solution lengths; for generated levels, it
@@ -202,7 +202,7 @@ $cal(S)$ to avoid confusion:
 
 When $K = nothing$, the encoding coincides with the standard semantics; when $K = C_("src")$, it
 coincides with the strict semantics of #fref(<def-3-6>, [Definition 3.6]). Intermediate choices
-forbid same-colour truncation for the colours in $K$ while leaving the remaining beams
+forbid same-colour blocking for the colours in $K$ while leaving the remaining beams
 untouched. Selective-strict is the SAT lever that lets us single out one helper at a time
 without affecting the other beams.
 
@@ -214,7 +214,7 @@ $Phi$ with the selective-strict encoding parameterised by $K$ is
 satisfiable if and only if $L$ admits a successful standard trajectory in which no agent of
 colour $c in K$ ever stands on the unblocked beam path of the source of colour $c$. We
 therefore use the selective-strict encoding as a sound decision oracle for "$L$ remains
-solvable when each colour in $K$ is individually barred from truncating its own beam", which
+solvable when each colour in $K$ is individually barred from blocking its own beam", which
 is exactly what the necessary-helper analysis below requires.
 
 === Helper events from a SAT model
@@ -225,9 +225,9 @@ agents $(c, c')$, a *helper event* with helper $c$, beneficiary $c'$, and time $
 two geometric conditions hold:
 
 + agent $c$ stands at time $t$ on a cell that lies on the unblocked beam path of the source of
-  colour $c$, so the beam of colour $c$ is truncated by $c$ at position $p_t(c)$; and
+  colour $c$, so the beam of colour $c$ is blocked by $c$ at position $p_t(c)$; and
 + agent $c'$ stands at time $t$ on a cell strictly downstream of $p_t(c)$ on the same beam path,
-  so $c'$ would lie inside the un-truncated beam and is therefore protected by $c$.
+  so $c'$ would lie inside the unblocked beam and is therefore protected by $c$.
 
 Helper events are an *observable of the chosen joint plan*, not an invariant of the level. A
 cooperative level typically admits many joint plans, and different plans may yield different
@@ -270,7 +270,7 @@ is considered. We describe each label below with a short geometric
 example.
 
 *Independent.* The binary detector returns non-cooperative: $Phi_("strict")(L, T_("max"))$ is
-satisfiable, so no agent ever has to truncate a beam. The profile analyzer short-circuits and
+satisfiable, so no agent ever has to block a beam. The profile analyzer short-circuits and
 returns `independent`. *Example.* A grid with two agents whose direct paths to their respective
 exits do not cross any beam at all (@fig-profile-independent).
 
@@ -292,7 +292,7 @@ exits do not cross any beam at all (@fig-profile-independent).
 *Cooperative (no observed helper).* Binary cooperation holds — strict-SAT is UNSAT — yet the
 extracted plan contains no helper event. This label is a *defensive fallback*: the helper-event
 extractor only records an event when a helper sits on its own beam path with a foreign-colour
-agent strictly downstream at the same time step, and a few edge cases (e.g. a helper truncating
+agent strictly downstream at the same time step, and a few edge cases (e.g. a helper blocking
 at the last cell of its own beam path) escape that criterion. We have not observed this
 fallback fire on any LLE level encountered in this thesis; the label is listed for completeness.
 The same word `cooperative` reappears in @generators as a *filter target* meaning "any level
@@ -321,14 +321,14 @@ is no blue beam. The dependency graph has the single edge $0 arrow 1$
   ),
   caption: [
     `asymmetric`: one red laser splits the grid horizontally. The red agent (top-left) crosses
-    its own beam unscathed; the blue agent (top-right) requires red to truncate the beam so it
+    its own beam unscathed; the blue agent (top-right) requires red to block the beam so it
     can reach the bottom-right exit. Edges: ${(0, 1)}$.
   ],
 ) <fig-profile-asymmetric>
 
 *Mutual.* The dependency graph contains a mutual pair, i.e. both edges $(c, c'), (c', c) in E$
 for some pair $c eq.not c'$. *Example.* Two laser sources of distinct colours, each crossing
-the other agent's path: each agent must truncate its own beam to shield the other at some
+the other agent's path: each agent must block its own beam to shield the other at some
 point in the plan (@fig-profile-mutual). Both edges are present, and a level is classified as
 `mutual` even when additional one-way edges between other pairs also exist, as long as the
 agents do not all belong to a single strongly connected component. Because *fully coupled* takes
@@ -349,7 +349,7 @@ component at size two while $|C| = 3$.
   ),
   caption: [
     `mutual`: two stacked beams of distinct colours. Each agent is immune to its own beam
-    but must wait for the other to truncate the foreign beam before crossing. A third agent
+    but must wait for the other to block the foreign beam before crossing. A third agent
     on an independent path is required to keep the profile distinct from `fully_coupled`: with
     only the reciprocal pair the two agents would form a strongly connected component spanning
     the whole agent set. It participates in no helper relationship, hence appears as an isolated
@@ -381,7 +381,7 @@ the blue beam, and neither agent $2$ nor agent $0$ has any further helping role
 
 *Distributed.* At least one agent has in-degree $>= 2$ in the dependency graph. *Example.*
 Three agents in which two distinct same-colour helpers (agents $0$ and $1$) must each
-truncate their respective beams to free agent $2$'s path to its exit (@fig-profile-distributed).
+block their respective beams to free agent $2$'s path to its exit (@fig-profile-distributed).
 The edges are ${(0, 1), (0, 2), (1, 2)}$, so agent $2$ has in-degree two and the level is
 `distributed`. (The extra edge $(0, 1)$ does not promote the level to `mutual` because the
 reciprocal edge $(1, 0)$ is absent.)
@@ -396,7 +396,7 @@ reciprocal edge $(1, 0)$ is absent.)
   ),
   caption: [
     `distributed`: agent $2$ must traverse both the red and the blue beam to reach its exit,
-    requiring truncation from both other agents. In-degree of agent $2$ is two. Edges:
+    requiring blocking from both other agents. In-degree of agent $2$ is two. Edges:
     ${(0, 1), (0, 2), (1, 2)}$.
   ],
 ) <fig-profile-distributed>
@@ -428,7 +428,7 @@ different policy without re-running any SAT calls.
 
 
 *Scope note.* The cooperation notion defined here is intentionally specific: it captures
-same-colour beam-truncation as the relevant cooperative act. A level that requires two agents to
+same-colour beam-blocking as the relevant cooperative act. A level that requires two agents to
 coordinate their movements for unrelated geometric reasons — without any laser blocking being
 involved — would not be identified as cooperative by this detector. This definition is not claimed
 to exhaust every possible interpretation of cooperation in multi-agent environments; it is the

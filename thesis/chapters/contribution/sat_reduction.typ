@@ -6,7 +6,7 @@ We reuse the level objects introduced in @formalization: the grid dimensions $H$
 position set $P$, the colour set $C$, the direction set $D$, the wall set $cal(W)$, the source
 set $cal(S)$, the exit set $cal(E)$, and the start map $s$.
 
-The SAT reduction introduces a finite horizon $T_("max") in NN$, which is the maximum number of
+The SAT reduction introduces a finite horizon $T_("max") in NN^+$, which is the maximum number of
 joint moves allowed in the bounded decision problem, together with the discrete time-step set
 $T = {0, 1, ..., T_("max")}$.
 
@@ -269,7 +269,7 @@ to a constant factor. The main families admit the following clause bounds.
     n (tau - 1) 10 |V| <= 10 n (tau - 1) p
   $
   and backward consistency contributes at most $n (tau - 1) p$ further clauses.
-  The collision and conservative hand-off clauses contribute at most
+  The collision and no-following-conflict clauses contribute at most
   $
     binom(n, 2) (tau + 2 (tau - 1)) p = binom(n, 2) (3 tau - 2) p
   $
@@ -322,7 +322,7 @@ solvability is polynomial-time reducible to SAT.
   consistency, local exclusivity, and backward consistency. We may therefore define a joint
   trajectory $p_t(c)$ by reading off the unique true agent variable for each colour $c$ and time
   $t$. The movement clauses enforce legal motion between consecutive steps; the collision clauses
-  enforce both simultaneous separation and the conservative hand-off rule; the laser clauses
+  enforce both simultaneous separation and the no-following-conflict rule; the laser clauses
   enforce safety with respect to active beams; and the exit clauses enforce the terminal
   condition. Hence the extracted trajectory is valid.
 

@@ -57,7 +57,7 @@ can stack two additional acceptance requirements drawn from @cooperation-profile
 
 - *Cooperation* (optional). The candidate must additionally satisfy the strict-UNSAT
   counterfactual of #fref(<thm-5-1>, [Theorem 5.1]), so every accepted level provably requires
-  the same-colour beam-truncation mechanism. Without this flag the cooperation profile is not
+  the same-colour beam-blocking mechanism. Without this flag the cooperation profile is not
   inspected.
 - *Profile filter* (optional, requires cooperation). The candidate must additionally match
   one of the requested cooperation-profile labels (e.g. `mutual`, `chain`, `distributed`).
@@ -102,7 +102,7 @@ to plain navigation usually is — so its solvable output is dominated by these 
 instances. The geometric filters do not themselves prove solvability or cooperation, but by
 discarding inert-laser and beam-stranded layouts they ensure that accepted levels actually
 contain the laser interactions the experiments depend on; and in the cooperative setting, where
-an active beam is a *prerequisite* for the same-colour truncation mechanism, they also avoid a
+an active beam is a *prerequisite* for the same-colour blocking mechanism, they also avoid a
 large number of SAT calls that could never have yielded a cooperative level. The generator
 otherwise offers the same formal guarantees as the random generator (solvable, optionally
 cooperative with profile filter), and is the default we use when the experiments call for

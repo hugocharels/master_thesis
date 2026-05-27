@@ -76,11 +76,11 @@ explicit *inter-agent blocking* rather than from partial observability or large 
   caption: [
     LLE Level 6, the canonical hard target used throughout this thesis. Agents must reach the
     exit tiles. Laser beams block movement for non-immune agents, but an immune agent can
-    truncate its own beam by occupying a cell along its path, opening a route for a teammate.
+    block its own beam by occupying a cell along its path, opening a route for a teammate.
   ],
 ) <figure-lvl6>
 
- The LLE paper identifies three
+The LLE paper identifies three
 properties that make the benchmark difficult for value-based MARL methods: *perfect
 coordination*, *interdependence*, and *zero-incentive dynamics* @Molinghen2025ZeroIncentive. Together, these properties
 create bottlenecks in which one agent must perform a locally unrewarded action that enables
@@ -99,7 +99,7 @@ created by coloured lasers and same-colour blocking.
 
 == Dependency structures in cooperative MARL
 
-The same-colour beam-truncation mechanism on which LLE relies admits a "cooperation required /
+The same-colour beam-blocking mechanism on which LLE relies admits a "cooperation required /
 not required" verdict per level, but cooperative behaviour at finer granularity can vary
 considerably: in a level with several agents and several lasers, helping relations can form a
 one-way edge, a mutual pair, a directed chain, a fan-in (one beneficiary, multiple helpers), or
@@ -139,7 +139,7 @@ content creation as an optimisation problem over a content space, which is conce
 solver-driven acceptance loop adopted in this thesis. The closest precedent for the present
 declarative-constraint approach is the Answer Set Programming (ASP) generator of
 #cite(<SmithMateas2011>, form: "prose"), which uses an ASP solver as the acceptance oracle for game content. A
-complementary line of work surveyed under the *Procedural Content Generation via Machine Learning* (PCGML) banner @Summerville2018PCGML uses
+complementary line of work surveyed under the Procedural Content Generation via Machine Learning (PCGML) banner @Summerville2018PCGML uses
 machine-learned generators trained on existing levels, but typically provides no formal guarantee
 on the produced output. The difficulty for the present problem is not merely to produce varied
 levels, but to produce levels that satisfy logically defined properties.

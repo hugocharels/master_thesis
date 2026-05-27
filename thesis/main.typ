@@ -126,8 +126,8 @@ $5 times 5$ and that enlarging the generated training pool restores generalisati
 of curriculum experiments finds that curriculum scheduling offers no advantage over direct
 training on a reachable target, and that no curriculum — including a staged budget of two million
 steps — lets these algorithms solve the mutually-cooperative LLE Level 6, on which direct training
-also scores zero; we trace this negative result to the base task being unlearnable by
-value-decomposition methods rather than to a failure of curriculum design.
+also scores zero; we trace this negative result to the base task being unlearnable by these
+value-based methods rather than to a failure of curriculum design.
 
 #v(20pt)
 *Keywords:* multi-agent reinforcement learning, procedural content generation, SAT solving,

@@ -39,7 +39,7 @@ step.
 
 == Formal theorem and proof
 
-#formalbox([Theorem 5.1 (Cooperation Detection Criterion)], [
+#formalbox(kind: "theorem", [Theorem 5.1 (Cooperation Detection Criterion)], [
   Let $L$ be an LLE level and $T_("max")$ a time horizon. Then $L$ requires cooperation with
   horizon $T_("max")$ if and only if $Phi(L, T_("max"))$ is satisfiable and
   $Phi_("strict")(L, T_("max"))$ is unsatisfiable.

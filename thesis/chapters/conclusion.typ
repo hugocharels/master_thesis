@@ -24,7 +24,7 @@ We restate the six research questions of @introduction and assess what each chap
 
 - *RQ1 — formal verification of solvability.* Answered by the bounded-horizon SAT reduction
   of @sat-reduction, whose correctness is established by
-  #fref(<prop-4-1>, [Proposition 4.1]). The encoding is polynomial-time constructible, places
+  #fref(<prop-4-14>, [Proposition 4.14]). The encoding is polynomial-time constructible, places
   bounded-horizon LLE solvability in NP, and proves the problem is at most as hard as SAT.
 
 - *RQ2 — formal verification of the cooperation requirement.* Answered by the
@@ -59,7 +59,7 @@ We restate the six research questions of @introduction and assess what each chap
 
 - *RQ6 — curriculum transfer to LLE Level 6.* Answered negatively, within scope. The experiments
   of @curriculum-strategy-experiment and @transfer-experiment show that, for the
-  value-decomposition algorithms evaluated here, a curriculum of generated levels confers no
+  value-based algorithms evaluated here, a curriculum of generated levels confers no
   advantage. On a reachable asymmetric target, ordering the stages does not beat direct training,
   and only data *diversity* helps; on the mutually-cooperative LLE Level 6, no condition —
   including a four-stage curriculum trained for two million steps — exceeds zero success, and
@@ -103,7 +103,7 @@ Several directions extend the present work naturally.
   would let the generator family target *graded* cooperation difficulty rather than only
   qualitative profile families.
 - *Algorithm-space breadth.* The learnability and curriculum-transfer experiments evaluate
-  three value-decomposition algorithms (IQL, VDN, QMIX). Comparison against
+  three value-based algorithms (IQL, VDN, QMIX). Comparison against
   centralised-critic actor-critic methods such as MADDPG @Lowe2017MADDPG and COMA
   @Foerster2018COMA, and against latent-variable variants such as MAVEN @Mahajan2019MAVEN,
   would give a fuller picture of which algorithm families benefit most from certified
@@ -118,7 +118,7 @@ Several directions extend the present work naturally.
   coordinated-exploration methods listed above could supply the representational capacity that
   monotonic value decomposition lacks. With a base learner able to acquire mutual coordination in
   isolation, the curriculum question of RQ6 could be revisited on a foundation that the present
-  value-decomposition methods do not provide.
+  value-based methods do not provide.
 
 The main open question is therefore not whether solver-based certification is possible in
 LLE; the present thesis answers that positively. The open question is how far that

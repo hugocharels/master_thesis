@@ -11,7 +11,7 @@ certified by the solver for every accepted level; the SAT encoding itself is dev
 LLE engine; this bound is an engine artefact, not a limitation of the encoding, which remains
 correct for any finite $n_a$.
 
-#formalbox([Definition 3.1 (LLE Level)], [
+#formalbox(kind: "definition", [Definition 3.1 (LLE Level)], [
   An LLE level is a tuple $L = (H, W, C, s, cal(W), cal(S), cal(E))$ where:
 
   - $H, W in NN^+$: grid height and width.
@@ -46,7 +46,7 @@ The *strict* rule is a counterfactual in which lasers ignore matching agents and
 unblockable rays, used in @cooperation-detection to test whether a standard solution actually
 relies on the blocking mechanism.
 
-#formalbox([Definition 3.2 (Active Beams)], [
+#formalbox(kind: "definition", [Definition 3.2 (Active Beams)], [
   Fix a time step $t$ and a joint position map $p_t : C -> P$.
 
   For a source $(c, d, p_s) in cal(S)$, consider the grid ray starting at $p_s$ and extending in
@@ -62,7 +62,7 @@ relies on the blocking mechanism.
   unique source of colour $c$ is active there.
 ]) <def-3-2>
 
-#formalbox([Definition 3.3 (Valid Joint Trajectory)], [
+#formalbox(kind: "definition", [Definition 3.3 (Valid Joint Trajectory)], [
   A *horizon* $T_("max") in NN^+$ is the maximum number of joint moves allowed in a candidate
   solution.
 
@@ -93,7 +93,7 @@ relies on the blocking mechanism.
     exit tile, it remains there for the rest of the episode.
 ]) <def-3-3>
 
-#formalbox([Definition 3.4 (Solvability)], [
+#formalbox(kind: "definition", [Definition 3.4 (Solvability)], [
   A level $L$ is *solvable* with horizon $T_("max")$ if there exists a valid joint trajectory
   $sigma$ of length $T_("max")$ such that the set of occupied positions at time $T_("max")$ is
   exactly the set of exits:
@@ -116,7 +116,7 @@ number of collision-free joint position maps, which is bounded by $|P|^(n_a)$. A
 chosen by the generation process, and all formal guarantees in this thesis are stated relative
 to that choice.
 
-#formalbox([Definition 3.5 (Bounded-Horizon LLE Solvability Problem)], [
+#formalbox(kind: "definition", [Definition 3.5 (Bounded-Horizon LLE Solvability Problem)], [
   The *bounded-horizon LLE solvability problem* is the following decision problem.
 
   - *Input:* an LLE level $L$ and a horizon $T_("max") in NN^+$.
@@ -124,7 +124,7 @@ to that choice.
     positions are exactly the exits?
 ]) <def-3-5>
 
-#formalbox([Definition 3.6 (Strict Beam Semantics)], [
+#formalbox(kind: "definition", [Definition 3.6 (Strict Beam Semantics)], [
   A *strict trajectory* of length $T_("max")$ is defined exactly as in #fref(<def-3-3>, [Definition 3.3]), except that
   beam activity is computed using the strict beam semantics of #fref(<def-3-2>, [Definition 3.2]): same-colour
   occupancy no longer blocks the corresponding beam.
@@ -134,7 +134,7 @@ In the model studied here, the relevant cooperative action is precisely this sam
 beam-blocking mechanism: an agent occupies a position that would otherwise allow its own beam to
 continue, thereby opening a path for another agent.
 
-#formalbox([Definition 3.7 (Cooperation Requirement with Horizon $T_("max")$)], [
+#formalbox(kind: "definition", [Definition 3.7 (Cooperation Requirement with Horizon $T_("max")$)], [
   A level $L$ is said to *require cooperation* with horizon $T_("max")$ if:
 
   - $L$ is solvable under the standard semantics.

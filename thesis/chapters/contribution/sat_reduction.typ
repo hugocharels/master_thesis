@@ -1,6 +1,6 @@
 #import "../../macros.typ": formalbox, proofbox, fref
 
-== Notation
+== Notation <notation>
 
 We reuse the level objects introduced in @formalization: the grid dimensions $H$ and $W$, the
 position set $P$, the colour set $C$, the direction set $D$, the wall set $cal(W)$, the source
@@ -14,6 +14,20 @@ The sets $P_("src")$ and $C_("src")$ are as defined in @formalization. We recall
 appears in at most one laser source; under this assumption, when a source of colour $c$ exists, its
 position and direction are uniquely determined by $c$. We write $s(c)$ for the initial position of
 agent $c in C$, as defined in #fref(<def-3-1>, [Definition 3.1]).
+
+For the clause-count and complexity statements throughout this chapter, we use the following
+shorthand:
+
+#formalbox([Shorthand notation], [
+  $
+    n_a &= |C| && quad "number of agents (and exits, since" |cal(E)| = |C| ")" \
+    p &= |P| = H W && quad "number of grid positions" \
+    s &= |cal(S)| && quad "number of laser sources" \
+    e &= |cal(E)| && quad "number of exits" \
+    tau &= T_("max") + 1 && quad "number of time steps in" T = {0, ..., T_("max")} \
+    V &= P without (cal(W) union P_("src")) && quad "walkable cells (no walls, no laser sources)"
+  $
+])
 
 
 == Propositional variables
@@ -29,278 +43,298 @@ We introduce three families of propositional variables.
 
 == Constraints and logical encoding
 
-We now formalise the constraint families used in the reduction. Each group of clauses corresponds
-to one logical component of the bounded-horizon decision problem.
+We now formalise the constraint families used in the reduction. Each constraint groups a
+family of CNF clauses corresponding to one logical component of the bounded-horizon decision
+problem. For every constraint we state the clauses in CNF and report two bounds: the maximum
+number of *clauses* generated as a function of the input parameters, and the maximum number
+of *literals per clause*. These bounds feed directly into the polynomial-size analysis of
+@clause-complexity and use the shorthand notation introduced at the end of @notation.
 
-+ *Initialization*
+=== Initialisation
 
-  - *Agents:* \
-    Each agent $c in C$ is placed at its designated starting position $s(c)$ at $t = 0$;
-    all other positions are unoccupied by that agent:
-    $
-      and.big_(c in C) and.big_((x, y) in P)
-      cases(
-        a_(c,x,y,0) & "if" (x,y) = s(c),
-        not a_(c,x,y,0) & "otherwise"
-      )
-    $
-
-  - *Laser sources:* \
-    For each laser source $(c, d, (x_s, y_s)) in cal(S)$, the beam is always active at its origin,
-    at every time step:
-    $
-      and.big_((c, d, (x_s, y_s)) in cal(S)) and.big_(t in T) b_(c, d, x_s, y_s, t)
-    $
-
-
-+ *Agent Movements*
-
-  We define the set of positions reachable from $(x, y)$ in one step as $(x, y)$ itself together
-  with its four grid neighbours, excluding walls and laser-source positions:
+#formalbox(kind: "constraint", [Constraint 4.1 (Agent initialisation)], [
+  Each agent $c in C$ is placed at its designated starting position $s(c)$ at $t = 0$; all
+  other positions are unoccupied by that agent:
   $
-    "next"(x,y) = {
-      (x',y') in {(x,y),(x,y-1),(x+1,y),(x,y+1),(x-1,y)} |
-      \ (x',y') in P, (x',y') in.not cal(W), (x',y') in.not P_("src")
-    }
-  $
-
-  - *Forward consistency:* \
-    If agent $c$ is at position $(x, y)$ at time $t$, it must be at some position in
-    $"next"(x, y)$ at time $t + 1$:
-    $
-      and.big_(c in C) and.big_(t = 0)^(T_("max") - 1) and.big_((x,y) in P)
-      a_(c,x,y,t) arrow.r or.big_((x',y') in "next"(x,y)) a_(c,x',y',t+1)
-    $
-    $
-      arrow.t.b.double
-    $
-    $
-      and.big_(c in C) and.big_(t = 0)^(T_("max") - 1) and.big_((x,y) in P)
-      not a_(c,x,y,t) or or.big_((x',y') in "next"(x,y)) a_(c,x',y',t+1)
-    $
-
-  Two formulations are proposed to enforce that each agent occupies at most one position at
-  each time step. The *global* formulation uses a single grid-wide uniqueness rule; the *local*
-  formulation uses a sparser uniqueness rule restricted to $"next"(x, y)$ and pairs it with a
-  backward-consistency clause that pins occupancy at $t + 1$ to a predecessor in
-  $"next"(x, y)$.
-
-  - *Global uniqueness:* \
-    No two distinct positions can both be occupied by agent $c$ at time $t$. The clauses at
-    $t = 0$ are already implied by initialization, so the family ranges over $t = 1, ..., T_("max")$:
-    $
-      and.big_(c in C) and.big_(t = 1)^(T_("max")) and.big_((x_1,y_1) in P)
-      and.big_((x_2,y_2) in P, \ (x_2,y_2) eq.not (x_1,y_1))
-      not a_(c,x_1,y_1,t) or not a_(c,x_2,y_2,t)
-    $
-
-  - *Local uniqueness:* \
-    No two distinct positions in $"next"(x, y)$ can simultaneously be occupied by agent $c$ at
-    time $t + 1$:
-    $
-      and.big_(c in C) and.big_(t = 0)^(T_("max") - 1) and.big_((x,y) in P)
-      and.big_((x',y') in "next"(x,y))
-      and.big_((x'',y'') in "next"(x,y), \ (x'',y'') eq.not (x',y'))
-      not a_(c,x',y',t+1) or not a_(c,x'',y'',t+1)
-    $
-
-  - *Backward consistency* (local formulation only): \
-    If agent $c$ is at position $(x, y)$ at time $t + 1$, it must have been at some position in
-    $"next"(x, y)$ at time $t$:
-    $
-      and.big_(c in C) and.big_(t = 0)^(T_("max") - 1) and.big_((x,y) in P)
-      a_(c,x,y,t+1) arrow.r or.big_((x',y') in "next"(x,y)) a_(c,x',y',t)
-    $
-    $
-      arrow.t.b.double
-    $
-    $
-      and.big_(c in C) and.big_(t = 0)^(T_("max") - 1) and.big_((x,y) in P)
-      not a_(c,x,y,t+1) or or.big_((x',y') in "next"(x,y)) a_(c,x',y',t)
-    $
-
-  - *No simultaneous occupation:* \
-    Two distinct agents cannot share the same position at the same time, nor can they move to a
-    position already occupied by the other agent:
-    $
-      and.big_(c_1 in C) and.big_(c_2 in C, c_2 eq.not c_1) and.big_((x,y) in P) and.big_(t in T)
-      not a_(c_1,x,y,t) or not a_(c_2,x,y,t)
-    $
-    $
-      and.big_(c_1 in C) and.big_(c_2 in C, c_2 eq.not c_1) and.big_((x,y) in P)
-      and.big_(t = 0)^(T_("max") - 1)
-      not a_(c_1,x,y,t+1) or not a_(c_2,x,y,t)
-    $
-    $
-      and.big_(c_1 in C) and.big_(c_2 in C, c_2 eq.not c_1) and.big_((x,y) in P)
-      and.big_(t = 0)^(T_("max") - 1)
-      not a_(c_1,x,y,t) or not a_(c_2,x,y,t+1)
-    $
-
-  - *Victory condition:* \
-    Each exit must be occupied by at least one agent at time $T_("max")$:
-    $
-      and.big_((x,y) in cal(E)) or.big_(c in C) a_(c,x,y,T_("max"))
-    $
-    Combined with the no-collision clauses below and the equality $|cal(E)| = n_a$, this clause
-    family yields a bijection between agents and exits at time $T_("max")$: the disjunctions force
-    a surjection from $C$ onto $cal(E)$, and a surjection between two finite sets of equal size is
-    automatically a bijection.
-
-  - *Stay on exit:* \
-    Once an agent reaches an exit, it remains there for all subsequent time steps:
-    $
-      and.big_(c in C) and.big_((x,y) in cal(E)) and.big_(t = 0)^(T_("max") - 1)
-      not a_(c,x,y,t) or a_(c,x,y,t+1)
-    $
-
-
-+ *Laser Activity*
-
-  We define $"next"_d(x, y)$ as the position immediately adjacent to $(x, y)$ in direction $d$:
-  $
-    "next"_d(x,y) = cases(
-      (x, y - 1) & "if" d = N,
-      (x + 1, y) & "if" d = E,
-      (x, y + 1) & "if" d = S,
-      (x - 1, y) & "if" d = W
+    and.big_(c in C) and.big_((x, y) in P)
+    cases(
+      a_(c,x,y,0) & "if" (x,y) = s(c),
+      not a_(c,x,y,0) & "otherwise"
     )
   $
+  *Bounds.* Exactly $n_a p$ unit clauses; 1 literal per clause.
+]) <constraint-4-1>
 
-  - *Walls block beams:* \
-    A beam cannot be active at a wall position:
-    $
-      and.big_((c,d,p_s) in cal(S)) and.big_((x,y) in cal(W)) and.big_(t in T)
-      not b_(c,d,x,y,t)
-    $
-
-  - *Beam propagation:* \
-    Beam propagation clauses are instantiated only when the successor cell
-    $(x', y') = "next"_d(x, y)$ lies inside the grid, is not a wall, and is not itself a source
-    cell. Source cells are handled separately by the initialization clauses above. Under these
-    conditions, the beam is active at $(x', y')$ iff it is active at $(x, y)$ and no agent of
-    colour $c$ occupies $(x', y')$:
-    $
-      and.big_((c,d,p_s) in cal(S)) and.big_(t in T)
-      and.big_((x,y) in P without cal(W), \ "next"_d(x,y) in P without cal(W), \ "next"_d(x,y) in.not P_("src"))
-      b_(c,d,x',y',t) arrow.l.r (b_(c,d,x,y,t) and not a_(c,x',y',t))
-      \ arrow.t.b.double \
-      and.big_((c,d,p_s) in cal(S)) and.big_(t in T)
-      and.big_((x,y) in P without cal(W), \ "next"_d(x,y) in P without cal(W), \ "next"_d(x,y) in.not P_("src"))
-      not b_(c,d,x,y,t) or a_(c,x',y',t) or b_(c,d,x',y',t)
-      \
-      and.big_((c,d,p_s) in cal(S)) and.big_(t in T)
-      and.big_((x,y) in P without cal(W), \ "next"_d(x,y) in P without cal(W), \ "next"_d(x,y) in.not P_("src"))
-      b_(c,d,x,y,t) or not b_(c,d,x',y',t)
-      \
-      and.big_((c,d,p_s) in cal(S)) and.big_(t in T)
-      and.big_((x,y) in P without cal(W), \ "next"_d(x,y) in P without cal(W), \ "next"_d(x,y) in.not P_("src"))
-      not a_(c,x',y',t) or not b_(c,d,x',y',t)
-    $
-
-  - *Link between beam and laser variables:* \
-    Since each colour has at most one source in the instances considered here, the laser variable
-    $l_(c,x,y,t)$ is true at a position iff the beam of the unique source of colour $c$ is active
-    there:
-    $
-      and.big_((c,d,p_s) in cal(S)) and.big_((x,y) in P) and.big_(t in T)
-      b_(c,d,x,y,t) arrow.l.r l_(c,x,y,t)
-    $
-    $
-      arrow.t.b.double
-    $
-    $
-      and.big_((c,d,p_s) in cal(S)) and.big_((x,y) in P) and.big_(t in T)
-      (not b_(c,d,x,y,t) or l_(c,x,y,t)) and (not l_(c,x,y,t) or b_(c,d,x,y,t))
-    $
-
-  - *Agents cannot step on active lasers:* \
-    An agent of colour $c_1$ cannot occupy a position where an active laser of some source colour
-    $c_2 in C_("src")$, with $c_2 eq.not c_1$, is present. Agents are immune only to lasers of
-    their own colour:
-    $
-      and.big_(c_1 in C) and.big_(c_2 in C_("src"), \ c_2 eq.not c_1) and.big_((x,y) in P) and.big_(t in T)
-      l_(c_2,x,y,t) arrow.r not a_(c_1,x,y,t)
-    $
-    $
-      arrow.t.b.double
-    $
-    $
-      and.big_(c_1 in C) and.big_(c_2 in C_("src"), \ c_2 eq.not c_1) and.big_((x,y) in P) and.big_(t in T)
-      not l_(c_2,x,y,t) or not a_(c_1,x,y,t)
-    $
-
-
-== Clause complexity and polynomial size
-
-To show that the reduction has polynomial size, it is enough to bound the number of generated
-clauses as a function of the input parameters. Let
-$
-  n = |C|,\ p = |P| = H W,\ s = |cal(S)|,\ e = |cal(E)|,\ tau = T_("max") + 1
-$
-and write
-$
-  V = P without (cal(W) union P_("src"))
-$
-for the walkable cells.
-
-We count *clauses* rather than *literals*. A CNF formula is a conjunction of clauses, each clause
-being a disjunction of literals. The total literal count is at most a constant factor larger than
-the clause count in our encoding, since every clause family generated below contains at most
-$max(|"next"(u)| + 1, n_a, 4) <= 6$ literals per clause. Counting clauses is therefore sufficient
-to establish a polynomial bound on the formula size, and the same bound transfers to literals up
-to a constant factor. The main families admit the following clause bounds.
-
-- *Initialization.*
-  The agent-initialisation clauses contribute exactly $n p$ unit clauses, and the laser-source
-  initialisation contributes exactly $s tau$ unit clauses.
-
-- *Movement constraints.*
-  Forward consistency contributes at most $n (tau - 1) p$ clauses.
-  The two uniqueness formulations differ here:
+#formalbox(kind: "constraint", [Constraint 4.2 (Laser-source initialisation)], [
+  For each laser source $(c, d, (x_s, y_s)) in cal(S)$, the beam is active at its origin at
+  every time step:
   $
-    "global uniqueness" = n (tau - 1) binom(p, 2)
+    and.big_((c, d, (x_s, y_s)) in cal(S)) and.big_(t in T) b_(c, d, x_s, y_s, t)
+  $
+  *Bounds.* Exactly $s tau$ unit clauses; 1 literal per clause.
+]) <constraint-4-2>
+
+=== Agent movement
+
+We define the set of positions reachable from $(x, y)$ in one step as $(x, y)$ itself
+together with its four grid neighbours, excluding walls and laser-source positions:
+$
+  "next"(x,y) = {
+    (x',y') in {(x,y),(x,y-1),(x+1,y),(x,y+1),(x-1,y)} |
+    \ (x',y') in P, (x',y') in.not cal(W), (x',y') in.not P_("src")
+  }
+$
+
+The relation $"next"$ is symmetric: $(x', y') in "next"(x, y) <==> (x, y) in "next"(x', y')$,
+because every LLE move (including staying in place) is reversible by the opposite action. The
+same set therefore serves as both successor and predecessor relation, which is why the
+backward-consistency constraint below quantifies over $"next"(x, y)$ rather than introducing a
+separate $"prev"(x, y)$.
+
+The constraint "each agent occupies at most one position at each time step" can be encoded in
+two ways, and we present both because they offer different trade-offs in clause count. The CNF
+passed to the solver contains *exactly one* of them, never both: the choice is made at run-time
+when the encoding is built. Both formulations admit the same set of satisfying assignments (the
+same legal joint trajectories) on top of the forward-consistency clauses; they differ only in
+how many clauses they generate and, consequently, in solver run-time. Chapter 7 compares the
+two empirically. Schematically, the movement-related clauses of the CNF are
+$
+  "CNF"_("movement") = "forward consistency" union cases(
+    "global uniqueness" & "(formulation A)",
+    "local uniqueness" union "backward consistency" & "(formulation B)",
+  )
+$
+
+#formalbox(kind: "constraint", [Constraint 4.3 (Forward consistency)], [
+  If agent $c$ is at position $(x, y)$ at time $t$, it must be at some position in
+  $"next"(x, y)$ at time $t + 1$:
+  $
+    and.big_(c in C) and.big_(t = 0)^(T_("max") - 1) and.big_((x,y) in P)
+    a_(c,x,y,t) arrow.r or.big_((x',y') in "next"(x,y)) a_(c,x',y',t+1)
   $
   $
-    "local uniqueness" = n (tau - 1) sum_(u in V) binom(|"next"(u)|, 2)
+    arrow.t.b.double
   $
-  Since $|"next"(u)| <= 5$, the local uniqueness term is bounded by
   $
-    n (tau - 1) 10 |V| <= 10 n (tau - 1) p
+    and.big_(c in C) and.big_(t = 0)^(T_("max") - 1) and.big_((x,y) in P)
+    not a_(c,x,y,t) or or.big_((x',y') in "next"(x,y)) a_(c,x',y',t+1)
   $
-  and backward consistency contributes at most $n (tau - 1) p$ further clauses.
-  The collision and no-following-conflict clauses contribute at most
-  $
-    binom(n, 2) (tau + 2 (tau - 1)) p = binom(n, 2) (3 tau - 2) p
-  $
-  The exit condition contributes exactly $e$ clauses, and the stay-on-exit condition contributes
-  exactly $n e (tau - 1)$ clauses.
+  *Bounds.* At most $n_a (tau - 1) p$ clauses; at most 6 literals per clause (one head literal
+  plus $|"next"(x, y)| <= 5$ disjuncts).
+]) <constraint-4-3>
 
-- *Laser constraints.*
-  The wall-blocking clauses contribute exactly $s |cal(W)| tau$ unit clauses (one per
-  source-wall-time triple).
-  Beam propagation contributes at most $3 s tau p$ clauses, since each admissible propagation
-  edge yields the three CNF clauses of the iff above; wall successors are handled separately by
-  the wall-blocking family.
-  The beam/laser linking clauses contribute exactly $2 s tau p$ clauses.
-  The laser-safety clauses contribute at most $n s tau p$ clauses.
+#formalbox(kind: "constraint", [Constraint 4.4 (Global uniqueness — formulation A only)], [
+  No two distinct positions can both be occupied by agent $c$ at time $t$. The clauses at
+  $t = 0$ are already implied by initialisation, so the family ranges over
+  $t = 1, ..., T_("max")$:
+  $
+    and.big_(c in C) and.big_(t = 1)^(T_("max")) and.big_((x_1,y_1) in P)
+    and.big_((x_2,y_2) in P, \ (x_2,y_2) eq.not (x_1,y_1))
+    not a_(c,x_1,y_1,t) or not a_(c,x_2,y_2,t)
+  $
+  *Bounds.* Exactly $n_a (tau - 1) binom(p, 2)$ clauses; 2 literals per clause.
+]) <constraint-4-4>
 
-Therefore the total number of clauses is polynomial in $n$, $p$, $s$, and $tau$. More precisely,
-with the global formulation the dominant term is
+#formalbox(kind: "constraint", [Constraint 4.5 (Local uniqueness — formulation B only)], [
+  No two distinct positions in $"next"(x, y)$ can simultaneously be occupied by agent $c$ at
+  time $t + 1$:
+  $
+    and.big_(c in C) and.big_(t = 0)^(T_("max") - 1) and.big_((x,y) in P)
+    and.big_((x',y') in "next"(x,y))
+    and.big_((x'',y'') in "next"(x,y), \ (x'',y'') eq.not (x',y'))
+    not a_(c,x',y',t+1) or not a_(c,x'',y'',t+1)
+  $
+  *Bounds.* At most $10 n_a (tau - 1) p$ clauses (since
+  $binom(|"next"(x, y)|, 2) <= binom(5, 2) = 10$); 2 literals per clause.
+]) <constraint-4-5>
+
+#formalbox(kind: "constraint", [Constraint 4.6 (Backward consistency — formulation B only)], [
+  If agent $c$ is at position $(x, y)$ at time $t + 1$, it must have been at some position in
+  $"next"(x, y)$ at time $t$ (recall that $"next"$ is symmetric, so it also describes the cells
+  from which $(x, y)$ can be reached):
+  $
+    and.big_(c in C) and.big_(t = 0)^(T_("max") - 1) and.big_((x,y) in P)
+    a_(c,x,y,t+1) arrow.r or.big_((x',y') in "next"(x,y)) a_(c,x',y',t)
+  $
+  $
+    arrow.t.b.double
+  $
+  $
+    and.big_(c in C) and.big_(t = 0)^(T_("max") - 1) and.big_((x,y) in P)
+    not a_(c,x,y,t+1) or or.big_((x',y') in "next"(x,y)) a_(c,x',y',t)
+  $
+  *Bounds.* At most $n_a (tau - 1) p$ clauses; at most 6 literals per clause.
+]) <constraint-4-6>
+
+#formalbox(kind: "constraint", [Constraint 4.7 (No simultaneous occupation)], [
+  Two distinct agents cannot share the same position at the same time, nor can they swap
+  positions between consecutive time steps:
+  $
+    and.big_(c_1 in C) and.big_(c_2 in C, c_2 eq.not c_1) and.big_((x,y) in P) and.big_(t in T)
+    not a_(c_1,x,y,t) or not a_(c_2,x,y,t)
+  $
+  $
+    and.big_(c_1 in C) and.big_(c_2 in C, c_2 eq.not c_1) and.big_((x,y) in P)
+    and.big_(t = 0)^(T_("max") - 1)
+    not a_(c_1,x,y,t+1) or not a_(c_2,x,y,t)
+  $
+  $
+    and.big_(c_1 in C) and.big_(c_2 in C, c_2 eq.not c_1) and.big_((x,y) in P)
+    and.big_(t = 0)^(T_("max") - 1)
+    not a_(c_1,x,y,t) or not a_(c_2,x,y,t+1)
+  $
+  *Bounds.* At most $binom(n_a, 2) (3 tau - 2) p$ clauses; 2 literals per clause.
+]) <constraint-4-7>
+
+#formalbox(kind: "constraint", [Constraint 4.8 (Victory condition)], [
+  Each exit must be occupied by at least one agent at time $T_("max")$:
+  $
+    and.big_((x,y) in cal(E)) or.big_(c in C) a_(c,x,y,T_("max"))
+  $
+  This clause only asks that the exits be *covered*; but since there are exactly $n_a$ agents,
+  exactly $n_a$ exits, and no two agents can share a cell
+  (#fref(<constraint-4-7>, [Constraint 4.7])), covering the $n_a$ exits with $n_a$ distinct
+  agents forces every agent onto a distinct exit at $T_("max")$. Every agent therefore reaches
+  an exit at the final step.
+
+  *Bounds.* Exactly $e$ clauses; at most $n_a$ literals per clause.
+]) <constraint-4-8>
+
+#formalbox(kind: "constraint", [Constraint 4.9 (Stay on exit)], [
+  Once an agent reaches an exit, it remains there for all subsequent time steps:
+  $
+    and.big_(c in C) and.big_((x,y) in cal(E)) and.big_(t = 0)^(T_("max") - 1)
+    not a_(c,x,y,t) or a_(c,x,y,t+1)
+  $
+  *Bounds.* Exactly $n_a e (tau - 1)$ clauses; 2 literals per clause.
+]) <constraint-4-9>
+
+=== Laser activity
+
+We define $"next"_d(x, y)$ as the position immediately adjacent to $(x, y)$ in direction $d$:
 $
-  O(n tau p^2 + n^2 tau p + n s tau p)
+  "next"_d(x,y) = cases(
+    (x, y - 1) & "if" d = N,
+    (x + 1, y) & "if" d = E,
+    (x, y + 1) & "if" d = S,
+    (x - 1, y) & "if" d = W
+  )
 $
-while with the local formulation it is
+
+#formalbox(kind: "constraint", [Constraint 4.10 (Walls block beams)], [
+  A beam cannot be active at a wall position:
+  $
+    and.big_((c,d,p_s) in cal(S)) and.big_((x,y) in cal(W)) and.big_(t in T)
+    not b_(c,d,x,y,t)
+  $
+  *Bounds.* Exactly $s |cal(W)| tau$ unit clauses; 1 literal per clause.
+]) <constraint-4-10>
+
+#formalbox(kind: "constraint", [Constraint 4.11 (Beam propagation)], [
+  Beam propagation clauses are instantiated only when the successor cell
+  $(x', y') = "next"_d(x, y)$ lies inside the grid, is not a wall, and is not itself a source
+  cell. Source cells are handled separately by #fref(<constraint-4-2>, [Constraint 4.2]).
+  Under these conditions, the beam is active at $(x', y')$ iff it is active at $(x, y)$ and no
+  agent of colour $c$ occupies $(x', y')$:
+  $
+    and.big_((c,d,p_s) in cal(S)) and.big_(t in T)
+    and.big_((x,y) in P without cal(W), \ "next"_d(x,y) in P without cal(W), \ "next"_d(x,y) in.not P_("src"))
+    b_(c,d,x',y',t) arrow.l.r (b_(c,d,x,y,t) and not a_(c,x',y',t))
+    \ arrow.t.b.double \
+    and.big_((c,d,p_s) in cal(S)) and.big_(t in T)
+    and.big_((x,y) in P without cal(W), \ "next"_d(x,y) in P without cal(W), \ "next"_d(x,y) in.not P_("src"))
+    not b_(c,d,x,y,t) or a_(c,x',y',t) or b_(c,d,x',y',t)
+    \
+    and.big_((c,d,p_s) in cal(S)) and.big_(t in T)
+    and.big_((x,y) in P without cal(W), \ "next"_d(x,y) in P without cal(W), \ "next"_d(x,y) in.not P_("src"))
+    b_(c,d,x,y,t) or not b_(c,d,x',y',t)
+    \
+    and.big_((c,d,p_s) in cal(S)) and.big_(t in T)
+    and.big_((x,y) in P without cal(W), \ "next"_d(x,y) in P without cal(W), \ "next"_d(x,y) in.not P_("src"))
+    not a_(c,x',y',t) or not b_(c,d,x',y',t)
+  $
+  *Bounds.* At most $3 s tau p$ clauses (three CNF clauses per admissible propagation edge);
+  at most 3 literals per clause.
+]) <constraint-4-11>
+
+#formalbox(kind: "constraint", [Constraint 4.12 (Link between beam and laser variables)], [
+  Since each colour has at most one source in the instances considered here, the laser variable
+  $l_(c,x,y,t)$ is true at a position iff the beam of the unique source of colour $c$ is active
+  there:
+  $
+    and.big_((c,d,p_s) in cal(S)) and.big_((x,y) in P) and.big_(t in T)
+    b_(c,d,x,y,t) arrow.l.r l_(c,x,y,t)
+  $
+  $
+    arrow.t.b.double
+  $
+  $
+    and.big_((c,d,p_s) in cal(S)) and.big_((x,y) in P) and.big_(t in T)
+    (not b_(c,d,x,y,t) or l_(c,x,y,t)) and (not l_(c,x,y,t) or b_(c,d,x,y,t))
+  $
+  *Bounds.* Exactly $2 s tau p$ clauses; 2 literals per clause.
+]) <constraint-4-12>
+
+#formalbox(kind: "constraint", [Constraint 4.13 (Agents cannot step on active lasers)], [
+  An agent of colour $c_1$ cannot occupy a position where an active laser of some source colour
+  $c_2 in C_("src")$, with $c_2 eq.not c_1$, is present. Agents are immune only to lasers of
+  their own colour:
+  $
+    and.big_(c_1 in C) and.big_(c_2 in C_("src"), \ c_2 eq.not c_1) and.big_((x,y) in P) and.big_(t in T)
+    l_(c_2,x,y,t) arrow.r not a_(c_1,x,y,t)
+  $
+  $
+    arrow.t.b.double
+  $
+  $
+    and.big_(c_1 in C) and.big_(c_2 in C_("src"), \ c_2 eq.not c_1) and.big_((x,y) in P) and.big_(t in T)
+    not l_(c_2,x,y,t) or not a_(c_1,x,y,t)
+  $
+  *Bounds.* At most $n_a s tau p$ clauses; 2 literals per clause.
+]) <constraint-4-13>
+
+
+== Clause complexity and polynomial size <clause-complexity>
+
+To show that the reduction has polynomial size, it is enough to bound the number of clauses
+generated as a function of the input parameters introduced in @notation.
+
+We count *clauses* rather than *literals*. A CNF formula is a conjunction of clauses, each
+clause being a disjunction of literals. The total literal count is at most a constant factor
+larger than the clause count in our encoding, since every clause family generated above contains
+at most $max(|"next"(u)| + 1, n_a) <= 6$ literals per clause (the worst case is forward or
+backward consistency, with one head literal and $|"next"(u)| <= 5$ disjuncts). Counting clauses
+is therefore sufficient to establish a polynomial bound on the formula size, and the same bound
+transfers to literals up to a constant factor.
+
+Summing the per-constraint bounds reported in @sat-reduction (the *Bounds* lines of
+#fref(<constraint-4-1>, [Constraints 4.1])--#fref(<constraint-4-13>, [4.13])) gives the total
+clause count as a polynomial in $n_a$, $p$, $s$, and $tau$. With the global formulation
+(formulation A, using Constraint 4.4) the dominant term is
 $
-  O(n tau p + n^2 tau p + n s tau p)
+  O(n_a tau p^2 + n_a^2 tau p + n_a s tau p)
 $
-The same loops introduce $O((n + s) p tau)$ propositional variables (agent, beam, and laser
-indices), also polynomial in the input parameters. The prose above quantifies agent-position
+while with the local formulation (formulation B, using Constraints 4.5 and 4.6) it is
+$
+  O(n_a tau p + n_a^2 tau p + n_a s tau p)
+$
+These are *asymptotic upper bounds*. The local formulation dominates the global one
+asymptotically, since its uniqueness term is linear in $p$ rather than quadratic; the
+dominance is not pointwise, however. On sufficiently small grids the global formulation
+actually produces fewer clauses than the local one, because the local formulation pays a
+constant overhead the global one avoids: a separate backward-consistency family of size
+$n_a (tau - 1) p$ (#fref(<constraint-4-6>, [Constraint 4.6])) and a per-cell pairs sum
+$sum_(u in V) binom(|"next"(u)|, 2)$ which is large relative to $binom(p, 2)$ when $p$ itself
+is small. We therefore keep both formulations and benchmark their actual clause counts and
+solver runtimes in @encoding-comparison.
+
+The same loops introduce $O((n_a + s) p tau)$ propositional variables (agent, beam, and laser
+indices), also polynomial in the input parameters. The constraints above quantify agent-position
 predicates over the full position set $P$; the implementation may safely restrict these to the
 walkable subset $V$, since clauses generated at walls and laser-source cells are vacuous under
-the initialization and the `next` filtering. Beam variables at wall cells are forced false by
-the wall-blocking family and play no role in any satisfying assignment; the implementation may
-skip them without affecting correctness.
+the initialisation and the `next` filtering. Beam variables at wall cells are forced false by
+#fref(<constraint-4-10>, [Constraint 4.10]) and play no role in any satisfying assignment; the
+implementation may skip them without affecting correctness.
 
 Since each clause is generated by a simple bounded computation inside these loops, the reduction
 itself is computable in polynomial time as well. This justifies the claim that bounded-horizon LLE
@@ -308,20 +342,20 @@ solvability is polynomial-time reducible to SAT.
 
 == Correctness of the reduction
 
-#formalbox([Proposition 4.1 (Correctness of the SAT Reduction)], [
+#formalbox(kind: "proposition", [Proposition 4.14 (Correctness of the SAT Reduction)], [
   Let $L$ be an LLE level and let $T_("max")$ be a horizon. For either movement formulation
   described above, the CNF formula $Phi(L, T_("max"))$ is satisfiable if and only if there exists a
   valid joint trajectory of length $T_("max")$ for $L$.
-]) <prop-4-1>
+]) <prop-4-14>
 
 #proofbox([
   For soundness, assume $Phi(L, T_("max"))$ is satisfiable. Initialization fixes exactly one start
   position for each agent at time $0$. For the global formulation, forward consistency together
   with pairwise exclusion ensures by induction on time that each agent occupies exactly one legal
   position at every later step. For the local formulation, the same conclusion follows from forward
-  consistency, local exclusivity, and backward consistency. We may therefore define a joint
-  trajectory $p_t(c)$ by reading off the unique true agent variable for each colour $c$ and time
-  $t$. The movement clauses enforce legal motion between consecutive steps; the collision clauses
+  consistency, local exclusivity, and backward consistency. We may therefore derive a joint
+  trajectory by setting $p_t(c) = (x, y)$, where $(x, y)$ is, for each colour $c$ and time $t$,
+  the unique position at which the variable $a_(c,x,y,t)$ is true. The movement clauses enforce legal motion between consecutive steps; the collision clauses
   enforce both simultaneous separation and the no-following-conflict rule; the laser clauses
   enforce safety with respect to active beams; and the exit clauses enforce the terminal
   condition. Hence the extracted trajectory is valid.
@@ -349,7 +383,7 @@ polynomial time by simulating the joint execution and checking that all agents o
 tiles at the end without violating the movement, collision, and laser constraints defined in
 @formalization.
 
-Combined with the polynomial-time construction above and #fref(<prop-4-1>, [Proposition 4.1]), this shows that
+Combined with the polynomial-time construction above and #fref(<prop-4-14>, [Proposition 4.14]), this shows that
 bounded-horizon LLE solvability is polynomial-time many-one reducible to SAT:
 
 $

@@ -3,7 +3,7 @@ choice inside the SAT solver — the local versus global formulation of the agen
 constraint — on four benchmark levels. The second characterises the generator family's
 *efficiency* through per-generator rejection rates, and the third its *output diversity* through
 the cooperation-profile distribution of accepted levels. The fourth asks whether off-the-shelf
-value-decomposition MARL agents can *learn* cooperative levels emitted by the generator on a
+value-based MARL agents can *learn* cooperative levels emitted by the generator on a
 small grid, and the fifth shows that enlarging the generated training pool restores
 generalisation. The sixth turns to curriculum learning: we first isolate the curriculum
 *mechanism* on a target that direct training can already reach (@curriculum-strategy-experiment),
@@ -13,7 +13,7 @@ task rather than to the curriculum itself. Software versions and seed convention
 experiment in this chapter are summarised in @appendix-reproducibility.
 
 
-== Experimental question
+== Experimental question <encoding-comparison>
 
 The experiment asks whether the *global* and *local* movement formulations introduced in
 @sat-reduction differ materially in CNF size and runtime on levels of increasing complexity.
@@ -325,7 +325,7 @@ accepted level under the binary criterion of @cooperation-detection: standard SA
 UNSAT, so every training and evaluation level requires at least one same-colour beam-blocking
 step. The learnability question is therefore not whether the levels are solvable in principle
 (they are, by construction), but whether the joint policy that solves them is reachable by
-common value-decomposition methods within a modest training budget.
+common value-based methods within a modest training budget.
 
 We restrict ourselves to three baseline cooperative-MARL algorithms: independent
 $Q$-learning (IQL), value-decomposition networks (VDN), and QMIX. They form a natural
@@ -528,7 +528,7 @@ property of the data regime rather than of any single credit-assignment scheme.
 === Interpretation
 
 This experiment isolates the practical payoff of the generator. The learnability ceiling reported
-in @learnability-experiment is not an intrinsic limit of the value-decomposition algorithms on
+in @learnability-experiment is not an intrinsic limit of the value-based algorithms on
 cooperative levels; it is a consequence of training on too few distinct instances. Because the
 constructive cooperative generator emits an effectively unlimited supply of certified — solvable
 and cooperation-requiring (@cooperation-detection) — levels at near-zero rejection cost, it
@@ -686,7 +686,7 @@ that direct training cannot solve at all. The canonical such target in this thes
 hand-crafted LLE Level 6 — a $12 times 13$ map with four agents and three lasers whose solution
 requires *mutual* cooperation, the dependency pattern in which several agents must each block a
 beam for the others before anyone can exit (@cooperation-detection). We therefore ask whether a
-curriculum of generated levels of growing cooperative complexity enables value-decomposition
+curriculum of generated levels of growing cooperative complexity enables value-based
 agents to solve Level 6, and, more generally, whether such agents can cross the
 mutual-cooperation boundary at all.
 
@@ -818,7 +818,7 @@ consequence of the target lying beyond the reach of the underlying MARL method.
 
 === Scope and threats to validity
 
-We are careful not to overclaim. These experiments establish that the value-decomposition
+We are careful not to overclaim. These experiments establish that the value-based
 algorithms evaluated here (IQL, VDN, QMIX), under a fixed set of hyperparameters and a sparse
 joint-exit reward, do not solve mutually-cooperative LLE targets, and that no curriculum over
 generated levels changes this — *not* that curriculum learning can never succeed on such targets.

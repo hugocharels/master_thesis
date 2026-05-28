@@ -186,12 +186,25 @@ def main() -> None:
     ax.text(
         0.35,
         0.4,
-        r"asymmetric ($\mathcal{A}$)",
+        r"asymmetric",
         fontsize=13,
         fontweight="bold",
         ha="left",
         color="#333",
         style="italic",
+    )
+
+    # The bounding box is the base predicate A (cooperation required); the four
+    # structural predicates are nested inside it.
+    ax.text(
+        0.35,
+        8.05,
+        r"$\mathcal{A}$",
+        fontsize=15,
+        fontweight="bold",
+        ha="left",
+        va="top",
+        color="#333",
     )
 
     ax.set_xlim(-0.1, 10.9)

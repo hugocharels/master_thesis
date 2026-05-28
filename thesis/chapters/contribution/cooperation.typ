@@ -439,9 +439,12 @@ patterns at the same time: they are not mutually exclusive, and one dependency g
 $G_L = (V, E)$, with $V = C$ the agent set and $n_a = |V| > 1$, can satisfy several at once. Since
 only one label is reported, the analyser must decide which pattern takes precedence; flagging the
 single *most important* match is the entire reason for the priority order formalised here. It is
-cleaner to read the patterns first as *substructure predicates* on $G_L$, and only afterwards
-collapse them to a label. The four predicates are:
+cleaner to read the patterns first as predicates on $G_L$, and only afterwards
+collapse them to a label. We use one base predicate and four structural refinements of it:
 
+- $cal(A)$ (asymmetric): cooperation is required, i.e. $G_L$ has at least one helping edge. This
+  is the base case, and every structured pattern below is a special case of it, so
+  $cal(C), cal(D), cal(M), cal(F) subset.eq cal(A)$.
 - $cal(C)$ (chain): $G_L$ contains a directed path of length at least two, i.e. some agent both
   helps and is helped.
 - $cal(D)$ (distributed): some vertex has in-degree at least two.
@@ -449,31 +452,25 @@ collapse them to a label. The four predicates are:
 - $cal(F)$ (fully coupled): $G_L$ is strongly connected, i.e. its single strongly connected
   component spans all $n_a$ agents.
 
-Each predicate coincides with the label of the same name once the higher-priority predicates are
-removed (the exact correspondence is the priority below); we write $cal(A)$ for the residual
-`asymmetric` case, in which none of the four patterns holds.
+Each label coincides with its predicate once the higher-priority predicates are removed (the
+exact correspondence is the priority below). The `asymmetric` label is therefore the residual
+$cal(A) without (cal(C) union cal(D) union cal(M) union cal(F))$, assigned only when cooperation
+is required but none of the four structural patterns holds.
 
-@fig-profile-venn shows these predicates and their overlaps as an Euler diagram: it is the
-catalogue of cooperation structures that any dependency graph $G_L$, and hence any LLE level, can
-exhibit. It is drawn over the predicates, not the labels; which single label a graph finally
-receives is settled by the priority below. For $n_a >= 3$ the only containments are
-$cal(F) subset cal(C)$ and $cal(F) inter cal(M) subset cal(D)$ (a strongly connected graph
-always contains a directed path of length two, and with a reciprocal pair also a vertex of
-in-degree two); fully coupled is otherwise incomparable to mutual and distributed, witnessed by
-the 3-cycle $"red" arrow "green" arrow "blue" arrow "red"$, while chain, distributed, and mutual overlap freely.
+@fig-profile-venn shows these predicates as an Euler diagram, with the base predicate $cal(A)$
+enclosing the four structural ones. They overlap rather than partition: chain, distributed, and
+mutual can co-occur freely, while fully coupled lies inside chain (and inside distributed when a
+reciprocal pair is present). Because one graph can match several predicates at once, the single
+label is fixed by the priority below.
 
 #figure(
   image("../../../results/cooperation_examples/profile_venn.png", width: 90%),
   caption: [
-    Cooperation *predicates* on the dependency graph $G_L$, as an Euler diagram
-    of substructure containment. Chain ($cal(C)$), distributed ($cal(D)$), and mutual ($cal(M)$)
-    are three overlapping circles. For $n_a >= 3$, fully coupled ($cal(F)$) lies inside $cal(C)$
-    and meets $cal(C) inter cal(D) inter cal(M)$, $cal(C) inter cal(D)$, and the $cal(C)$-only
-    region, but not the $cal(C) inter cal(M)$-without-$cal(D)$ lens, which is empty because
-    $cal(F) inter cal(M) subset cal(D)$. The two-agent fully-coupled case (the reciprocal pair,
-    which contains no chain) is drawn as a separate circle. The single label each graph receives
-    follows the priority of @tab-profile-priority, assigning each region to its predicate minus
-    the inner ones; `asymmetric` is the residual area outside every circle.
+    Euler diagram of the cooperation predicates on $G_L$. The bounding box is the base predicate
+    $cal(A)$; chain ($cal(C)$), distributed ($cal(D)$), and mutual ($cal(M)$) overlap, and fully
+    coupled ($cal(F)$) lies inside $cal(C)$ (the small separate circle is the two-agent case).
+    Each graph is labelled by the priority of @tab-profile-priority, predicate minus the inner
+    ones, leaving `asymmetric` as the residual area.
   ],
 ) <fig-profile-venn>
 
@@ -502,7 +499,7 @@ decided beforehand by the binary detector and do not appear there.
       [one beneficiary, several helpers],
     [4], [`chain`], [$cal(C) without (cal(M) union cal(D) union cal(F))$],
       [a relayed dependency (handoff)],
-    [5], [`asymmetric`], [$cal(A)$],
+    [5], [`asymmetric`], [$cal(A) without (cal(C) union cal(D) union cal(M) union cal(F))$],
       [one-way help, no relay],
     table.hline(stroke: 1pt),
   ),
@@ -516,7 +513,7 @@ The priority of @tab-profile-priority is *total*, but it refines a coarser *part
 the graph structure forces on the four patterns: one is intrinsically at least as cooperative as
 another exactly when the first entails the second. The only such entailments are
 $cal(F) arrow.r.double cal(C)$ and the conditional $cal(F) inter cal(M) arrow.r.double cal(D)$;
-all other pairs are incomparable, and `asymmetric` ($cal(A)$, no pattern present) lies below all
+all other pairs are incomparable, and the `asymmetric` label (no structural pattern) lies below all
 four. @tab-profile-partial-order lists the result, and our total order
 $cal(F) succ cal(M) succ cal(D) succ cal(C) succ cal(A)$ is one linear extension of it.
 

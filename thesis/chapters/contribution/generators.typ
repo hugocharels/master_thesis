@@ -90,8 +90,8 @@ random layouts quickly become dominated by unsolvable or trivial instances.
 
 A structured variant that biases generation toward well-formed, solvable configurations before
 any SAT call is made. Relative to the random generator, it adds a purely geometric pre-filter
-that rejects candidates which are already degenerate before any SAT call is made.
-@tab-constrained-random-filters lists the three rejected configurations in full.
+that rejects already-degenerate candidates. @tab-constrained-random-filters lists the three
+rejected configurations in full.
 
 #figure(
   table(
@@ -132,9 +132,9 @@ the base random generator still *accepts* such a level whenever it is solvable (
 to plain navigation usually is), so its solvable output is dominated by these laser-free
 instances. The geometric filters do not themselves prove solvability or cooperation, but by
 discarding inert-laser and beam-stranded layouts they ensure that accepted levels actually
-contain the laser interactions the experiments depend on; and in the cooperative setting, where
-an active beam is a *prerequisite* for the same-colour blocking mechanism, they also avoid a
-large number of SAT calls that could never have yielded a cooperative level. The generator
+contain the laser interactions the experiments depend on. In the cooperative setting, where
+an active beam is a *prerequisite* for the same-colour blocking mechanism, they also avoid many
+SAT calls that could never have yielded a cooperative level. The generator
 otherwise offers the same formal guarantees as the random generator (solvable, optionally
 cooperative with profile filter), and is the default we use when the experiments call for
 "random sampling" of solvable or cooperative levels. The effect is visible by comparing the

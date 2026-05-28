@@ -96,7 +96,7 @@ two ways, and we present both because they offer different trade-offs in clause 
 passed to the solver contains *exactly one* of them, never both: the choice is made at run-time
 when the encoding is built. Both formulations admit the same set of satisfying assignments (the
 same legal joint trajectories) on top of the forward-consistency clauses; they differ only in
-how many clauses they generate and, consequently, in solver run-time. Chapter 7 compares the
+how many clauses they generate and, consequently, in solver run-time. @encoding-comparison compares the
 two empirically. Schematically, the movement-related clauses of the CNF are
 $
   "CNF"_("movement") = "forward consistency" union cases(
@@ -123,7 +123,7 @@ $
   plus $|"next"(x, y)| <= 5$ disjuncts).
 ]) <constraint-4-3>
 
-#formalbox(kind: "constraint", [Constraint 4.4 (Global uniqueness — formulation A only)], [
+#formalbox(kind: "constraint", [Constraint 4.4 (Global uniqueness, formulation A only)], [
   No two distinct positions can both be occupied by agent $c$ at time $t$. The clauses at
   $t = 0$ are already implied by initialisation, so the family ranges over
   $t = 1, ..., T_("max")$:
@@ -135,7 +135,7 @@ $
   *Bounds.* Exactly $n_a (tau - 1) binom(p, 2)$ clauses; 2 literals per clause.
 ]) <constraint-4-4>
 
-#formalbox(kind: "constraint", [Constraint 4.5 (Local uniqueness — formulation B only)], [
+#formalbox(kind: "constraint", [Constraint 4.5 (Local uniqueness, formulation B only)], [
   No two distinct positions in $"next"(x, y)$ can simultaneously be occupied by agent $c$ at
   time $t + 1$:
   $
@@ -148,7 +148,7 @@ $
   $binom(|"next"(x, y)|, 2) <= binom(5, 2) = 10$); 2 literals per clause.
 ]) <constraint-4-5>
 
-#formalbox(kind: "constraint", [Constraint 4.6 (Backward consistency — formulation B only)], [
+#formalbox(kind: "constraint", [Constraint 4.6 (Backward consistency, formulation B only)], [
   If agent $c$ is at position $(x, y)$ at time $t + 1$, it must have been at some position in
   $"next"(x, y)$ at time $t$ (recall that $"next"$ is symmetric, so it also describes the cells
   from which $(x, y)$ can be reached):
@@ -304,8 +304,7 @@ clause being a disjunction of literals. The total literal count is at most a con
 larger than the clause count in our encoding, since every clause family generated above contains
 at most $max(|"next"(u)| + 1, n_a) <= 6$ literals per clause (the worst case is forward or
 backward consistency, with one head literal and $|"next"(u)| <= 5$ disjuncts). Counting clauses
-is therefore sufficient to establish a polynomial bound on the formula size, and the same bound
-transfers to literals up to a constant factor.
+is therefore sufficient to bound the formula size polynomially.
 
 Summing the per-constraint bounds reported in @sat-reduction (the *Bounds* lines of
 #fref(<constraint-4-1>, [Constraints 4.1])--#fref(<constraint-4-13>, [4.13])) gives the total
@@ -397,9 +396,9 @@ Whether bounded-horizon LLE solvability is also *NP-hard* remains open in the pr
 Establishing NP-hardness would require a polynomial-time reduction in the opposite direction, from
 a known NP-hard problem to LLE solvability. This thesis does not claim such a result.
 
-It is also important to distinguish proved statements from standard complexity-theoretic beliefs.
-The question whether $"P" = "NP"$ remains open. Accordingly, statements here about worst-case
-difficulty should be read only through the formal claims we have established: SAT is NP-complete,
+We must also distinguish proved statements from standard complexity-theoretic beliefs.
+Whether $"P" = "NP"$ remains open, so statements here about worst-case difficulty should be read
+only through the formal claims we have established: SAT is NP-complete,
 bounded-horizon LLE solvability belongs to NP, and the reduction above places bounded-horizon LLE
 solvability within the polynomial-time many-one image of SAT.
 

@@ -13,10 +13,10 @@ to cooperate.
 
 We instantiate this work on the Laser Learning Environment (LLE), a cooperative MARL benchmark
 whose mechanics are formalised in @lle-background; its hand-crafted Level 6 serves as the
-canonical hard target throughout the thesis. We expect the methodology developed here —
-coupling procedural generation with a formal verification oracle — to generalise to any MARL
-setting whose target structural properties are expressible as decision problems, but we
-evaluate it on LLE only and leave broader transfer to future work.
+canonical hard target throughout the thesis. We expect this methodology (coupling
+procedural generation with a formal verification oracle) to generalise to any MARL setting whose
+target properties are expressible as decision problems, but we evaluate it on LLE only and leave
+broader transfer to future work.
 
 
 == Motivation
@@ -32,12 +32,12 @@ cooperation* in the specific sense induced by the environment's mechanics. Witho
 guarantees, PCG risks producing levels that are invalid, trivial, or misaligned with the
 training objective.
 
-Generated levels are also useful beyond standalone training: the same configuration knobs that
-control individual levels — grid size, number of agents, number of lasers, wall budget,
-cooperation profile, time horizon (the bounded number of joint steps allowed for a solution) — also define a natural difficulty axis. A formally-verified
-generator is therefore a candidate building block for *curriculum learning*: rather than train
-directly on a hard hand-crafted target, an agent can be trained on a sequence of progressively
-harder generated levels.
+Generated levels are also useful beyond standalone training. The same knobs that control a single
+level also define a natural difficulty axis: grid size, number of agents, number of lasers, wall
+budget, cooperation profile, and time horizon (the bounded number of joint steps allowed for a
+solution). A formally-verified generator is therefore a candidate building block for *curriculum
+learning*: rather than train directly on a hard hand-crafted target, an agent can be trained on a
+sequence of progressively harder generated levels.
 
 The thesis delivers three contributions and an empirical study. The contributions are a
 bounded-horizon SAT encoding of LLE solvability with a correctness proof and complexity

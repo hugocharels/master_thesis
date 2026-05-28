@@ -15,8 +15,7 @@ This blocking is the source of the cooperative structure studied in this thesis.
 a position along its own beam, an agent shortens the beam and opens cells beyond it for
 teammates who are not immune to that colour. Crucially, this action is locally unrewarded: the
 helper agent receives no direct benefit from blocking its own beam. The reward is issued only
-when all agents simultaneously occupy their exits, which requires the full team to coordinate
-successfully.
+when all agents simultaneously occupy their exits, which requires the full team to coordinate.
 
 An annotated rendering of LLE Level 6 (the canonical hard target used throughout this thesis)
 is shown in @figure-lvl6.

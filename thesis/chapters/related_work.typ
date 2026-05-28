@@ -29,8 +29,8 @@ exploration to escape the monotonicity bottleneck on coordination-critical tasks
 Both families perform well when individual contributions are roughly additive, and both struggle
 on the coordination-critical, low-reward bottlenecks that LLE is designed to expose @LLE. The
 empirical chapter of this thesis (@experiments) accordingly uses three points along the
-value-decomposition spectrum — independent $Q$-learning (IQL, no credit assignment), VDN
-(additive), and QMIX (monotonic mixing) — to train on generated cooperative levels and on the
+value-decomposition spectrum, namely independent $Q$-learning (IQL, no credit assignment), VDN
+(additive), and QMIX (monotonic mixing), to train on generated cooperative levels and on the
 curriculum-transfer target.
 
 
@@ -86,10 +86,10 @@ coordination*, *interdependence*, and *zero-incentive dynamics* @Molinghen2025Ze
 create bottlenecks in which one agent must perform a locally unrewarded action that enables
 another agent to progress.
 
-This benchmark framing is directly relevant to the present work. The thesis does not attempt to
-improve MARL training algorithms on LLE. Instead, it addresses an upstream question left open by
-the benchmark paper: how can we generate LLE levels that are guaranteed to be solvable and that
-contain the beam-blocking dependency on which the benchmark relies?
+This framing is directly relevant here. The thesis does not try to improve MARL algorithms on
+LLE; it addresses an upstream question the benchmark paper leaves open: how can we generate LLE
+levels guaranteed to be solvable and to contain the beam-blocking dependency the benchmark relies
+on?
 
 The LLE paper therefore plays two roles in this thesis. First, it justifies why LLE is an
 interesting target domain. Second, it provides the conceptual vocabulary used here to discuss
@@ -134,7 +134,7 @@ requires.
 
 Procedural Content Generation (PCG) is useful in reinforcement-learning settings because it can
 replace a small fixed benchmark set with a larger and more diverse stream of instances
-@Shaker2016. Within PCG, search-based methods — surveyed by #cite(<Togelius2011>, form: "prose") — phrase
+@Shaker2016. Within PCG, search-based methods (surveyed by #cite(<Togelius2011>, form: "prose")) phrase
 content creation as an optimisation problem over a content space, which is conceptually close to the
 solver-driven acceptance loop adopted in this thesis. The closest precedent for the present
 declarative-constraint approach is the Answer Set Programming (ASP) generator of
@@ -150,8 +150,8 @@ learning agent. #cite(<RisiTogelius2020>, form: "prose") survey this line and ar
 a natural lever for moving beyond fixed-benchmark RL toward generalisation across infinite
 environment families. Within that line, PCGRL @Khalifa2020PCGRL inverts the relationship between
 PCG and RL: rather than using PCG to feed RL agents, it trains an RL agent to *act as* the level
-designer. The thesis here runs in the opposite direction — a fixed solver-in-the-loop generator
-produces certified levels that feed RL training — and PCGRL is therefore a useful contrast
+designer. The thesis here runs in the opposite direction (a fixed solver-in-the-loop generator
+produces certified levels that feed RL training), so PCGRL is a useful contrast
 rather than a comparable system.
 
 What distinguishes this thesis from the lines above is the *verification* step. A constructive
@@ -168,8 +168,8 @@ The general idea of training on a sequence of progressively harder tasks predate
 deep-learning era; #cite(<Bengio2009>, form: "prose") formalised *curriculum learning* as a meta-learning
 strategy in which the order of training examples is itself a design choice. In reinforcement
 learning specifically, the survey by #cite(<Narvekar2020Curriculum>, form: "prose") catalogues the design
-space along three axes — the *task generator*, the *sequencing policy*, and the *transfer
-mechanism* — and shows that curriculum learning consistently helps on long-horizon and
+space along three axes (the *task generator*, the *sequencing policy*, and the *transfer
+mechanism*) and shows that curriculum learning consistently helps on long-horizon and
 sparse-reward problems, the regime in which LLE Level 6 sits.
 
 A more recent line of work tightens the coupling between curriculum and environment generation.
@@ -225,10 +225,10 @@ strict-counterfactual semantics introduced in @cooperation-detection.
 Within the compilation route, encoding design materially affects solver performance. The work of
 #cite(<FrommknechtSurynek2024>, form: "prose") studies SAT-based MAPF under the makespan
 objective using an MDD-SAT formulation and compares solver-facing choices such as eager versus
-lazy encodings and informative initial assignments. The point of citing this paper is not that it
-solves the same problem, but that it confirms a recurring lesson: performance is not determined
-only by the underlying decision problem; it also depends on how the problem is encoded and on
-how the resulting CNF interacts with the chosen SAT solver. The empirical chapter of this thesis
+lazy encodings and informative initial assignments. We cite it not because it
+solves the same problem, but for a recurring lesson: performance depends not only on the
+underlying decision problem but on how it is encoded and how the resulting CNF interacts with the
+chosen SAT solver. The empirical chapter of this thesis
 (@experiments) compares two alternative uniqueness encodings in the same spirit.
 
 At the same time, the distance of this work to standard MAPF must be stated explicitly. Standard MAPF
@@ -249,8 +249,8 @@ inserted between the agent and the environment as a hard constraint.
 
 The connection to this thesis is methodological rather than direct. Shielded RL inserts a formal
 acceptance oracle on the *action* side of the loop, at runtime; we insert one on the *training-
-material* side, at generation time. Both follow the same recipe — encode a target property in a
-decidable formalism, run a solver, and reject anything that fails — but they apply it to opposite
+material* side, at generation time. Both follow the same recipe (encode a target property in a
+decidable formalism, run a solver, and reject anything that fails), but they apply it to opposite
 ends of the agent-environment interface. Shielded RL therefore does not provide a drop-in
 technique, but it does demonstrate that "formal-methods filter on top of an RL system" is a
 working pattern.

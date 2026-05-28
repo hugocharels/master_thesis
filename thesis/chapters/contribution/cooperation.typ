@@ -9,9 +9,9 @@ unchanged.
 
 Accordingly, the strict SAT encoding keeps the standard laser-safety clauses and replaces only the
 same-colour beam-propagation rule. For every source $(c, d, p_s) in cal(S)$, every admissible
-propagation edge from $(x, y)$ to $(x', y')$ — in the sense of @sat-reduction: successor inside
-the grid, not a wall, and not a source cell — and every time step $t in T$, the strict encoding
-uses
+propagation edge from $(x, y)$ to $(x', y')$ (in the sense of @sat-reduction, i.e. a successor
+inside the grid, not a wall, and not a source cell), and every time step $t in T$, the strict
+encoding uses
 
 $
   b_(c,d,x',y',t) arrow.l.r b_(c,d,x,y,t)
@@ -58,7 +58,7 @@ step.
   $(arrow.l)$ Assume that $Phi(L, T_("max"))$ is satisfiable and
   $Phi_("strict")(L, T_("max"))$ is unsatisfiable. The first condition implies that $L$ is solvable
   under the standard semantics. Suppose, for contradiction, that some successful standard
-  trajectory uses no same-colour beam-blocking step — that is, no agent $c$ ever stands on a
+  trajectory uses no same-colour beam-blocking step: no agent $c$ ever stands on a
   cell of the unblocked beam path of the source of colour $c$. Under that hypothesis the two semantics produce identical beam
   states for this trajectory: the standard rule blocks the beam of colour $c$ only at a cell
   occupied by agent $c$, and by assumption no such occupancy occurs, so each beam reaches the
@@ -181,7 +181,7 @@ by a *profile analyser* layered on top of the binary detector. The profile is no
 itself: it is the *generation target* that lets the generators of @generators request a specific
 kind of cooperation, and the quantity whose per-generator distribution we report in @experiments.
 
-Two properties shape everything that follows and are best stated at the outset. First, the profile
+Two properties shape everything that follows. First, the profile
 is computed from a *dependency graph* between agents, itself built from a *helper-event set*
 extracted from *one* satisfying assignment of $Phi(L, T_("max"))$. It therefore describes the
 cooperation structure of a single extracted plan and is *not* an invariant of the level: two

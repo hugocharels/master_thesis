@@ -8,7 +8,7 @@ target profile, and writes the rendered image to
 
 To use: edit the ``LEVELS`` dict below, then run from the project root:
 
-    python3.13 scripts/render_cooperation_examples.py
+    python3.13 src/scripts/render_cooperation_examples.py
 
 Per-entry options:
 - ``world``: an LLE world string (multiline). Set to ``None`` or an empty
@@ -34,7 +34,7 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from lle import World
 
-PROJECT_ROOT = Path(__file__).resolve().parents[1]
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(PROJECT_ROOT / "src"))
 
 from solver import CooperationLevel

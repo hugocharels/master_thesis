@@ -1,4 +1,5 @@
-#import "../../macros.typ": formalbox, proofbox, fref
+#import "../../macros.typ": formalbox, fref, proofbox
+#import "@preview/lovelace:0.3.0": pseudocode-list
 
 == Strict SAT encoding
 
@@ -82,11 +83,11 @@ standard one. Hence the strict solver can find a satisfying trajectory simply be
 a path long enough to walk *around* the laser geometry rather than *through* it, even though the
 short, natural solution would step into the beam and shield another agent. As soon as the horizon
 $T_("max")$ admits such a detour, the strict formula becomes satisfiable and the level stops being
-labelled cooperative — regardless of what the natural solution does.
+labelled cooperative, regardless of what the natural solution does.
 
 *Example: detour bypass.* @fig-horizon-demo shows a $4 times 4$ grid that makes this concrete.
 Two agents start in the top row; their only exits sit in the bottom row, and a single red laser
-covers two cells of row 1. Running the cooperation analyzer on this level at three different
+covers two cells of row 1. Running the cooperation analyser on this level at three different
 horizons reproduces all three failure modes at once (@tab-horizon-demo).
 
 #figure(
@@ -100,41 +101,45 @@ horizons reproduces all three failure modes at once (@tab-horizon-demo).
 #figure(
   table(
     columns: 3,
-    stroke: black,
-    inset: 8pt,
-    align: horizon,
-    table.header([*$T_("max")$*], [*Solver result (standard / strict)*], [*Profile label*]),
-    [2],  [UNSAT],         [— (rejected as unsolvable)],
-    [3],  [SAT, strict UNSAT], [`asymmetric`, edges ${(0, 1)}$],
-    [9], [SAT, strict SAT],   [`independent`],
+    stroke: none,
+    inset: (x: 12pt, y: 6pt),
+    align: (left, center, center),
+    table.hline(stroke: 1pt),
+    table.header([*Horizon range*], [*Solvable*], [*Cooperation required*]),
+    table.hline(stroke: 0.5pt),
+    [$0 <= T_("max") <= 2$], [no], [n/a],
+    [$3 <= T_("max") <= 8$], [yes], [yes],
+    [$T_("max") >= 9$], [yes], [no],
+    table.hline(stroke: 1pt),
   ),
   caption: [
-    Cooperation classification of the level in @fig-horizon-demo at three horizons. With
-    $T_("max") = 2$ no agent has time to reach an exit, so the standard solver returns UNSAT
-    and cooperation is never tested. With $T_("max") = 3$ — the tightest horizon at which the
-    level is solvable — cooperation is required: the only feasible plan uses red same-colour
-    blocking. With $T_("max") = 9$ — the smallest horizon admitting a detour around the beam
-    — the strict solver finds a trajectory in which the blue agent walks around the beam, so
-    cooperation is no longer flagged.
+    Cooperation classification of the level in @fig-horizon-demo across three horizon ranges.
+    For $T_("max") <= 2$ no agent has time to reach an exit, so the standard solver returns
+    UNSAT and cooperation is never tested. For $3 <= T_("max") <= 8$ the level is solvable
+    but only via red same-colour blocking, so cooperation is required. For $T_("max") >= 9$ a
+    detour around the beam fits: the strict solver finds a trajectory in which the green agent
+    walks around the beam, and cooperation is no longer flagged.
   ],
 ) <tab-horizon-demo>
 
 The same level therefore receives three qualitatively different labels depending on the chosen
-horizon — *unsolvable*, *cooperative*, or *non-cooperative* — without the level itself changing.
+horizon (*unsolvable*, *cooperative*, or *non-cooperative*), without the level itself changing.
 The phenomenon generalises: any level whose natural short solution uses beam-blocking can be
 made to look non-cooperative by raising $T_("max")$ until a geometric detour fits, and can be
 made to look unsolvable by lowering $T_("max")$ until even the natural solution does not.
 
-*Practical consequence.* The criterion is *sound* but *horizon-sensitive*. Choosing $T_("max")$
-too generously under-detects cooperation by allowing geometric detours; choosing it too tightly
-makes the standard solver itself UNSAT, so the level is rejected as unsolvable before cooperation
-is even tested. Both failure modes shift the operating point in opposite directions, and neither
-contradicts #fref(<thm-5-1>, [Theorem 5.1]), which states cooperation strictly *relative to* a chosen horizon.
+In practice, the criterion correctly identifies cooperation at any *fixed* horizon, but the label
+it assigns is not an intrinsic property of the level: it depends on the choice of $T_("max")$.
+Two opposing failure modes follow. If $T_("max")$ is set too generously, geometric detours
+become available and cooperation is under-detected; if it is set too tightly, the standard solver
+returns UNSAT and the level is rejected as unsolvable before cooperation is tested at all.
+Neither outcome contradicts #fref(<thm-5-1>, [Theorem 5.1]), which applies strictly relative to
+the chosen horizon.
 
 The recipe used throughout this thesis is to pick $T_("max")$ as the smallest horizon at which a
-representative short solution of the geometry is expected to fit, with a small additive slack. For
-the parameter configurations of @experiments this means horizons proportional to the grid
-diameter (concrete values are listed alongside each experimental configuration). Under that
+representative short solution of the geometry is expected to fit, with a small margin
+proportional to the grid diameter (concrete values are listed alongside each experimental
+configuration in @experiments). Under that
 choice, the criterion is tight enough that accepted levels reliably exhibit the intended
 beam-blocking behaviour at their stated horizon, and loose enough that the underlying standard
 solver does not spuriously reject solvable instances.
@@ -142,17 +147,29 @@ solver does not spuriously reject solvable instances.
 
 == Practical algorithm
 
-The cooperation detector runs two SAT calls on the same level:
+The cooperation detector runs two SAT calls on the same level, in the order shown in
+@alg-cooperation. The first call rejects unsolvable levels; the second decides cooperation by
+checking the strict counterfactual under the same horizon. Both calls share the same bounded
+horizon and differ only in the beam-propagation clauses. For benchmark levels, the horizon can
+be chosen from known solution lengths; for generated levels, it is the user-supplied generation
+parameter $T_("max")$.
 
-+ Run $"Solver"(L, T_("max"))$. If the result is UNSAT, the level is unsolvable for that horizon,
-  so it is rejected before cooperation is considered.
-+ Otherwise, run $"StrictSolver"(L, T_("max"))$. If this call is UNSAT, the level requires
-  cooperation for the same horizon; if it is SAT, a strict trajectory exists, so the level is
-  solvable without any same-colour beam-blocking step and is therefore non-cooperative.
-
-Both calls share the same bounded horizon and differ only in the beam-propagation clauses. For
-benchmark levels, the horizon can be chosen from known solution lengths; for generated levels, it
-is the user-supplied generation parameter $T_("max")$.
+#figure(
+  kind: "algorithm",
+  supplement: [Algorithm],
+  pseudocode-list(booktabs: true, numbered-title: [*CooperationDetection* ($L$, $T_("max")$)])[
+    - *Input:* level $L$, horizon $T_("max")$
+    - *Output:* one of `UNSOLVABLE`, `COOPERATIVE`, `NON_COOPERATIVE`
+    + *if* $"Solver"(L, T_("max")) = "UNSAT"$ *then return* `UNSOLVABLE`
+    + *if* $"StrictSolver"(L, T_("max")) = "UNSAT"$ *then return* `COOPERATIVE`
+    + *return* `NON_COOPERATIVE`
+  ],
+  caption: [
+    Cooperation detection on level $L$ at horizon $T_("max")$. The first call rejects
+    unsolvable levels; the second decides cooperation by checking the strict counterfactual
+    under the same horizon.
+  ],
+) <alg-cooperation>
 
 
 == Cooperation profiles <cooperation-profiles>
@@ -160,66 +177,43 @@ is the user-supplied generation parameter $T_("max")$.
 #fref(<thm-5-1>, [Theorem 5.1]) yields a *binary* answer: a level either requires cooperation or it does not. Once the
 binary criterion holds, however, several qualitatively different cooperation structures fall under
 that single label, and the generators of @generators rely on this finer distinction to target
-specific patterns. The cooperation profile analyzer operates on top of the binary detector and
-produces a richer classification by combining three pieces of derived data:
+specific patterns. In this section, we describe how we determine the *cooperation profile* of an
+LLE level with a *profile analyser* that operates on top of the binary detector. The profile
+label is computed from a *dependency graph* between agents, itself built from a *helper-event
+set* extracted from one satisfying assignment of $Phi(L, T_("max"))$. Alongside the label, the
+analyser also reports a *necessary-helper set*, identified by colour-wise counterfactual SAT
+calls; this set is a level invariant that complements the label but does not enter the
+classification decision.
 
-+ a *helper-event set* extracted from one satisfying assignment of $Phi(L, T_("max"))$;
-+ a *necessary-helper set* identified by colour-wise counterfactual SAT calls; and
-+ a *dependency graph* between agents, built from the helper events.
-
-The decision procedure produces one of eight labels:
+The decision procedure produces one of seven labels:
 
 - *unsolvable*: $Phi(L, T_("max"))$ is UNSAT.
 - *independent*: cooperation is not required.
-- *cooperative*: cooperation is required, but the extracted plan exhibits no observable helper
-  event (a fallback used when the dependency graph happens to be empty).
 - *asymmetric*: at least one one-way helping relation exists, with none of the richer
   structures below.
-- *mutual*: two agents help each other.
 - *chain*: helper events form a directed path with no branching.
 - *distributed*: at least one agent benefits from two or more distinct helpers.
+- *mutual*: two agents help each other.
 - *fully coupled*: every agent belongs to a single strongly connected component of the
   dependency graph.
 
-Every label is constructible within LLE's $1 <= n_a <= 4$ regime: `mutual` and `fully_coupled`
-need at least two agents; `chain` and `distributed` need at least three; the remaining labels
-are reachable from two agents upward. The taxonomy therefore does not require any structural
-configuration that LLE cannot host.
+Every label is constructible within LLE's $1 <= n_a <= 4$ regime: `asymmetric` and `fully_coupled`
+need at least two agents; the remaining labels are reachable from three agents upward.
+The taxonomy therefore does not require any structural configuration that LLE cannot host.
 
-The remainder of this section makes each underlying object precise and gives one geometric example
-per family.
+The remainder of the section is organised as follows. @sec-helper-events and @sec-dep-graph
+introduce the two pieces of machinery, helper events and the dependency graph, needed to
+read the profile catalogue, which is then presented with geometric LLE examples in
+@sec-profile-families. @sec-ordering-structure formalises the priority order used by the
+classifier when a single graph matches several profiles and clarifies why the order is a
+labelling rule rather than a hierarchy on the underlying graph categories. The remaining two
+subsections cover auxiliary analyser outputs that do not affect the label decision:
+selective-strict semantics (@sec-selective-strict) and the necessary-helper set
+(@sec-necessary-helpers).
 
-=== Selective-strict semantics
+=== Helper events from a SAT model <sec-helper-events>
 
-Some profile decisions require asking whether a single agent is *individually* indispensable as a
-helper. To support this, the SAT encoding offers a *selective-strict* laser mode, parameterised
-by a set of colours $K subset.eq C_("src")$ — chosen distinct from the source-set symbol
-$cal(S)$ to avoid confusion:
-
-- for every source $(c, d, p_s) in cal(S)$ with $c in K$, the beam-propagation clauses use the
-  strict equivalence of @sat-reduction;
-- for every source $(c, d, p_s) in cal(S)$ with $c in.not K$, the standard equivalence is used.
-
-When $K = nothing$, the encoding coincides with the standard semantics; when $K = C_("src")$, it
-coincides with the strict semantics of #fref(<def-3-6>, [Definition 3.6]). Intermediate choices
-forbid same-colour blocking for the colours in $K$ while leaving the remaining beams
-untouched. Selective-strict is the SAT lever that lets us single out one helper at a time
-without affecting the other beams.
-
-The same argument used in the proof of #fref(<thm-5-1>, [Theorem 5.1]) generalises to this
-intermediate encoding — the selective-strict clauses for the colours in $K$ are exactly the strict
-clauses of @sat-reduction restricted to those colours, while every other colour keeps its standard
-clauses, so the model-transfer construction of the theorem applies colour by colour. Concretely,
-$Phi$ with the selective-strict encoding parameterised by $K$ is
-satisfiable if and only if $L$ admits a successful standard trajectory in which no agent of
-colour $c in K$ ever stands on the unblocked beam path of the source of colour $c$. We
-therefore use the selective-strict encoding as a sound decision oracle for "$L$ remains
-solvable when each colour in $K$ is individually barred from blocking its own beam", which
-is exactly what the necessary-helper analysis below requires.
-
-=== Helper events from a SAT model
-
-Given a satisfying assignment of $Phi(L, T_("max"))$, the analyzer recovers the joint trajectory
+Given a satisfying assignment of $Phi(L, T_("max"))$, the analyser recovers the joint trajectory
 $sigma = (p_0, ..., p_(T_("max"))).$ For each time step $t$ and each ordered pair of distinct
 agents $(c, c')$, a *helper event* with helper $c$, beneficiary $c'$, and time $t$ is recorded if
 two geometric conditions hold:
@@ -233,19 +227,7 @@ Helper events are an *observable of the chosen joint plan*, not an invariant of 
 cooperative level typically admits many joint plans, and different plans may yield different
 helper-event sets.
 
-=== Necessary helpers
-
-The *necessary-helper set* is, by contrast, a property of the level itself. For every colour
-$c in C_("src")$ the analyzer runs one selective-strict SAT call with $K = {c}$. If the call
-returns UNSAT, the colour $c$ is added to the set. Operationally, $c$ is necessary when the level
-cannot be solved as soon as $c$ alone is barred from helping with its own beam, even though every
-other agent retains that ability.
-
-The necessary-helper set does not depend on which standard model the solver returns: each
-counterfactual is its own one-shot satisfiability check, independent of the joint plan chosen
-elsewhere.
-
-=== Dependency graph
+=== Dependency graph <sec-dep-graph>
 
 Helper events induce a directed graph $G_L = (V, E)$ on the set of agents:
 
@@ -253,24 +235,22 @@ $
   V = C, quad E = {(c, c') | exists t : (c, c', t) "is a helper event"}.
 $
 
-Multiple helper events between the same ordered pair $(c, c')$ — possibly at different time
-steps and along different beam paths — collapse into a single edge. The time dimension is
+Multiple helper events between the same ordered pair $(c, c')$ (possibly at different time
+steps and along different beam paths) collapse into a single edge. The time dimension is
 otherwise discarded; a separate scalar, the *synchronous width*, records the maximum number of
 distinct helpers active at the same time step and is exposed alongside the profile label without
 entering the classification decision.
 
-=== Profile families
+=== Profile families <sec-profile-families>
 
 The profile label is the output of a small decision procedure applied to $G_L$, with the binary
-cooperation requirement as a hard precondition. The priority order over the cooperation-required
-labels is *fully coupled $succ$ mutual $succ$ distributed $succ$ chain $succ$ asymmetric
-$succ$ cooperative*, so a level matching several criteria is labelled by the strongest one.
-The two non-cooperative labels (`unsolvable` and `independent`) short-circuit before this order
-is considered. We describe each label below with a short geometric
-example.
+cooperation requirement as a hard precondition. When a single graph matches several profiles,
+a priority order over labels (formalised in @sec-ordering-structure) selects the strongest one;
+the two non-cooperative labels (`unsolvable` and `independent`) short-circuit before this order
+is consulted. We describe each label below with a short geometric example.
 
 *Independent.* The binary detector returns non-cooperative: $Phi_("strict")(L, T_("max"))$ is
-satisfiable, so no agent ever has to block a beam. The profile analyzer short-circuits and
+satisfiable, so no agent ever has to block a beam. The profile analyser short-circuits and
 returns `independent`. *Example.* A grid with two agents whose direct paths to their respective
 exits do not cross any beam at all (@fig-profile-independent).
 
@@ -289,26 +269,14 @@ exits do not cross any beam at all (@fig-profile-independent).
   ],
 ) <fig-profile-independent>
 
-*Cooperative (no observed helper).* Binary cooperation holds — strict-SAT is UNSAT — yet the
-extracted plan contains no helper event. This label is a *defensive fallback*: the helper-event
-extractor only records an event when a helper sits on its own beam path with a foreign-colour
-agent strictly downstream at the same time step, and a few edge cases (e.g. a helper blocking
-at the last cell of its own beam path) escape that criterion. We have not observed this
-fallback fire on any LLE level encountered in this thesis; the label is listed for completeness.
-The same word `cooperative` reappears in @generators as a *filter target* meaning "any level
-satisfying the binary cooperation criterion, regardless of finer profile". The two uses are
-distinct: the classifier returns `cooperative` only as the fallback above, while the generator
-filter `cooperative` accepts levels of any cooperative profile.
-
-*Asymmetric.* The residual category: the dependency graph has at least one edge $(c, c') in E$
-and matches none of the stronger profiles above. The label is therefore the *fallback* applied
-whenever cooperation is required but the graph fits neither *fully coupled*, *mutual*,
-*distributed*, nor *chain*; a typical asymmetric graph is a small set of one-way edges, but
-sparser shapes that escape the chain criterion (e.g. two short paths that do not span every
-participating agent) also fall here. *Example.* Two agents of distinct colours; only the red
-beam blocks the blue agent's path to its exit, so the red agent must step into its own beam
-at some moment to let the blue agent pass. The reciprocal situation never arises since there
-is no blue beam. The dependency graph has the single edge $0 arrow 1$
+*Asymmetric.* The residual category: cooperation is required but the dependency graph fits
+none of the stronger profiles below. The label covers both the typical case (a small set of
+one-way edges) and the degenerate case where the extracted plan contains no observable
+helper event at all (e.g. when the helper sits at the last cell of its own beam path).
+*Example.* Two agents of distinct colours; only the red beam blocks the green agent's path
+to its exit, so the red agent must step into its own beam at some moment to let the green
+agent pass. The reciprocal situation never arises since there
+is no green beam. The dependency graph has the single edge $0 arrow 1$
 (@fig-profile-asymmetric).
 
 #figure(
@@ -321,45 +289,14 @@ is no blue beam. The dependency graph has the single edge $0 arrow 1$
   ),
   caption: [
     `asymmetric`: one red laser splits the grid horizontally. The red agent (top-left) crosses
-    its own beam unscathed; the blue agent (top-right) requires red to block the beam so it
+    its own beam unscathed; the green agent (top-right) requires red to block the beam so it
     can reach the bottom-right exit. Edges: ${(0, 1)}$.
   ],
 ) <fig-profile-asymmetric>
 
-*Mutual.* The dependency graph contains a mutual pair, i.e. both edges $(c, c'), (c', c) in E$
-for some pair $c eq.not c'$. *Example.* Two laser sources of distinct colours, each crossing
-the other agent's path: each agent must block its own beam to shield the other at some
-point in the plan (@fig-profile-mutual). Both edges are present, and a level is classified as
-`mutual` even when additional one-way edges between other pairs also exist, as long as the
-agents do not all belong to a single strongly connected component. Because *fully coupled* takes
-priority in the decision order, the `mutual` label is only reachable with $|C| >= 3$ agents:
-when $|C| = 2$, a reciprocal pair is itself a strongly connected component spanning the whole
-agent set (size $2 = |C| > 1$), so the level is labelled `fully_coupled` and the `mutual` branch
-is never reached. The example in @fig-profile-mutual therefore includes a third agent on an
-independent path, outside the reciprocal pair, which keeps the largest strongly connected
-component at size two while $|C| = 3$.
-
-#figure(
-  grid(
-    columns: (auto, auto),
-    column-gutter: 1.5em,
-    align: center + horizon,
-    image("../../../results/cooperation_examples/mutual.png", height: 4cm),
-    image("../../../results/cooperation_examples/dep_mutual.png", width: 3.5cm),
-  ),
-  caption: [
-    `mutual`: two stacked beams of distinct colours. Each agent is immune to its own beam
-    but must wait for the other to block the foreign beam before crossing. A third agent
-    on an independent path is required to keep the profile distinct from `fully_coupled`: with
-    only the reciprocal pair the two agents would form a strongly connected component spanning
-    the whole agent set. It participates in no helper relationship, hence appears as an isolated
-    vertex in the dependency graph. Edges: ${(0, 1), (1, 0)}$.
-  ],
-) <fig-profile-mutual>
-
-*Chain.* The dependency graph is a directed path: every vertex has in-degree and out-degree at
-most one, the longest chain has length at least two (i.e. at least two consecutive edges), and
-that longest chain visits every participating vertex. *Example.* Three agents arranged so that
+*Chain.* The dependency graph is a directed path: it is acyclic, every vertex has in-degree and
+out-degree at most one, the longest directed path has length at least two (i.e. at least two
+consecutive edges), and that path visits every participating vertex. *Example.* Three agents arranged so that
 agent $0$ must shield agent $1$ across the red beam, agent $1$ must shield agent $2$ across
 the blue beam, and neither agent $2$ nor agent $0$ has any further helping role
 (@fig-profile-chain). The graph is $0 arrow 1 arrow 2$.
@@ -374,7 +311,7 @@ the blue beam, and neither agent $2$ nor agent $0$ has any further helping role
   ),
   caption: [
     `chain`: three agents and two beams. Walls confine each agent to a separate region so
-    helping flows in one direction only — red helps blue across the red beam, blue helps the
+    helping flows in one direction only: red helps blue across the red beam, blue helps the
     third agent across the blue beam. Edges: ${(0, 1), (1, 2)}$.
   ],
 ) <fig-profile-chain>
@@ -395,16 +332,49 @@ reciprocal edge $(1, 0)$ is absent.)
     image("../../../results/cooperation_examples/dep_distributed.png", width: 3.5cm),
   ),
   caption: [
-    `distributed`: agent $2$ must traverse both the red and the blue beam to reach its exit,
+    `distributed`: agent $2$ must traverse both the red and the green beam to reach its exit,
     requiring blocking from both other agents. In-degree of agent $2$ is two. Edges:
     ${(0, 1), (0, 2), (1, 2)}$.
   ],
 ) <fig-profile-distributed>
 
-*Fully coupled.* The largest strongly connected component of the dependency graph spans the
-entire agent set: its size equals the number of agents $|C|$ (with $|C| > 1$). *Example.* Three
-agents in which every pair of agents helps each other, yielding a directed cycle on all three
-agents and a strongly connected component of size three $= |C|$ (@fig-profile-fully-coupled). This is the strictest profile and is rare on small grids.
+*Mutual.* The dependency graph contains a mutual pair, i.e. both edges $(c, c'), (c', c) in E$
+for some pair $c eq.not c'$. *Example.* Two laser sources of distinct colours, each crossing
+the other agent's path: each agent must block its own beam to shield the other at some
+point in the plan (@fig-profile-mutual). Both edges are present, and a level is classified as
+`mutual` even when additional one-way edges between other pairs also exist, as long as the
+agents do not all belong to a single strongly connected component. Because *fully coupled* takes
+priority in the decision order, the `mutual` label is only reachable with $n_a >= 3$ agents:
+when $n_a = 2$, a reciprocal pair is itself a strongly connected component spanning the whole
+agent set (size $2 = n_a > 1$), so the level is labelled `fully_coupled` and the `mutual` branch
+is never reached. The example in @fig-profile-mutual therefore includes a third agent on an
+independent path, outside the reciprocal pair, which keeps the largest strongly connected
+component at size two while $n_a = 3$.
+
+#figure(
+  grid(
+    columns: (auto, auto),
+    column-gutter: 1.5em,
+    align: center + horizon,
+    image("../../../results/cooperation_examples/mutual.png", height: 4cm),
+    image("../../../results/cooperation_examples/dep_mutual.png", width: 3.5cm),
+  ),
+  caption: [
+    `mutual`: two stacked beams of distinct colours. Each agent is immune to its own beam
+    but must wait for the other to block the foreign beam before crossing. A third agent
+    on an independent path is required to keep the profile distinct from `fully_coupled`: with
+    only the reciprocal pair the two agents would form a strongly connected component spanning
+    the whole agent set. It participates in no helper relationship, hence appears as an isolated
+    vertex in the dependency graph. Edges: ${(0, 1), (1, 0)}$.
+  ],
+) <fig-profile-mutual>
+
+*Fully coupled.* The dependency graph is strongly connected: its single strongly connected
+component spans the entire agent set (size $n_a > 1$). *Example.* Three agents in which every
+pair helps each other, so the dependency graph is the complete digraph $K_(n_a)^("*")$ (the
+digraph with all $n_a (n_a - 1)$ edges between distinct agents), which is trivially strongly
+connected (@fig-profile-fully-coupled). This is the highest-priority profile and is rare on
+small grids.
 
 #figure(
   grid(
@@ -422,25 +392,151 @@ agents and a strongly connected component of size three $= |C|$ (@fig-profile-fu
   ],
 ) <fig-profile-fully-coupled>
 
-The analyzer also exposes the auxiliary scalars used by the decision procedure (longest chain
+The analyser also exposes the auxiliary scalars used by the decision procedure (longest chain
 length, largest SCC size, synchronous width) so downstream code can re-classify levels under a
 different policy without re-running any SAT calls.
 
 
+=== Ordering structure of the profile labels <sec-ordering-structure>
+
+The catalogue assigns each level a single label, but the underlying cooperation patterns are
+not mutually exclusive: one dependency graph $G_L$ can exhibit several at once. Read as
+*substructure* predicates on $G_L = (V, E)$, with $V = C$ the agent set and $n_a = |V| > 1$, the
+four cooperation-required profiles are:
+
+- $cal(C)$ (chain): $G_L$ contains a directed path of length at least two.
+- $cal(D)$ (distributed): some vertex has in-degree at least two.
+- $cal(M)$ (mutual): some pair $c eq.not c'$ has both $(c, c'), (c', c) in E$.
+- $cal(F)$ (fully coupled): $G_L$ is strongly connected, i.e. its single strongly connected
+  component spans all $n_a$ agents.
+
+For $n_a >= 3$, fully coupled is the strongest pattern and lies *inside* chain,
+$
+  cal(F) subset.eq cal(C),
+$
+because every strongly connected graph on three or more vertices contains a directed path of
+length two: from any vertex follow an out-edge to a second vertex and then an out-edge to a
+third (each exists since every vertex has out-degree at least one); should that walk return to
+the start, strong connectivity supplies a further distinct vertex. Fully coupled also satisfies
+$
+  cal(F) inter cal(M) subset.eq cal(D),
+$
+since a strongly connected graph containing a reciprocal pair must have a vertex of in-degree at
+least two: were every in-degree equal to one, the graph would be a single cycle through all
+agents, which on $n_a >= 3$ agents has no reciprocal pair. Fully coupled is *not* contained in
+mutual or distributed on its own, however: the 3-cycle ${(0, 1), (1, 2), (2, 0)}$ is fully
+coupled yet has no reciprocal pair and every in-degree equal to one. The chain, distributed,
+and mutual categories otherwise overlap freely.
+
+@fig-profile-venn shows the layout. Chain, distributed, and mutual are three overlapping
+circles; fully coupled is a region *inside* chain, covering
+$cal(C) inter cal(D) inter cal(M)$, $cal(C) inter cal(D)$, and the chain-only part, while
+avoiding the chain-and-mutual-without-distributed lens (empty by
+$cal(F) inter cal(M) subset.eq cal(D)$). The two-agent case is degenerate and drawn separately:
+the only fully-coupled graph on two agents is the reciprocal pair, which contains no directed
+path of length two and so lies outside chain.
+
+#figure(
+  image("../../../results/cooperation_examples/profile_venn.png", width: 90%),
+  caption: [
+    Cooperation patterns on the dependency graph $G_L$ (for $n_a >= 3$), as an Euler diagram of
+    substructure containment. Chain (C), distributed (D), and mutual (M) are three overlapping
+    circles. Fully coupled (F) lies inside chain and covers $C inter D inter M$, $C inter D$,
+    and the chain-only region, but not the chain-and-mutual-without-distributed lens, which is
+    empty because $F inter M subset.eq D$. The two-agent fully-coupled case (the reciprocal
+    pair, which contains no chain) is drawn as a separate circle. The residual area outside
+    every circle is `asymmetric`.
+  ],
+) <fig-profile-venn>
+
+The classifier collapses these coexisting patterns to a single label by the priority
+$cal(F) succ cal(M) succ cal(D) succ cal(C) succ "asymmetric"$ (@tab-profile-priority),
+returning the most cooperative pattern a graph exhibits: fully coupled (every agent reachable
+from every other) outranks mutual (direct reciprocity), then distributed (several helpers per
+beneficiary), then chain (a linear handoff), then asymmetric (a single one-way relation). The
+two lowest labels are residual: a graph is labelled `chain` only when it is exactly a directed
+path with no richer pattern present, and `asymmetric` when it has at least one edge but fits
+none of the four.
+
+#figure(
+  table(
+    columns: 4,
+    stroke: none,
+    inset: (x: 10pt, y: 6pt),
+    align: (center, left, left, left),
+    table.hline(stroke: 1pt),
+    table.header(
+      [*Priority*], [*Label*], [*Condition on $G_L$*], [*Cooperation*],
+    ),
+    table.hline(stroke: 0.5pt),
+    [1], [`fully coupled`], [strongly connected, $n_a > 1$],
+      [every agent reaches every other],
+    [2], [`mutual`], [reciprocal pair exists],
+      [direct reciprocal helping],
+    [3], [`distributed`], [some in-degree $>= 2$],
+      [one beneficiary, several helpers],
+    [4], [`chain`], [$G_L$ is a directed path covering every participating vertex],
+      [linear handoff],
+    [5], [`asymmetric`], [at least one edge],
+      [a single one-way helping relation],
+    table.hline(stroke: 1pt),
+  ),
+  caption: [
+    Priority-based labelling of cooperative-required levels. The classifier walks the rows
+    from top to bottom and assigns the first matching label.
+  ],
+) <tab-profile-priority>
+
+
+=== Selective-strict semantics <sec-selective-strict>
+
+Some profile decisions require asking whether a single agent is *individually* indispensable as a
+helper. To support this, the SAT encoding offers a *selective-strict* laser mode, parameterised
+by a set of colours $K subset.eq C_("src")$ (chosen distinct from the source-set symbol
+$cal(S)$ to avoid confusion):
+
+- for every source $(c, d, p_s) in cal(S)$ with $c in K$, the beam-propagation clauses use the
+  strict equivalence of @sat-reduction;
+- for every source $(c, d, p_s) in cal(S)$ with $c in.not K$, the standard equivalence is used.
+
+When $K = nothing$, the encoding coincides with the standard semantics; when $K = C_("src")$, it
+coincides with the strict semantics of #fref(<def-3-6>, [Definition 3.6]). Intermediate choices
+forbid same-colour blocking for the colours in $K$ while leaving the remaining beams
+untouched. Selective-strict is the SAT lever that lets us single out one helper at a time
+without affecting the other beams.
+
+The same argument used in the proof of #fref(<thm-5-1>, [Theorem 5.1]) generalises to this
+intermediate encoding: the selective-strict clauses for the colours in $K$ are exactly the strict
+clauses of @sat-reduction restricted to those colours, while every other colour keeps its standard
+clauses, so the model-transfer construction of the theorem applies colour by colour. Concretely,
+$Phi$ with the selective-strict encoding parameterised by $K$ is
+satisfiable if and only if $L$ admits a successful standard trajectory in which no agent of
+colour $c in K$ ever stands on the unblocked beam path of the source of colour $c$. We
+therefore use the selective-strict encoding as a sound decision oracle for "$L$ remains
+solvable when each colour in $K$ is individually barred from blocking its own beam", which
+is exactly what the necessary-helper analysis below requires.
+
+
+=== Necessary helpers <sec-necessary-helpers>
+
+The *necessary-helper set* is, by contrast, a property of the level itself. For every colour
+$c in C_("src")$ the analyser runs one selective-strict SAT call with $K = {c}$. If the call
+returns UNSAT, the colour $c$ is added to the set. Operationally, $c$ is necessary when the level
+cannot be solved as soon as $c$ alone is barred from helping with its own beam, even though every
+other agent retains that ability.
+
+The necessary-helper set does not depend on which standard model the solver returns: each
+counterfactual is its own one-shot satisfiability check, independent of the joint plan chosen
+elsewhere.
+
+
 *Scope note.* The cooperation notion defined here is intentionally specific: it captures
 same-colour beam-blocking as the relevant cooperative act. A level that requires two agents to
-coordinate their movements for unrelated geometric reasons — without any laser blocking being
-involved — would not be identified as cooperative by this detector. This definition is not claimed
-to exhaust every possible interpretation of cooperation in multi-agent environments; it is the
-specific mechanism studied in this benchmark, and the formal guarantee is scoped accordingly.
-
-*Taxonomy scope.* The eight labels above are designed to be informative *in practice* on small
-LLE grids, not to partition every directed graph one could imagine. Graphs that combine weaker
-structures without satisfying any stronger criterion fall into the residual `asymmetric` class.
-For instance, a 3-cycle among three of four agents (a strict 3-SCC that does not span every
-agent) is labelled `asymmetric`, not `fully_coupled`, because the SCC is smaller than $|C|$.
-Such pathological shapes have not appeared in our experiments, but the catch-all behaviour of
-`asymmetric` is by design rather than an oversight.
+coordinate their movements for unrelated geometric reasons (without any laser blocking being
+involved) would not be identified as cooperative by this detector. This definition is not
+claimed to exhaust every possible interpretation of cooperation in multi-agent environments;
+it is the specific mechanism studied in this benchmark, and the formal guarantee is scoped
+accordingly.
 
 *Model-dependence of finer-grained analyses.* The binary detector above is a property of the
 *level*: the satisfiability of $Phi(L, T_("max"))$ and $Phi_("strict")(L, T_("max"))$ does not
@@ -452,6 +548,6 @@ satisfying assignments. A cooperative level typically admits many valid joint pl
 different plans may exhibit different helping patterns: an agent that helps another in one
 solution may be passive in another. The profile label therefore reflects the structure of the
 extracted plan, not an intrinsic invariant of the level. This is acceptable for the generation
-use case considered here — the analyzer still acts as a sound filter that certifies the extracted
-plan exhibits the targeted profile — but two solver runs on the same level can in principle yield
+use case considered here (the analyser still acts as a sound filter that certifies the extracted
+plan exhibits the targeted profile), but two solver runs on the same level can in principle yield
 different profile labels.

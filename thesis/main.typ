@@ -150,7 +150,7 @@ cooperative levels, Laser Learning Environment, curriculum learning.
 
 #include "chapters/related_work.typ"
 
-= Background and formalization <background>
+= Background and formalisation <background>
 
 #include "chapters/methods/background.typ"
 

@@ -1,6 +1,6 @@
 #import "../../macros.typ": formalbox, fref
 
-== Problem formalization <formalization>
+== Problem formalisation <formalization>
 
 We now define the semantic objects and decision problems used throughout the thesis. Two
 properties are central: *solvability* (whether there exists a valid joint trajectory bringing all
@@ -72,7 +72,7 @@ relies on the blocking mechanism.
 
   A joint trajectory is *valid* if it satisfies the following conditions:
 
-  - *Initialization:* $forall c in C, p_0(c) = s(c)$.
+  - *Initialisation:* $forall c in C, p_0(c) = s(c)$.
   - *Movement:* $forall t < T_("max"), forall c in C$, $p_(t+1)(c)$ is reachable from $p_t(c)$
     in one step: the agent may stay in place or move to a 4-neighbouring cell. Walls and
     laser-source cells are the only blocked destinations; exit tiles and cells crossed by the

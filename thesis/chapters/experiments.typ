@@ -231,14 +231,14 @@ The binary cooperation detector of @cooperation-detection certifies that every a
 cooperative level requires at least one same-colour beam-blocking step, but it does not
 distinguish *which* structural pattern of inter-agent dependency the level exhibits. This
 experiment measures the distribution of cooperation profiles among accepted levels, using the
-cooperation profile analyzer also introduced in @cooperation-detection.
+cooperation profile analyser also introduced in @cooperation-detection.
 
 === Protocol
 
 For each of three cooperative generators (Constrained Random, Constructive, and Level-6-Style,
 all in cooperative mode) and two grid configurations ($5 times 5$ with 2 agents and 1 laser,
 $8 times 8$ with 3 agents and 2 lasers), the script accepts 100 cooperative levels on the small
-grid and 50 on the large grid, then classifies each into one of the analyzer's profile families:
+grid and 50 on the large grid, then classifies each into one of the analyser's profile families:
 `asymmetric`, `mutual`, `chain`, `distributed`, or `fully_coupled`.
 
 === Results
@@ -265,8 +265,8 @@ The $8 times 8$ configuration with 3 agents and 2 lasers exposes the contrast be
 generators. The Constructive generator produces 46 `mutual`, 2 `asymmetric`, and 2 `distributed`
 levels out of 50, i.e. a 92 % majority of mutual cooperation. This reflects the multi-colour
 structural-laser construction: with two distinct-colour lasers each crossing the entire lane
-band, the agent of colour 0 must block laser 0 for the other agents to pass, and symmetrically
-agent 1 must block laser 1, so two helpers act on their own beams in turn — the canonical mutual
+band, the red agent must block the red laser for the other agents to pass, and symmetrically
+the green agent must block the green laser, so two helpers act on their own beams in turn — the canonical mutual
 pattern.
 
 The Constrained Random generator produces 46 `asymmetric`, 3 `distributed`, and 1 `chain` level
@@ -277,7 +277,7 @@ incidentally and the generator does not reach the `mutual` family here.
 The Level-6-Style generator produces 34 `mutual`, 13 `asymmetric`, and 3 `distributed` levels
 out of 50 on the same configuration. The cluster-and-corridor geometry forces all agents through
 a shared corridor and tends to produce multiple agents helping each other simultaneously, much
-like the canonical LLE Level 6 itself (which the analyzer also classifies as `mutual`). The
+like the canonical LLE Level 6 itself (which the analyser also classifies as `mutual`). The
 two Constructive families therefore split their cooperative output as follows: the Constructive
 generator favours the mutual pattern by design (92 % mutual), and the Level-6-Style generator
 favours it by geometric pressure (68 % mutual).
@@ -304,7 +304,7 @@ rejection sampling. This makes the generator practical for producing large pools
 The profile-distribution experiment measures *output diversity*. The headline finding is that
 the same Constructive cooperative generator produces predominantly `mutual` levels (92 % mutual
 on $8 times 8$ with two lasers). Together with the Level-6-Style generator (68 % mutual on the
-same grid), the family spans the asymmetric / mutual / distributed range of the analyzer's
+same grid), the family spans the asymmetric / mutual / distributed range of the analyser's
 classification.
 
 What these experiments do not establish is whether certified levels are useful for training. The

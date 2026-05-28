@@ -103,7 +103,7 @@ The same-colour beam-blocking mechanism on which LLE relies admits a "cooperatio
 not required" verdict per level, but cooperative behaviour at finer granularity can vary
 considerably: in a level with several agents and several lasers, helping relations can form a
 one-way edge, a mutual pair, a directed chain, a fan-in (one beneficiary, multiple helpers), or
-a fully connected graph. The cooperation profile analyzer of @cooperation-detection extracts
+a fully connected graph. The cooperation profile analyser of @cooperation-detection extracts
 this dependency graph from a SAT model of a solution and labels it as, respectively,
 *asymmetric*, *mutual*, *chain*, *distributed*, or *fully coupled*. The structural categories themselves are
 standard graph-theory vocabulary; to our knowledge, this is the first taxonomy that recovers

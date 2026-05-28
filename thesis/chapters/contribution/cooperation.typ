@@ -176,22 +176,27 @@ parameter $T_("max")$.
 
 #fref(<thm-5-1>, [Theorem 5.1]) yields a *binary* answer: a level either requires cooperation or it does not. Once the
 binary criterion holds, however, several qualitatively different cooperation structures fall under
-that single label, and the generators of @generators rely on this finer distinction to target
-specific patterns. In this section, we describe how we determine the *cooperation profile* of an
-LLE level with a *profile analyser* that operates on top of the binary detector. The profile
-label is computed from a *dependency graph* between agents, itself built from a *helper-event
-set* extracted from one satisfying assignment of $Phi(L, T_("max"))$. Alongside the label, the
-analyser also reports a *necessary-helper set*, identified by colour-wise counterfactual SAT
-calls; this set is a level invariant that complements the label but does not enter the
-classification decision.
+that single label. This section refines the binary verdict into a *cooperation profile*, computed
+by a *profile analyser* layered on top of the binary detector. The profile is not an end in
+itself: it is the *generation target* that lets the generators of @generators request a specific
+kind of cooperation, and the quantity whose per-generator distribution we report in @experiments.
+
+Two properties shape everything that follows and are best stated at the outset. First, the profile
+is computed from a *dependency graph* between agents, itself built from a *helper-event set*
+extracted from *one* satisfying assignment of $Phi(L, T_("max"))$. It therefore describes the
+cooperation structure of a single extracted plan and is *not* an invariant of the level: two
+solver runs can in principle disagree (we return to this in the closing remark of the chapter). It
+is best read as a sound *filter*: when the analyser returns a profile, the extracted plan provably
+exhibits it. Second, alongside the label the analyser reports a *necessary-helper set*, identified
+by colour-wise counterfactual SAT calls; unlike the label, this set *is* a level invariant, and it
+complements the label without entering the classification decision.
 
 The decision procedure produces one of seven labels:
 
 - *unsolvable*: $Phi(L, T_("max"))$ is UNSAT.
 - *independent*: cooperation is not required.
-- *asymmetric*: at least one one-way helping relation exists, with none of the richer
-  structures below.
-- *chain*: helper events form a directed path with no branching.
+- *asymmetric*: helping occurs but no agent is both a helper and a beneficiary.
+- *chain*: some agent is both a helper and a beneficiary (a relayed dependency).
 - *distributed*: at least one agent benefits from two or more distinct helpers.
 - *mutual*: two agents help each other.
 - *fully coupled*: every agent belongs to a single strongly connected component of the
@@ -200,6 +205,20 @@ The decision procedure produces one of seven labels:
 Every label is constructible within LLE's $1 <= n_a <= 4$ regime: `asymmetric` and `fully_coupled`
 need at least two agents; the remaining labels are reachable from three agents upward.
 The taxonomy therefore does not require any structural configuration that LLE cannot host.
+
+When several of these patterns occur in the same level, the analyser reports only the one we
+consider the most cooperative, following the order
+$ "fully coupled" succ "mutual" succ "distributed" succ "chain" succ "asymmetric", $
+read from strongest to weakest. Formally this priority is a strict total order on the five
+cooperative profiles (irreflexive, antisymmetric, transitive, and total), which is exactly what
+guarantees every level a unique top-ranked label. We make it total by a deliberate choice of our
+own rather than by mathematical necessity: it encodes our qualitative judgement that all-to-all
+coupling embodies cooperation far more strongly than a single one-way helping relation, with the
+intermediate profiles graded between. The *structure-based* notion of one profile being
+intrinsically more cooperative than another is only a partial order, so another author could
+reasonably extend it differently; our priority is one linear extension of it, fixed and applied
+consistently throughout. @sec-ordering-structure makes the partial order, the structural reasons
+behind it, and this extension precise.
 
 The remainder of the section is organised as follows. @sec-helper-events and @sec-dep-graph
 introduce the two pieces of machinery, helper events and the dependency graph, needed to
@@ -223,23 +242,33 @@ two geometric conditions hold:
 + agent $c'$ stands at time $t$ on a cell strictly downstream of $p_t(c)$ on the same beam path,
   so $c'$ would lie inside the unblocked beam and is therefore protected by $c$.
 
-Helper events are an *observable of the chosen joint plan*, not an invariant of the level. A
-cooperative level typically admits many joint plans, and different plans may yield different
-helper-event sets.
+Helper events are a *property of the chosen joint plan*: a different satisfying plan may yield
+a different set. A helper event records only that $c$ *did* shield $c'$ in this plan, not that
+$c'$ *needed* $c$, since in another plan the beneficiary might reach its exit by a different
+route. Edges therefore assert observed help, not necessity; necessity is certified separately by
+the necessary-helper set of @sec-necessary-helpers.
 
 === Dependency graph <sec-dep-graph>
 
-Helper events induce a directed graph $G_L = (V, E)$ on the set of agents:
+Fix the satisfying assignment $sigma$ of $Phi(L, T_("max"))$ from which the helper events of
+@sec-helper-events were read. These events induce a directed graph $G_(L, sigma) = (V, E)$ on the
+set of agents,
 
 $
-  V = C, quad E = {(c, c') | exists t : (c, c', t) "is a helper event"}.
+  V = C, quad E = {(c, c') | exists t : (c, c', t) "is a helper event of" sigma},
 $
 
-Multiple helper events between the same ordered pair $(c, c')$ (possibly at different time
-steps and along different beam paths) collapse into a single edge. The time dimension is
-otherwise discarded; a separate scalar, the *synchronous width*, records the maximum number of
-distinct helpers active at the same time step and is exposed alongside the profile label without
-entering the classification decision.
+in which an edge $c arrow c'$ points from helper to beneficiary. If $c$ helps $c'$ several times,
+possibly at different time steps or along different beams, the two are still joined by a single
+edge. The time dimension is otherwise discarded by the graph; to retain one
+trace of it we expose a separate scalar, the *synchronous width*, the maximum number of distinct
+helpers active at the same time step. It captures a difficulty axis the time-collapsed graph
+cannot express, namely whether cooperation must occur *simultaneously* (several agents shielding
+at once) or can be spread sequentially over the horizon. It is reported alongside the profile
+label but does not enter the classification decision.
+
+Since the helper events are read from a single model $sigma$, so is $G_(L, sigma)$; where the
+model is fixed or immaterial we abbreviate it to $G_L$.
 
 === Profile families <sec-profile-families>
 
@@ -269,14 +298,15 @@ exits do not cross any beam at all (@fig-profile-independent).
   ],
 ) <fig-profile-independent>
 
-*Asymmetric.* The residual category: cooperation is required but the dependency graph fits
-none of the stronger profiles below. The label covers both the typical case (a small set of
-one-way edges) and the degenerate case where the extracted plan contains no observable
-helper event at all (e.g. when the helper sits at the last cell of its own beam path).
+*Asymmetric.* The residual category: cooperation is required but no agent is both a helper and a
+beneficiary (the dependency graph has no directed path of length two), and none of the richer
+profiles below applies. The label covers both the typical case (a small set of one-way edges) and
+the degenerate case where the extracted plan contains no observable helper event at all (e.g. when
+the helper sits at the last cell of its own beam path).
 *Example.* Two agents of distinct colours; only the red beam blocks the green agent's path
 to its exit, so the red agent must step into its own beam at some moment to let the green
 agent pass. The reciprocal situation never arises since there
-is no green beam. The dependency graph has the single edge $0 arrow 1$
+is no green beam. The dependency graph has the single edge $"red" arrow "green"$
 (@fig-profile-asymmetric).
 
 #figure(
@@ -290,16 +320,16 @@ is no green beam. The dependency graph has the single edge $0 arrow 1$
   caption: [
     `asymmetric`: one red laser splits the grid horizontally. The red agent (top-left) crosses
     its own beam unscathed; the green agent (top-right) requires red to block the beam so it
-    can reach the bottom-right exit. Edges: ${(0, 1)}$.
+    can reach the bottom-right exit. Edges: $"red" arrow "green"$.
   ],
 ) <fig-profile-asymmetric>
 
-*Chain.* The dependency graph is a directed path: it is acyclic, every vertex has in-degree and
-out-degree at most one, the longest directed path has length at least two (i.e. at least two
-consecutive edges), and that path visits every participating vertex. *Example.* Three agents arranged so that
-agent $0$ must shield agent $1$ across the red beam, agent $1$ must shield agent $2$ across
-the blue beam, and neither agent $2$ nor agent $0$ has any further helping role
-(@fig-profile-chain). The graph is $0 arrow 1 arrow 2$.
+*Chain.* Cooperation is required, some agent is both a helper and a beneficiary (the dependency
+graph contains a directed path of length at least two), and none of the richer profiles below
+applies. The simplest case is a single linear handoff, as in the example. *Example.* Three agents arranged so that
+the red agent must shield the green agent across the red beam, the green agent must shield the
+blue agent across the green beam, and neither the blue agent nor the red agent has any further
+helping role (@fig-profile-chain). The graph is $"red" arrow "green" arrow "blue"$.
 
 #figure(
   grid(
@@ -311,17 +341,23 @@ the blue beam, and neither agent $2$ nor agent $0$ has any further helping role
   ),
   caption: [
     `chain`: three agents and two beams. Walls confine each agent to a separate region so
-    helping flows in one direction only: red helps blue across the red beam, blue helps the
-    third agent across the blue beam. Edges: ${(0, 1), (1, 2)}$.
+    helping flows in one direction only: red helps green across the red beam, green helps blue
+    across the green beam. Edges: ${"red" arrow "green", "green" arrow "blue"}$.
   ],
 ) <fig-profile-chain>
 
 *Distributed.* At least one agent has in-degree $>= 2$ in the dependency graph. *Example.*
-Three agents in which two distinct same-colour helpers (agents $0$ and $1$) must each
-block their respective beams to free agent $2$'s path to its exit (@fig-profile-distributed).
-The edges are ${(0, 1), (0, 2), (1, 2)}$, so agent $2$ has in-degree two and the level is
-`distributed`. (The extra edge $(0, 1)$ does not promote the level to `mutual` because the
-reciprocal edge $(1, 0)$ is absent.)
+Three agents in which two distinct same-colour helpers (the red and green agents) must each
+block their respective beams to free the blue agent's path to its exit (@fig-profile-distributed).
+The edges are ${"red" arrow "green", "red" arrow "blue", "green" arrow "blue"}$, so the blue
+agent has in-degree two and the level is
+`distributed`. (The extra edge $"red" arrow "green"$ does not promote the level to `mutual` because the
+reciprocal edge $"green" arrow "red"$ is absent.) Note that the taxonomy grades cooperation by *in-degree*,
+how many distinct helpers a single beneficiary depends on, and deliberately gives no separate
+profile to the mirror case of one helper that shields several beneficiaries (a high *out-degree*
+hub). We classify the structure of *support received* rather than of *help given*; such a hub
+therefore contributes only through the in-degrees it induces and, absent any richer pattern, falls
+under `asymmetric`.
 
 #figure(
   grid(
@@ -332,9 +368,9 @@ reciprocal edge $(1, 0)$ is absent.)
     image("../../../results/cooperation_examples/dep_distributed.png", width: 3.5cm),
   ),
   caption: [
-    `distributed`: agent $2$ must traverse both the red and the green beam to reach its exit,
-    requiring blocking from both other agents. In-degree of agent $2$ is two. Edges:
-    ${(0, 1), (0, 2), (1, 2)}$.
+    `distributed`: the blue agent must traverse both the red and the green beam to reach its exit,
+    requiring blocking from both other agents. In-degree of the blue agent is two. Edges:
+    ${"red" arrow "green", "red" arrow "blue", "green" arrow "blue"}$.
   ],
 ) <fig-profile-distributed>
 
@@ -347,7 +383,7 @@ agents do not all belong to a single strongly connected component. Because *full
 priority in the decision order, the `mutual` label is only reachable with $n_a >= 3$ agents:
 when $n_a = 2$, a reciprocal pair is itself a strongly connected component spanning the whole
 agent set (size $2 = n_a > 1$), so the level is labelled `fully_coupled` and the `mutual` branch
-is never reached. The example in @fig-profile-mutual therefore includes a third agent on an
+is never reached. The example in @fig-profile-mutual therefore includes a third agent (blue) on an
 independent path, outside the reciprocal pair, which keeps the largest strongly connected
 component at size two while $n_a = 3$.
 
@@ -360,17 +396,17 @@ component at size two while $n_a = 3$.
     image("../../../results/cooperation_examples/dep_mutual.png", width: 3.5cm),
   ),
   caption: [
-    `mutual`: two stacked beams of distinct colours. Each agent is immune to its own beam
-    but must wait for the other to block the foreign beam before crossing. A third agent
+    `mutual`: a red and a green beam stacked. Each agent is immune to its own beam
+    but must wait for the other to block the foreign beam before crossing. A third agent (blue)
     on an independent path is required to keep the profile distinct from `fully_coupled`: with
-    only the reciprocal pair the two agents would form a strongly connected component spanning
-    the whole agent set. It participates in no helper relationship, hence appears as an isolated
-    vertex in the dependency graph. Edges: ${(0, 1), (1, 0)}$.
+    only the reciprocal pair the red and green agents would form a strongly connected component
+    spanning the whole agent set. The blue agent participates in no helper relationship, hence
+    appears as an isolated vertex in the dependency graph. Edges: ${"red" arrow "green", "green" arrow "red"}$.
   ],
 ) <fig-profile-mutual>
 
 *Fully coupled.* The dependency graph is strongly connected: its single strongly connected
-component spans the entire agent set (size $n_a > 1$). *Example.* Three agents in which every
+component (SCC) spans the entire agent set (size $n_a > 1$). *Example.* Three agents in which every
 pair helps each other, so the dependency graph is the complete digraph $K_(n_a)^("*")$ (the
 digraph with all $n_a (n_a - 1)$ edges between distinct agents), which is trivially strongly
 connected (@fig-profile-fully-coupled). This is the highest-priority profile and is rare on
@@ -387,8 +423,7 @@ small grids.
   caption: [
     `fully_coupled`: three agents and three beams stacked, so every agent must shield, and be
     shielded by, both others to reach the bottom row of exits. The complete dependency graph
-    has all six edges between distinct agents. Edges:
-    ${(0,1),(0,2),(1,0),(1,2),(2,0),(2,1)}$.
+    has all six edges between distinct agents (every directed pair among red, green, and blue).
   ],
 ) <fig-profile-fully-coupled>
 
@@ -399,64 +434,54 @@ different policy without re-running any SAT calls.
 
 === Ordering structure of the profile labels <sec-ordering-structure>
 
-The catalogue assigns each level a single label, but the underlying cooperation patterns are
-not mutually exclusive: one dependency graph $G_L$ can exhibit several at once. Read as
-*substructure* predicates on $G_L = (V, E)$, with $V = C$ the agent set and $n_a = |V| > 1$, the
-four cooperation-required profiles are:
+The analyser flags each level with a single label, yet a level can exhibit several cooperation
+patterns at the same time: they are not mutually exclusive, and one dependency graph
+$G_L = (V, E)$, with $V = C$ the agent set and $n_a = |V| > 1$, can satisfy several at once. Since
+only one label is reported, the analyser must decide which pattern takes precedence; flagging the
+single *most important* match is the entire reason for the priority order formalised here. It is
+cleaner to read the patterns first as *substructure predicates* on $G_L$, and only afterwards
+collapse them to a label. The four predicates are:
 
-- $cal(C)$ (chain): $G_L$ contains a directed path of length at least two.
+- $cal(C)$ (chain): $G_L$ contains a directed path of length at least two, i.e. some agent both
+  helps and is helped.
 - $cal(D)$ (distributed): some vertex has in-degree at least two.
 - $cal(M)$ (mutual): some pair $c eq.not c'$ has both $(c, c'), (c', c) in E$.
 - $cal(F)$ (fully coupled): $G_L$ is strongly connected, i.e. its single strongly connected
   component spans all $n_a$ agents.
 
-For $n_a >= 3$, fully coupled is the strongest pattern and lies *inside* chain,
-$
-  cal(F) subset.eq cal(C),
-$
-because every strongly connected graph on three or more vertices contains a directed path of
-length two: from any vertex follow an out-edge to a second vertex and then an out-edge to a
-third (each exists since every vertex has out-degree at least one); should that walk return to
-the start, strong connectivity supplies a further distinct vertex. Fully coupled also satisfies
-$
-  cal(F) inter cal(M) subset.eq cal(D),
-$
-since a strongly connected graph containing a reciprocal pair must have a vertex of in-degree at
-least two: were every in-degree equal to one, the graph would be a single cycle through all
-agents, which on $n_a >= 3$ agents has no reciprocal pair. Fully coupled is *not* contained in
-mutual or distributed on its own, however: the 3-cycle ${(0, 1), (1, 2), (2, 0)}$ is fully
-coupled yet has no reciprocal pair and every in-degree equal to one. The chain, distributed,
-and mutual categories otherwise overlap freely.
+Each predicate coincides with the label of the same name once the higher-priority predicates are
+removed (the exact correspondence is the priority below); we write $cal(A)$ for the residual
+`asymmetric` case, in which none of the four patterns holds.
 
-@fig-profile-venn shows the layout. Chain, distributed, and mutual are three overlapping
-circles; fully coupled is a region *inside* chain, covering
-$cal(C) inter cal(D) inter cal(M)$, $cal(C) inter cal(D)$, and the chain-only part, while
-avoiding the chain-and-mutual-without-distributed lens (empty by
-$cal(F) inter cal(M) subset.eq cal(D)$). The two-agent case is degenerate and drawn separately:
-the only fully-coupled graph on two agents is the reciprocal pair, which contains no directed
-path of length two and so lies outside chain.
+@fig-profile-venn shows these predicates and their overlaps as an Euler diagram: it is the
+catalogue of cooperation structures that any dependency graph $G_L$, and hence any LLE level, can
+exhibit. It is drawn over the predicates, not the labels; which single label a graph finally
+receives is settled by the priority below. For $n_a >= 3$ the only containments are
+$cal(F) subset cal(C)$ and $cal(F) inter cal(M) subset cal(D)$ (a strongly connected graph
+always contains a directed path of length two, and with a reciprocal pair also a vertex of
+in-degree two); fully coupled is otherwise incomparable to mutual and distributed, witnessed by
+the 3-cycle $"red" arrow "green" arrow "blue" arrow "red"$, while chain, distributed, and mutual overlap freely.
 
 #figure(
   image("../../../results/cooperation_examples/profile_venn.png", width: 90%),
   caption: [
-    Cooperation patterns on the dependency graph $G_L$ (for $n_a >= 3$), as an Euler diagram of
-    substructure containment. Chain (C), distributed (D), and mutual (M) are three overlapping
-    circles. Fully coupled (F) lies inside chain and covers $C inter D inter M$, $C inter D$,
-    and the chain-only region, but not the chain-and-mutual-without-distributed lens, which is
-    empty because $F inter M subset.eq D$. The two-agent fully-coupled case (the reciprocal
-    pair, which contains no chain) is drawn as a separate circle. The residual area outside
-    every circle is `asymmetric`.
+    Cooperation *predicates* on the dependency graph $G_L$, as an Euler diagram
+    of substructure containment. Chain ($cal(C)$), distributed ($cal(D)$), and mutual ($cal(M)$)
+    are three overlapping circles. For $n_a >= 3$, fully coupled ($cal(F)$) lies inside $cal(C)$
+    and meets $cal(C) inter cal(D) inter cal(M)$, $cal(C) inter cal(D)$, and the $cal(C)$-only
+    region, but not the $cal(C) inter cal(M)$-without-$cal(D)$ lens, which is empty because
+    $cal(F) inter cal(M) subset cal(D)$. The two-agent fully-coupled case (the reciprocal pair,
+    which contains no chain) is drawn as a separate circle. The single label each graph receives
+    follows the priority of @tab-profile-priority, assigning each region to its predicate minus
+    the inner ones; `asymmetric` is the residual area outside every circle.
   ],
 ) <fig-profile-venn>
 
-The classifier collapses these coexisting patterns to a single label by the priority
-$cal(F) succ cal(M) succ cal(D) succ cal(C) succ "asymmetric"$ (@tab-profile-priority),
-returning the most cooperative pattern a graph exhibits: fully coupled (every agent reachable
-from every other) outranks mutual (direct reciprocity), then distributed (several helpers per
-beneficiary), then chain (a linear handoff), then asymmetric (a single one-way relation). The
-two lowest labels are residual: a graph is labelled `chain` only when it is exactly a directed
-path with no richer pattern present, and `asymmetric` when it has at least one edge but fits
-none of the four.
+The classifier collapses these coexisting predicates into a single label by the priority
+$cal(F) succ cal(M) succ cal(D) succ cal(C) succ cal(A)$ and returns the most cooperative
+pattern a graph exhibits; @tab-profile-priority gives each label as its predicate with the
+higher-priority ones removed. The non-cooperative labels `unsolvable` and `independent` are
+decided beforehand by the binary detector and do not appear there.
 
 #figure(
   table(
@@ -466,26 +491,61 @@ none of the four.
     align: (center, left, left, left),
     table.hline(stroke: 1pt),
     table.header(
-      [*Priority*], [*Label*], [*Condition on $G_L$*], [*Cooperation*],
+      [*Priority*], [*Label*], [*Predicate form*], [*Meaning*],
     ),
     table.hline(stroke: 0.5pt),
-    [1], [`fully coupled`], [strongly connected, $n_a > 1$],
+    [1], [`fully_coupled`], [$cal(F)$],
       [every agent reaches every other],
-    [2], [`mutual`], [reciprocal pair exists],
+    [2], [`mutual`], [$cal(M) without cal(F)$],
       [direct reciprocal helping],
-    [3], [`distributed`], [some in-degree $>= 2$],
+    [3], [`distributed`], [$cal(D) without (cal(M) union cal(F))$],
       [one beneficiary, several helpers],
-    [4], [`chain`], [$G_L$ is a directed path covering every participating vertex],
-      [linear handoff],
-    [5], [`asymmetric`], [at least one edge],
-      [a single one-way helping relation],
+    [4], [`chain`], [$cal(C) without (cal(M) union cal(D) union cal(F))$],
+      [a relayed dependency (handoff)],
+    [5], [`asymmetric`], [$cal(A)$],
+      [one-way help, no relay],
     table.hline(stroke: 1pt),
   ),
   caption: [
-    Priority-based labelling of cooperative-required levels. The classifier walks the rows
-    from top to bottom and assigns the first matching label.
+    Priority-based labelling of cooperative-required levels. The classifier walks the rows from
+    top to bottom and assigns the first label whose predicate matches.
   ],
 ) <tab-profile-priority>
+
+The priority of @tab-profile-priority is *total*, but it refines a coarser *partial* order that
+the graph structure forces on the four patterns: one is intrinsically at least as cooperative as
+another exactly when the first entails the second. The only such entailments are
+$cal(F) arrow.r.double cal(C)$ and the conditional $cal(F) inter cal(M) arrow.r.double cal(D)$;
+all other pairs are incomparable, and `asymmetric` ($cal(A)$, no pattern present) lies below all
+four. @tab-profile-partial-order lists the result, and our total order
+$cal(F) succ cal(M) succ cal(D) succ cal(C) succ cal(A)$ is one linear extension of it.
+
+#figure(
+  table(
+    columns: 3,
+    stroke: none,
+    inset: (x: 10pt, y: 6pt),
+    align: (left, left, left),
+    table.hline(stroke: 1pt),
+    table.header(
+      [*Profile*], [*Structurally more cooperative than*], [*Incomparable (ordered by convention)*],
+    ),
+    table.hline(stroke: 0.5pt),
+    [`fully_coupled`], [`chain`, `asymmetric`], [`mutual`, `distributed`],
+    [`mutual`], [`asymmetric`], [`chain`, `distributed`, `fully_coupled`],
+    [`distributed`], [`asymmetric`], [`chain`, `mutual`, `fully_coupled`],
+    [`chain`], [`asymmetric`], [`mutual`, `distributed`],
+    [`asymmetric`], [none (least cooperative)], [none],
+    table.hline(stroke: 1pt),
+  ),
+  caption: [
+    Structural partial order on the cooperation profiles (for $n_a >= 3$). Among the four
+    structural patterns, one profile is more cooperative than another only when its pattern
+    entails the other's; `asymmetric` (no pattern) lies below all four. Remaining pairs are
+    incomparable and are separated only by the convention of @tab-profile-priority. The analyser's
+    priority is one linear extension of this partial order.
+  ],
+) <tab-profile-partial-order>
 
 
 === Selective-strict semantics <sec-selective-strict>
@@ -538,16 +598,11 @@ claimed to exhaust every possible interpretation of cooperation in multi-agent e
 it is the specific mechanism studied in this benchmark, and the formal guarantee is scoped
 accordingly.
 
-*Model-dependence of finer-grained analyses.* The binary detector above is a property of the
-*level*: the satisfiability of $Phi(L, T_("max"))$ and $Phi_("strict")(L, T_("max"))$ does not
-depend on which satisfying assignment the SAT solver happens to return. The necessary-helper set
-of @cooperation-profiles is likewise an invariant of the level, being a sequence of one-shot
-satisfiability checks. The full profile label, however, depends on the helper events extracted
-from a single standard model, which the SAT solver chooses without any preference among
-satisfying assignments. A cooperative level typically admits many valid joint plans, and
-different plans may exhibit different helping patterns: an agent that helps another in one
-solution may be passive in another. The profile label therefore reflects the structure of the
-extracted plan, not an intrinsic invariant of the level. This is acceptable for the generation
-use case considered here (the analyser still acts as a sound filter that certifies the extracted
-plan exhibits the targeted profile), but two solver runs on the same level can in principle yield
-different profile labels.
+*Model-dependence of finer-grained analyses.* It is worth restating which outputs are intrinsic
+to the level and which are not. The binary detector is: the satisfiability of
+$Phi(L, T_("max"))$ and $Phi_("strict")(L, T_("max"))$ does not depend on which satisfying
+assignment the solver returns, and the necessary-helper set is likewise an invariant, being a
+sequence of one-shot counterfactual checks. The profile label is not: it is read from a single
+model the solver picks arbitrarily, so two runs on the same level can in principle return
+different labels. As stated at the start of the section, this is acceptable because the label
+serves as a sound filter on the extracted plan rather than as a claim about the level.

@@ -97,7 +97,7 @@ The three contribution chapters then develop the original technical content of t
 logical order. @sat-reduction introduces the SAT-based solver: a propositional encoding of
 bounded-horizon LLE solvability, with correctness proofs and a complexity-theoretic positioning.
 @cooperation-detection builds on that encoding to define the cooperation detector based on a
-strict counterfactual semantics, and extends it with a profile analyzer that classifies the kind
+strict counterfactual semantics, and extends it with a profile analyser that classifies the kind
 of cooperation a level exhibits. @generators then uses both decision procedures as acceptance
 oracles inside a family of procedural generators that produce levels certified to satisfy the
 advertised properties.

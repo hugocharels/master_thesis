@@ -175,7 +175,7 @@ those totals.
     align: (left, center, right, right, right, right),
     table.header(
       [*Level*], [*Method*],
-      [*Initialization*], [*Movement*], [*Laser*], [*Total*],
+      [*Initialisation*], [*Movement*], [*Laser*], [*Total*],
     ),
     [3×3],     [local],  [23],     [537],     [225],    [785],
     [3×3],     [global], [23],     [505],     [225],    [753],
@@ -296,7 +296,7 @@ the raw counts.
   caption: [
     Raw profile-count breakdown per generator and grid size. The columns *asym.*, *mutual*,
     *chain*, *distr.*, *full* correspond to the five cooperation-profile labels classified by
-    the analyzer of @cooperation-profiles. The 5×5 configuration uses 2 agents and 1 laser;
+    the analyser of @cooperation-profiles. The 5×5 configuration uses 2 agents and 1 laser;
     the 8×8 configuration uses 3 agents and 2 lasers. Source:
     `results/profile_benchmark/benchmark_results.json`.
   ],

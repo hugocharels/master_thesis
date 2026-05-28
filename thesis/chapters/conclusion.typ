@@ -3,7 +3,7 @@
 == Summary
 
 This thesis developed a SAT-based framework for reasoning about solvability and cooperation in
-a modeled subset of the Laser Learning Environment. We first formalised bounded-horizon
+a modelled subset of the Laser Learning Environment. We first formalised bounded-horizon
 solvability as a decision problem and reduced it to satisfiability of a CNF formula. On top of
 that reduction, we introduced a strict beam-semantics counterfactual that turns the
 blocking-based cooperation mechanism of LLE into a second decision problem on the same level,
@@ -38,7 +38,7 @@ We restate the six research questions of @introduction and assess what each chap
   level carries a solver certificate of the advertised property.
 
 - *RQ4 — controlling the cooperation profile.* Answered constructively. The cooperation
-  profile analyzer of @cooperation-profiles labels every certified cooperative level, and the
+  profile analyser of @cooperation-profiles labels every certified cooperative level, and the
   generators expose a profile filter that restricts acceptance to a chosen subset of the
   taxonomy. The profile-distribution experiment of @profile-distribution shows that the
   constructive generator reliably produces *mutual* profiles when $n_l >= 2$ and admits
@@ -98,7 +98,7 @@ Several directions extend the present work naturally.
   *fully coupled* profile by raising $n_l$ and the grid size.
 - *Richer cooperation metrics.* The cooperation-profile taxonomy of @cooperation-profiles
   captures five dependency-graph patterns. Extensions could promote the synchronous-width
-  scalar already exposed by the analyzer into a first-class profile axis, and could add a
+  scalar already exposed by the analyser into a first-class profile axis, and could add a
   chain-length difficulty axis on top of the qualitative chain label. These richer targets
   would let the generator family target *graded* cooperation difficulty rather than only
   qualitative profile families.

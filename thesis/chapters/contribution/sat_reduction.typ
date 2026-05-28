@@ -349,7 +349,7 @@ solvability is polynomial-time reducible to SAT.
 ]) <prop-4-14>
 
 #proofbox([
-  For soundness, assume $Phi(L, T_("max"))$ is satisfiable. Initialization fixes exactly one start
+  For soundness, assume $Phi(L, T_("max"))$ is satisfiable. Initialisation fixes exactly one start
   position for each agent at time $0$. For the global formulation, forward consistency together
   with pairwise exclusion ensures by induction on time that each agent occupies exactly one legal
   position at every later step. For the local formulation, the same conclusion follows from forward
@@ -364,7 +364,7 @@ solvability is polynomial-time reducible to SAT.
   $a_(c,x,y,t)$ according to whether agent $c$ occupies $(x, y)$ at time $t$ in the trajectory.
   Set beam variables $b_(c,d,x,y,t)$ and laser variables $l_(c,x,y,t)$ according to the
   deterministic beam dynamics induced by the same agent positions. Every clause family is then
-  satisfied by construction: initialization matches the start state; the movement, uniqueness,
+  satisfied by construction: initialisation matches the start state; the movement, uniqueness,
   and collision clauses match the trajectory semantics; the propagation iff and beam-laser link
   clauses hold because $b$ and $l$ are set exactly to those deterministic values; the
   agent-laser blocking clauses hold because trajectory validity already forbids any agent from

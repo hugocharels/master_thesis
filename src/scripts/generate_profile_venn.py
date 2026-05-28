@@ -1,19 +1,24 @@
 """Generate the cooperation-profile category Euler diagram.
 
-Existential (substructure) reading on the dependency graph $G_L$ ($n_a >= 3$):
+Substructure-predicate reading on the dependency graph $G_L$ ($n_a >= 3$):
 
   - C (chain): contains a directed path of length >= 2.
   - D (distributed): contains a vertex of in-degree >= 2.
   - M (mutual): contains a reciprocal pair.
   - F (fully coupled): strongly connected on all agents.
 
+This diagram shows predicates, not labels; the single label each graph
+receives follows the priority cascade in the thesis (F > M > D > chain >
+asymmetric). In particular the chain *label* is the strictly stronger
+"whole graph is a covering path" condition, not the C predicate drawn here.
+
 Relations drawn:
 
   - C, D, M are three overlapping circles (classical 3-circle layout).
   - F is a shape inside C covering the regions C n D n M, C n D, and C-only,
     because F subset.eq C and F n M subset.eq D (a fully-coupled graph always
-    contains a chain, and a mutual + fully-coupled graph is also distributed,
-    so F never touches the "C and M but not D" region).
+    contains a chain, and a mutual + fully-coupled graph is
+    also distributed, so F never touches the "C and M but not D" region).
   - For n_a = 2 the only fully-coupled graph is the reciprocal pair, which
     contains no chain; it sits as a small separate circle in the residual.
 
@@ -134,7 +139,7 @@ def main() -> None:
     ax.text(
         2.4,
         7.85,
-        "chain (C)",
+        r"chain ($\mathcal{C}$)",
         fontsize=15,
         fontweight="bold",
         ha="center",
@@ -143,7 +148,7 @@ def main() -> None:
     ax.text(
         9.1,
         7.85,
-        "mutual (M)",
+        r"mutual ($\mathcal{M}$)",
         fontsize=15,
         fontweight="bold",
         ha="center",
@@ -152,7 +157,7 @@ def main() -> None:
     ax.text(
         5.9,
         0.55,
-        "distributed (D)",
+        r"distributed ($\mathcal{D}$)",
         fontsize=15,
         fontweight="bold",
         ha="center",
@@ -161,7 +166,7 @@ def main() -> None:
     ax.text(
         1.35,
         3.95,
-        "fully\ncoupled (F)",
+        "fully\n" + r"coupled ($\mathcal{F}$)",
         fontsize=12.5,
         fontweight="bold",
         ha="center",
@@ -181,7 +186,7 @@ def main() -> None:
     ax.text(
         0.35,
         0.4,
-        "asymmetric",
+        r"asymmetric ($\mathcal{A}$)",
         fontsize=13,
         fontweight="bold",
         ha="left",

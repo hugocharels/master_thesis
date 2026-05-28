@@ -60,14 +60,6 @@ def render(name: str, nodes: list[int], edges: list[tuple[int, int]]) -> None:
         linewidths=1.2,
         ax=ax,
     )
-    nx.draw_networkx_labels(
-        graph,
-        pos,
-        font_color="white",
-        font_weight="bold",
-        font_size=16,
-        ax=ax,
-    )
     nx.draw_networkx_edges(
         graph,
         pos,

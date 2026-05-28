@@ -18,7 +18,7 @@ reject it if it violates generator-specific structural constraints, build the co
 world instance, and run the appropriate SAT-based acceptance test. A single standard SAT call
 certifies solvability. When the user additionally requires cooperation, the generator also runs
 the strict-beam counterfactual test from @cooperation-detection; when a specific cooperation
-profile is requested, the profile analyzer of @cooperation-profiles acts as a soft filter on
+profile is requested, the profile analyser of @cooperation-profiles acts as a soft filter on
 top. The cooperation requirement and the profile filter are parameters rather than separate
 generator classes — *what* the generator constructs and *which extra properties* are checked
 are independent axes.

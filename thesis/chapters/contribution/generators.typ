@@ -1,6 +1,6 @@
 #import "../../macros.typ": fref
 
-== Design pattern
+== Design principles
 
 All generators follow a common architecture built around three principles:
 
@@ -20,7 +20,7 @@ certifies solvability. When the user additionally requires cooperation, the gene
 the strict-beam counterfactual test from @cooperation-detection; when a specific cooperation
 profile is requested, the profile analyser of @cooperation-profiles acts as a soft filter on
 top. The cooperation requirement and the profile filter are parameters rather than separate
-generator classes — *what* the generator constructs and *which extra properties* are checked
+generator classes: *what* the generator constructs and *which extra properties* are checked
 are independent axes.
 
 
@@ -28,7 +28,7 @@ are independent axes.
 
 Viewed through the solvability and cooperation definitions of @formalization, the generator
 family targets the three level categories shown in @fig-generator-categories. Every accepted
-level is solvable — categories (b) or (c); unsolvable levels in category (a) are always
+level is solvable, i.e. categories (b) or (c); unsolvable levels in category (a) are always
 rejected. When the user additionally requires cooperation, levels in (b) are rejected as well,
 so only category (c) survives.
 
@@ -51,8 +51,8 @@ so only category (c) survives.
 
 == Cooperation profile targeting <profile-targeting>
 
-Every generator in this chapter certifies *solvability* for every accepted level — that is
-the role of the SAT oracle and it is always on. On top of that always-on guarantee, the user
+Every generator in this chapter certifies *solvability* for every accepted level. That is
+the role of the SAT oracle, and it is always on. On top of that always-on guarantee, the user
 can stack two additional acceptance requirements drawn from @cooperation-profiles:
 
 - *Cooperation* (optional). The candidate must additionally satisfy the strict-UNSAT
@@ -64,8 +64,8 @@ can stack two additional acceptance requirements drawn from @cooperation-profile
   The accepted set is the corresponding sub-class of category (c) above.
 
 Solvability is therefore the floor; cooperation and profile filtering are layered on top. All
-other generator parameters — grid size, number of agents $n_a$, number of lasers $n_l$, wall
-budget, horizon $T_("max")$ — are independent knobs and can be combined freely with any
+other generator parameters (grid size, number of agents $n_a$, number of lasers $n_l$, wall
+budget, horizon $T_("max")$) are independent knobs and can be combined freely with any
 choice on the cooperation axis.
 
 
@@ -76,7 +76,7 @@ wall positions, and laser source positions are drawn pairwise-distinct from the 
 laser source is given a random direction. The resulting candidate is submitted to the SAT
 oracle under whichever acceptance setting (solvability only, plus cooperation, or plus
 cooperation with profile filter) was requested. When a lower-bound horizon $T_("min")$ is
-provided — a user-supplied difficulty knob, separate from the encoding horizon $T_("max")$ —
+provided (a user-supplied difficulty knob, separate from the encoding horizon $T_("max")$),
 the generator also requires the candidate to be unsatisfiable for $T_("min") - 1$, selecting
 levels that fall inside a difficulty window.
 
@@ -89,16 +89,47 @@ random layouts quickly become dominated by unsolvable or trivial instances.
 == Constrained random generator
 
 A structured variant that biases generation toward well-formed, solvable configurations before
-any SAT call is made. Relative to the random generator, it rejects candidates that are already
-geometrically degenerate — for example a laser that points immediately outside the grid, a
-laser with zero beam length, a laser on the bottom edge oriented downward, or an exit lying
-on an unavoidable beam segment.
+any SAT call is made. Relative to the random generator, it adds a purely geometric pre-filter
+that rejects candidates which are already degenerate before any SAT call is made.
+@tab-constrained-random-filters lists the three rejected configurations in full.
+
+#figure(
+  table(
+    columns: (auto, 1fr, 1fr),
+    stroke: none,
+    inset: (x: 9pt, y: 6pt),
+    align: (left, left, left),
+    table.hline(stroke: 1pt),
+    table.header(
+      [*Rejected configuration*], [*Geometric condition*], [*Why it is degenerate*],
+    ),
+    table.hline(stroke: 0.5pt),
+    [Laser firing off the grid],
+      [the cell immediately in front of the source is out of bounds (e.g. a source on the
+        bottom edge facing south)],
+      [the beam covers no tile, so the source behaves like an inert wall],
+    [Zero-length beam],
+      [the cell immediately in front of the source is a wall or another laser source],
+      [the beam is blocked at its first step and emits no active beam],
+    [Exit on a beam tile],
+      [an exit cell coincides with a tile covered by some laser beam],
+      [the exit is reachable only by standing on a live beam, so it is unusable unless the
+        beam is blocked],
+    table.hline(stroke: 1pt),
+  ),
+  caption: [
+    Geometric configurations rejected by the constrained random generator before any SAT call.
+    The beam-tile set in the last two rows already accounts for beams stopping at walls and at
+    other laser sources. These filters do not establish solvability; they only discard layouts
+    whose lasers are inert or whose exits are beam-stranded.
+  ],
+) <tab-constrained-random-filters>
 
 These degeneracies are not merely cosmetic. A laser whose beam has zero length, or that points
 off the grid, emits *no active beam*: its source then behaves like an inert wall tile, and the
 level presents none of the beam-crossing structure the laser was meant to introduce. Crucially,
-the base random generator still *accepts* such a level whenever it is solvable — a level reduced
-to plain navigation usually is — so its solvable output is dominated by these laser-free
+the base random generator still *accepts* such a level whenever it is solvable (a level reduced
+to plain navigation usually is), so its solvable output is dominated by these laser-free
 instances. The geometric filters do not themselves prove solvability or cooperation, but by
 discarding inert-laser and beam-stranded layouts they ensure that accepted levels actually
 contain the laser interactions the experiments depend on; and in the cooperative setting, where
@@ -119,7 +150,7 @@ a set of $n_a$ distinct *lane indices* without replacement on the orientation ax
 the horizontal orientation, columns for the vertical one), places one agent start at one end
 of each lane and the corresponding exit at the other end, and reserves every cell of every
 lane as non-buildable. Lane indices are sampled *without* a contiguity constraint, so the
-lane band can be split anywhere on the orientation axis — this is the main source of
+lane band can be split anywhere on the orientation axis, which is the main source of
 within-pool diversity.
 
 When the generator is run in cooperative mode, the laser-placement step plants a deliberate
@@ -142,7 +173,7 @@ The full unblocked beam segment of every laser, from source to grid edge, is add
 reserved cell set before walls are placed; without this step a wall could land between two
 non-adjacent lanes and silently break the cooperation requirement. The remaining free cells
 are then shuffled uniformly and the first $n_w$ of them are placed as walls, where $n_w$ is
-the requested wall budget — shuffling rather than taking a row-major prefix is what gives
+the requested wall budget; shuffling rather than taking a row-major prefix is what gives
 within-pool wall-mask diversity. The
 finished candidate is verified by the SAT oracle exactly as in the random and constrained
 random generators.
@@ -150,7 +181,7 @@ random generators.
 The distinct-colour multi-laser construction is the key qualitative change relative to a
 single-structural-laser template. With $n_l = 1$ the geometry yields a single
 helper-beneficiary pair and the cooperation profile is *asymmetric* by construction. With
-$n_l = 2$ the two lasers cross each other's lanes and the profile is *mutual* — every helper
+$n_l = 2$ the two lasers cross each other's lanes and the profile is *mutual*: every helper
 is also a beneficiary. With $n_l >= 3$ on grids large enough to accommodate the construction
 the profile mix shifts toward *distributed* as one agent benefits from multiple distinct
 helpers. Example pools in solvable and cooperative settings are shown in
@@ -174,7 +205,7 @@ beam crosses the corridor; remaining free cells receive walls up to the requeste
 This geometry consistently produces *mutual* cooperation profiles that mirror the structure
 of Level 6, and it is the generator we recommend for producing training instances intended
 to transfer to Level 6 (see the curriculum-transfer experiment in @experiments). The profile
-filter from @profile-targeting still applies — the default target is `mutual`, but other
+filter from @profile-targeting still applies: the default target is `mutual`, but other
 profile labels can be requested when the parameter combination supports them. Example pools
 at three grid sizes (up to the $12 times 13$ Level 6 footprint) are shown in
 @appendix-gallery-level6.
@@ -184,15 +215,34 @@ at three grid sizes (up to the $12 times 13$ Level 6 footprint) are shown in
 
 #figure(
   table(
-    columns: 2,
-    stroke: black,
-    inset: 8pt,
-    align: horizon,
-    table.header([*Generator*], [*Construction Bias*]),
-    [Random], [Uniform random sampling],
-    [Constrained Random], [Random + geometric rejection],
-    [Constructive], [Reserved agent lanes + planted dependency],
-    [Level-6-Style], [Clustered starts/exits + corridor lasers],
+    columns: (auto, 1fr, 1fr),
+    stroke: none,
+    inset: (x: 9pt, y: 7pt),
+    column-gutter: 14pt,
+    align: (left, left, left),
+    table.hline(stroke: 1pt),
+    table.header(
+      [*Generator*], [*Pre-SAT construction bias*], [*Profile tendency*],
+    ),
+    table.hline(stroke: 0.5pt),
+    [Random],
+      [Uniform random sampling of every layout component],
+      [Mostly `asymmetric`],
+    [Constrained random],
+      [Uniform sampling + geometric rejection (@tab-constrained-random-filters)],
+      [Mostly `asymmetric`],
+    [Constructive],
+      [Reserved agent lanes + a deliberately planted laser dependency],
+      [`asymmetric` (1 laser), `mutual` (2 lasers), `distributed` ($>= 3$ lasers)],
+    [Level-6-style],
+      [Clustered starts and exits with a corridor of lasers between them],
+      [`mutual` by design],
+    table.hline(stroke: 1pt),
   ),
-  caption: [Generator families and their construction bias before the SAT oracle is consulted.],
-)
+  caption: [
+    The four generator families. Every family certifies *solvability* through the SAT oracle for
+    each accepted level; the table summarises the pre-SAT construction bias and the cooperation
+    profile each family tends to produce. The measured per-generator profile distributions are
+    reported in @profile-distribution.
+  ],
+) <tab-generator-summary>

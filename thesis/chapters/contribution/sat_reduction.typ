@@ -324,7 +324,9 @@ actually produces fewer clauses than the local one, because the local formulatio
 constant overhead the global one avoids: a separate backward-consistency family of size
 $n_a (tau - 1) p$ (#fref(<constraint-4-6>, [Constraint 4.6])) and a per-cell pairs sum
 $sum_(u in V) binom(|"next"(u)|, 2)$ which is large relative to $binom(p, 2)$ when $p$ itself
-is small. We therefore keep both formulations and benchmark their actual clause counts and
+is small. The grid size at which the global formulation's quadratic uniqueness term overtakes this
+local overhead is the *crossover*: below it the global formulation is the more compact, above it the
+local one. We therefore keep both formulations and benchmark their actual clause counts and
 solver runtimes in @encoding-comparison.
 
 The same loops introduce $O((n_a + s) p tau)$ propositional variables (agent, beam, and laser

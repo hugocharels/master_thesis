@@ -58,6 +58,10 @@ def save_results_json(results, output_dir):
                 "mean_solve_time": float(data["mean_solve_time"]),
                 "std_solve_time": float(data["std_solve_time"]),
                 "mean_total_time": float(data["mean_total_time"]),
+                # Raw per-run timings, kept so the timing boxplots can be
+                # regenerated without re-running the solver benchmark.
+                "gen_times": [float(t) for t in data["gen_times"]],
+                "solve_times": [float(t) for t in data["solve_times"]],
                 "satisfiable": data["satisfiable"],
             }
 

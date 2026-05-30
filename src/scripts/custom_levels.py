@@ -1,6 +1,6 @@
 """Example custom benchmark levels built with WorldBuilder."""
 
-from lle.lle import World
+from lle import World
 
 from lle.tiles import Direction
 from generators.world_builder import WorldBuilder

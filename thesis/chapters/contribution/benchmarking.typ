@@ -36,18 +36,11 @@ behaviour and the behaviour of the solver on a realistic cooperative puzzle.
 
 For each level and each movement formulation, the benchmark performs one profiled run to extract the
 exact clause counts and the full constraint breakdown. It then repeats the same solver invocation
-for 100 runs, each time on a fresh copy of the world, and reports the mean and standard deviation
-of generation time and solve time. Using fresh world copies avoids benchmark contamination by
-mutable environment state.
+for 100 runs, reporting the mean and standard deviation of generation and solve time. Each run
+starts from a freshly built world in its initial state, so the 100 repetitions are independent and
+none is affected by state a previous run may have left in the mutable `lle.World` object.
 
 No timeout or parallel speedup is introduced in this protocol. The measurements should therefore be
 read as direct comparisons between the two SAT formulations on the same machine, rather than as
-hardware-independent absolute performance claims.
-
-
-=== Outputs
-
-The benchmarking pipeline produces a console summary table, a JSON file containing aggregated
-benchmark statistics, and a set of plots for clause counts, per-constraint clause breakdowns, and
-timing statistics. The results reported in the following sections draw on these outputs to interpret the
-trade-off between the two movement formulations.
+hardware-independent absolute performance claims. The clause counts and timing statistics recorded
+here are the basis for the results reported in the following sections.

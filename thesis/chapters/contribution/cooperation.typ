@@ -294,7 +294,7 @@ exits do not cross any beam at all (@fig-profile-independent).
 ) <fig-profile-independent>
 
 *Asymmetric.* The residual category: cooperation is required, but $G_L$ matches none of the four
-structural patterns below — no relay (chain), no agent helped by two others (distributed), no
+structural patterns below: no relay (chain), no agent helped by two others (distributed), no
 reciprocal pair (mutual), and not strongly connected (fully coupled). The label covers both the
 typical case (a small set of one-way edges) and the degenerate case where the extracted plan
 contains no observable helper event at all (e.g. when the helper sits at the last cell of its own

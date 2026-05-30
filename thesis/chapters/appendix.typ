@@ -102,7 +102,7 @@ seed conventions are summarised below.
     [MARL trainer],                    [`marl` framework, called from `src/experiments/learnability/run_experiment.py`],
     [Plotting backend],                [`matplotlib`],
     [Solver-comparison seeds],         [None (deterministic CNF; only timings vary across runs)],
-    [Rejection benchmark],             [Unseeded (`seed=None`); reported as means over 200 trials ($3 times 3$, $5 times 5$) or 20 trials ($8 times 8$)],
+    [Rejection benchmark],             [Seeded (`seed=20260530`, env `REJECTION_SEED`); 200 trials ($3 times 3$, $5 times 5$) or 20 trials ($8 times 8$); per-trial attempt distributions shown as boxplots],
     [Profile benchmark],               [Unseeded (`seed=None`); reported as counts over 100 ($5 times 5$) or 50 ($8 times 8$) accepted levels],
     [Learnability training-pool seed], [20260618],
     [Learnability training seeds],     [$cal(S) = {0, 1, ..., 19}$ (twenty seeds per algorithm)],
@@ -188,16 +188,18 @@ those totals.
   ),
   caption: [
     Clause counts per constraint family for the two SAT movement formulations on the four
-    benchmark levels. Source: `results/MLG-Student-Day/benchmark_results.json`.
+    benchmark levels. Source: `results/sat_encoding/benchmark_results.json`.
   ],
 ) <tab-sat-clauses>
 
 
-== SAT encoding — generation and solve times <appendix-sat-times>
+== SAT encoding — generation and solve durations <appendix-sat-times>
 
-@tab-sat-times reports the mean CNF generation time and mean SAT solve time for each
-(level, method) pair, averaged over the 100 timing runs of the benchmark protocol described
-in @benchmarking. Standard deviations follow the mean in parentheses.
+@tab-sat-times reports the median CNF generation and SAT solve durations for each
+(level, method) pair over the 100 timing runs of the benchmark protocol described in
+@benchmarking; the interquartile range follows in parentheses. We report medians rather than means
+because the per-run generation duration is heavy-tailed (occasional warm-up and garbage-collection
+pauses inflate the mean), as the boxplots of @experiments make visible.
 
 #figure(
   table(
@@ -207,21 +209,21 @@ in @benchmarking. Standard deviations follow the mean in parentheses.
     align: (left, center, right, right, right),
     table.header(
       [*Level*], [*Method*],
-      [*Gen time (ms)*], [*Solve time (ms)*], [*Total (ms)*],
+      [*Generation (ms)*], [*Solve (ms)*], [*Total (ms)*],
     ),
-    [3×3],     [local],  [$0.19 plus.minus 0.07$],   [$0.013 plus.minus 0.004$], [$0.20$],
-    [3×3],     [global], [$0.23 plus.minus 0.18$],   [$0.018 plus.minus 0.006$], [$0.25$],
-    [5×5],     [local],  [$2.0 plus.minus 2.8$],     [$0.08 plus.minus 0.02$],   [$2.1$],
-    [5×5],     [global], [$2.4 plus.minus 3.3$],     [$0.17 plus.minus 0.03$],   [$2.6$],
-    [8×8],     [local],  [$28 plus.minus 11$],       [$4.8 plus.minus 0.6$],     [$33$],
-    [8×8],     [global], [$65 plus.minus 15$],       [$76 plus.minus 7$],        [$141$],
-    [Level 6], [local],  [$116 plus.minus 8$],       [$7.1 plus.minus 0.9$],     [$123$],
-    [Level 6], [global], [$486 plus.minus 29$],      [$58 plus.minus 3$],        [$544$],
+    [3×3],     [local],  [0.16 (0.16–0.17)],   [0.010 (0.010–0.011)], [0.17],
+    [3×3],     [global], [0.13 (0.12–0.14)],   [0.012 (0.011–0.015)], [0.14],
+    [5×5],     [local],  [1.26 (1.23–1.47)],   [0.062 (0.060–0.065)], [1.32],
+    [5×5],     [global], [1.25 (1.20–1.45)],   [0.122 (0.120–0.127)], [1.38],
+    [8×8],     [local],  [16 (15–63)],         [3.69 (3.64–3.79)],    [20.0],
+    [8×8],     [global], [75 (26–78)],         [48 (48–49)],          [123],
+    [Level 6], [local],  [111 (60–114)],       [4.6 (4.3–5.0)],       [115],
+    [Level 6], [global], [466 (457–485)],      [38 (37–40)],          [505],
   ),
   caption: [
-    Mean CNF generation, SAT solve, and total times (milliseconds) per level and movement
-    formulation, averaged over 100 timing runs. Source:
-    `results/MLG-Student-Day/benchmark_results.json`.
+    Median CNF generation, SAT solve, and total durations (milliseconds) per level and movement
+    formulation over 100 timing runs, with the interquartile range in parentheses. Source:
+    `results/sat_encoding/benchmark_results.json`.
   ],
 ) <tab-sat-times>
 
@@ -243,28 +245,32 @@ mean number of attempts per accepted level.
       [*Generator*], [*Grid*],
       [*Success*], [*Fail*], [*Mean attempts*], [*Rejection (%)*],
     ),
-    [Constrained Random (solvable)],   [3×3], [200], [0],  [3.5],   [71.2],
-    [Constrained Random (solvable)],   [5×5], [200], [0],  [7.6],   [86.8],
-    [Constrained Random (solvable)],   [8×8], [19],  [1],  [6.2],   [83.9],
-    [Constrained Random (cooperative)],[3×3], [200], [0],  [79.5],  [98.7],
-    [Constrained Random (cooperative)],[5×5], [200], [0],  [68.8],  [98.5],
-    [Constrained Random (cooperative)],[8×8], [—],   [20], [—],     [—],
+    [Constrained Random (solvable)],   [3×3], [200], [0],  [3.2],   [68.8],
+    [Constrained Random (solvable)],   [5×5], [200], [0],  [7.6],   [86.9],
+    [Constrained Random (solvable)],   [8×8], [20],  [0],  [6.5],   [84.5],
+    [Constrained Random (cooperative)],[3×3], [200], [0],  [74.8],  [98.7],
+    [Constrained Random (cooperative)],[5×5], [200], [0],  [77.5],  [98.7],
+    [Constrained Random (cooperative)],[8×8], [12],  [8],  [14.8],  [93.3],
     [Constructive (solvable)],         [3×3], [200], [0],  [1.00],  [0.0],
-    [Constructive (solvable)],         [5×5], [200], [0],  [1.10],  [9.5],
-    [Constructive (solvable)],         [8×8], [20],  [0],  [1.05],  [4.8],
+    [Constructive (solvable)],         [5×5], [200], [0],  [1.11],  [10.3],
+    [Constructive (solvable)],         [8×8], [20],  [0],  [1.20],  [16.7],
     [Constructive (cooperative)],      [3×3], [200], [0],  [1.00],  [0.0],
-    [Constructive (cooperative)],      [5×5], [200], [0],  [1.06],  [6.1],
-    [Constructive (cooperative)],      [8×8], [20],  [0],  [1.05],  [4.8],
-    [Level-6-Style],                   [3×3], [200], [0],  [78.3],  [98.7],
-    [Level-6-Style],                   [5×5], [200], [0],  [5.3],   [81.1],
-    [Level-6-Style],                   [8×8], [20],  [0],  [4.2],   [76.2],
+    [Constructive (cooperative)],      [5×5], [200], [0],  [1.06],  [5.7],
+    [Constructive (cooperative)],      [8×8], [19],  [1],  [1.00],  [0.0],
+    [Level-6-Style],                   [3×3], [200], [0],  [74.8],  [98.7],
+    [Level-6-Style],                   [5×5], [200], [0],  [5.7],   [82.5],
+    [Level-6-Style],                   [8×8], [20],  [0],  [4.1],   [75.3],
   ),
   caption: [
     Detailed rejection-benchmark numbers per generator setting and grid size. "Success" is
     the number of successful trials and "Fail" the number of trials that exhausted their
     per-trial budget (500 attempts for the small grids; 100 attempts or 30 seconds for the
-    $8 times 8$ grid). The $8 times 8$ Constrained Random cooperative row is missing because
-    the LLE C extension segfaulted during the benchmark on a randomly-sampled world. Source:
+    $8 times 8$ grid). Mean attempts and rejection rate are computed over the successful
+    trials only. The $8 times 8$ Constrained Random cooperative row is the most expensive
+    setting, with 8 of 20 trials exhausting the time budget; its mean attempts is therefore an
+    optimistic estimate over the trials that completed. That configuration also intermittently
+    crashes the SAT solver's native extension, so each attempt is run in an isolated worker
+    subprocess that discards and resamples the offending candidate. Source:
     `results/rejection_benchmark/benchmark_results.json`.
   ],
 ) <tab-rejection-detail>

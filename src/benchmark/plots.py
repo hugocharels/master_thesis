@@ -79,12 +79,11 @@ def plot_clauses_per_level(results, output_dir):
     fig, ax = plt.subplots(figsize=(10, 6))
     for i, (method_key, method_label) in enumerate(METHODS.items()):
         clauses = [results[method_key][lvl]["total_clauses"] for lvl in levels]
-        offset = (i - 0.5) * width + width / 2
+        offset = (i - (len(METHODS) - 1) / 2) * width
         bars = ax.bar(
             x + offset, clauses, width,
             label=method_label,
-            alpha=DEFAULT_BAR_ALPHA,
-            edgecolor="white", linewidth=0.5,
+            edgecolor="black", linewidth=0.8,
         )
         for bar, val in zip(bars, clauses):
             ax.text(
@@ -102,9 +101,10 @@ def plot_clauses_per_level(results, output_dir):
     ax.set_ylim(bottom=10)
     ax.set_title("Total number of clauses per level")
     ax.set_xticks(x)
-    ax.set_xticklabels([_level_label(lvl) for lvl in levels], rotation=20, ha="right")
+    ax.set_xticklabels([_short_level_label(lvl) for lvl in levels])
+    ax.tick_params(axis="x", length=0)
     ax.legend()
-    ax.grid(axis="y", which="both")
+    ax.grid(axis="y", which="major")
     fig.tight_layout()
     _save(fig, output_dir, "clauses_per_level")
     plt.close(fig)
@@ -199,54 +199,74 @@ def plot_method_clauses_breakdown(results, output_dir):
     plt.close(fig)
 
 
+def _grouped_boxplot(ax, levels, x, width, results, time_key):
+    """Draw one boxplot per (level, method) group from the raw per-run timings.
+
+    Returns legend handles (one coloured patch per method).
+    """
+    colors = plt.rcParams["axes.prop_cycle"].by_key()["color"]
+    handles = []
+    for i, (method_key, method_label) in enumerate(METHODS.items()):
+        offset = (i - (len(METHODS) - 1) / 2) * width
+        data = [list(results[method_key][lvl][time_key]) for lvl in levels]
+        color = colors[i % len(colors)]
+        bp = ax.boxplot(
+            data,
+            positions=x + offset,
+            widths=width * 0.92,
+            patch_artist=True,
+            manage_ticks=False,
+            medianprops=dict(color="black", linewidth=1.2),
+            whiskerprops=dict(color="black", linewidth=1.0),
+            capprops=dict(color="black", linewidth=1.0),
+            flierprops=dict(
+                marker="o", markersize=2.5, markerfacecolor=color,
+                markeredgecolor="black", markeredgewidth=0.3, alpha=0.6,
+            ),
+        )
+        for box in bp["boxes"]:
+            box.set(facecolor=color, edgecolor="black", linewidth=0.8)
+        handles.append(
+            plt.Rectangle(
+                (0, 0), 1, 1,
+                facecolor=color, edgecolor="black", linewidth=0.8,
+                label=method_label,
+            )
+        )
+    return handles
+
+
 def plot_times_per_level(results, output_dir):
-    """Bar chart: mean generation time and solve time, grouped by method."""
+    """Grouped boxplots: per-run generation and solve time, grouped by method."""
     levels = _get_levels_from_results(results)
     x = np.arange(len(levels))
-    width = 0.35
+    width = 0.4
 
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(16, 6))
-    for i, (method_key, method_label) in enumerate(METHODS.items()):
-        means = [results[method_key][lvl]["mean_gen_time"] for lvl in levels]
-        stds = [results[method_key][lvl]["std_gen_time"] for lvl in levels]
-        offset = (i - 0.5) * width + width / 2
-        ax1.bar(
-            x + offset, means, width,
-            yerr=stds, capsize=3,
-            label=method_label,
-            alpha=DEFAULT_BAR_ALPHA,
-            edgecolor="white", linewidth=0.5,
-        )
+
+    handles = _grouped_boxplot(ax1, levels, x, width, results, "gen_times")
     ax1.set_xlabel("Level")
-    ax1.set_ylabel("Time, seconds (log scale)")
+    ax1.set_ylabel("Duration, seconds (log scale)")
     ax1.set_yscale("log")
     ax1.set_ylim(bottom=1e-4)
-    ax1.set_title("Mean generation time per level")
+    ax1.set_title("Generation duration per level")
     ax1.set_xticks(x)
-    ax1.set_xticklabels([_level_label(lvl) for lvl in levels], rotation=20, ha="right")
-    ax1.legend()
-    ax1.grid(axis="y", which="both")
+    ax1.set_xticklabels([_short_level_label(lvl) for lvl in levels])
+    ax1.tick_params(axis="x", length=0)
+    ax1.legend(handles=handles)
+    ax1.grid(axis="y", which="major")
 
-    for i, (method_key, method_label) in enumerate(METHODS.items()):
-        means = [results[method_key][lvl]["mean_solve_time"] for lvl in levels]
-        stds = [results[method_key][lvl]["std_solve_time"] for lvl in levels]
-        offset = (i - 0.5) * width + width / 2
-        ax2.bar(
-            x + offset, means, width,
-            yerr=stds, capsize=3,
-            label=method_label,
-            alpha=DEFAULT_BAR_ALPHA,
-            edgecolor="white", linewidth=0.5,
-        )
+    _grouped_boxplot(ax2, levels, x, width, results, "solve_times")
     ax2.set_xlabel("Level")
-    ax2.set_ylabel("Time, seconds (log scale)")
+    ax2.set_ylabel("Duration, seconds (log scale)")
     ax2.set_yscale("log")
     ax2.set_ylim(bottom=1e-5)
-    ax2.set_title("Mean solve time per level")
+    ax2.set_title("Solve duration per level")
     ax2.set_xticks(x)
-    ax2.set_xticklabels([_level_label(lvl) for lvl in levels], rotation=20, ha="right")
-    ax2.legend()
-    ax2.grid(axis="y", which="both")
+    ax2.set_xticklabels([_short_level_label(lvl) for lvl in levels])
+    ax2.tick_params(axis="x", length=0)
+    ax2.legend(handles=handles)
+    ax2.grid(axis="y", which="major")
 
     fig.tight_layout()
     _save(fig, output_dir, "times_per_level")

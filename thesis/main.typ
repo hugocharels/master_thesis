@@ -10,6 +10,11 @@
 #set text(lang: "en")
 #set par(justify: true)
 
+// Typst gives no default indentation to list/enum bullets; indent them so they
+// stand out from the surrounding justified body text.
+#set list(indent: 1em)
+#set enum(indent: 1em)
+
 // Figure and table captions are left-aligned (academic convention).
 #show figure.caption: set align(left)
 
@@ -169,6 +174,27 @@ cooperative levels, Laser Learning Environment, curriculum learning.
 #include "chapters/contribution/generators.typ"
 
 = Empirical evaluation <experiments>
+
+The empirical evaluation proceeds in six parts: a solver-engineering baseline, followed by five
+parts that answer research questions RQ3–RQ6 (RQ1 and RQ2 are settled by the formal results of
+@sat-reduction and @cooperation-detection). Each part is developed in its own section.
+
+- *SAT encoding* (baseline, @encoding-comparison): the local versus global agent-uniqueness
+  formulation, compared on CNF size and solve time; a solver-engineering baseline that justifies
+  the encoding used throughout, not one of the research questions.
+- *Generator efficiency* (RQ3, @generator-rejection-rates): per-generator rejection rates under
+  the rejection-sampling strategy.
+- *Output diversity* (RQ4, @profile-distribution): the cooperation-profile distribution of
+  accepted levels.
+- *Learnability* (RQ5, @learnability-experiment): whether off-the-shelf value-based MARL agents
+  learn generated cooperative levels on a small grid.
+- *Data scaling* (RQ5, @data-scaling-experiment): whether enlarging the generated training pool
+  restores generalisation.
+- *Curriculum learning* (RQ6, @curriculum-strategy-experiment, @transfer-experiment): whether
+  staged exposure helps, on a reachable target and up to the mutually-cooperative LLE Level 6.
+
+Software versions and seed conventions for every experiment in this chapter are summarised in
+@appendix-reproducibility.
 
 #include "chapters/contribution/benchmarking.typ"
 

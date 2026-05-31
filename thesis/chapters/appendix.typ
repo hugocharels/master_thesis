@@ -200,7 +200,7 @@ generator, representative samples of which are shown in
 The per-pool-size learning curves below mirror @fig-learnability-curves: each panel pair shows the
 train- and test-pool success rate against environment steps for IQL, VDN, and QMIX, with $95%$
 confidence bands over the seeds. Read together, they make the effect of @data-scaling-experiment
-visible step by step — as the training pool grows from 20 to 100 to 500 levels, the test curves
+visible step by step: as the training pool grows from 20 to 100 to 500 levels, the test curves
 (right panel of each figure) climb toward the training curves (left panel), i.e. the
 generalisation gap closes.
 
@@ -224,8 +224,8 @@ generalisation gap closes.
 #figure(
   image("../../results/datascale_5x5_2a_1L_n500/figures/learning_curves.pdf", width: 100%),
   caption: [
-    Data scaling with $|cal(D)_("train")| = 500$ levels: the train and test curves nearly coincide
-    — the agent generalises to held-out levels about as well as it fits the training pool.
+    Data scaling with $|cal(D)_("train")| = 500$ levels: the train and test curves nearly coincide,
+    and the agent generalises to held-out levels about as well as it fits the training pool.
   ],
 ) <fig-datascale-curves-500>
 
@@ -379,12 +379,12 @@ shown in @fig-frontier-pool.
 ) <fig-frontier-pool>
 
 Two diagnostic checks rule out a budget shortfall rather than a learnability wall. An *overfit
-gate* trains a single algorithm (QMIX) on one fixed mutual level for 600,000 steps — removing the
-need to generalise entirely — and still plateaus below $0.12$ training success with zero held-out
+gate* trains a single algorithm (QMIX) on one fixed mutual level for 600,000 steps (removing the
+need to generalise entirely) and still plateaus below $0.12$ training success with zero held-out
 success. A *budget-bump gate* extends the budget to $1{,}500{,}000$ steps (VDN, 100-level pool):
 success stays flat, peaking early (around $0.10$) and then decaying to zero rather than climbing.
 Finally, shrinking the grid to $5 times 5$ / 2-laser (VDN, 200,000 steps) yields $0.00$ on both
-train and test pools — two lasers drive success to zero independently of grid size.
+train and test pools: two lasers drive success to zero independently of grid size.
 
 === Two-laser curriculum
 
@@ -429,7 +429,7 @@ levels from each rung.
       [*Rung*], [*Grid*], [*Agents*], [*Lasers*], [*$T_("max")$*], [*Walls*],
       [*Generator*], [*Profile*], [*Train*], [*Eval*],
     ),
-    [S1], [6×6], [2], [0], [12], [3], [Random (solvable)],          [—],             [100], [0],
+    [S1], [6×6], [2], [0], [12], [3], [Random (solvable)],          [n/a],             [100], [0],
     [S2], [6×6], [2], [1], [14], [3], [Constructive (cooperative)], [any],           [100], [0],
     [S3], [6×6], [2], [2], [18], [3], [Constructive (cooperative)], [`fully_coupled`], [100], [50],
   ),
@@ -463,8 +463,8 @@ levels from each rung.
 A four-stage curriculum of generated levels growing in geometry and cooperation, four agents
 throughout, with the gem reward set to zero in every environment so that the reward structure is
 consistent between the gem-free generated levels and the gem-bearing Level 6. @tab-level6-stages
-gives the stage ladder and @tab-level6-results the per-condition outcomes. Every condition —
-including the full curriculum at two million steps — scores zero on Level 6 *and* on the
+gives the stage ladder and @tab-level6-results the per-condition outcomes. Every condition,
+including the full curriculum at two million steps, scores zero on Level 6 *and* on the
 in-distribution held-out generated pool; mean Level-6 return stays negative throughout. The stage
 pools are SAT-generated from master seed `RNG_SEED = 20260514`, and the runs were produced against
 `marl` commit `23c4d233`. The stage pools themselves were not retained on disk; representative
@@ -762,14 +762,14 @@ Held-out cooperative pool used as $cal(D)_("test")$ for @learnability-experiment
 
 Pure random sampling with *no* geometric validation: the generator places agents, exits, walls,
 and laser sources uniformly at random and accepts any layout the SAT oracle certifies as
-solvable, regardless of laser geometry. Every level shown here is therefore solvable — the
+solvable, regardless of laser geometry. Every level shown here is therefore solvable; the
 contrast with the Constrained Random generator of the next section is one of geometric *quality*,
 not of solvability.
 
 The characteristic artefact is visible throughout the pools below: most levels contain a laser
 source that emits *no active beam*, because the source points immediately off the grid or sits
-flush against a wall or edge. Such a source is inert — it behaves like an ordinary wall tile
-rather than a laser — so the level presents none of the beam-crossing structure the laser was
+flush against a wall or edge. Such a source is inert (it behaves like an ordinary wall tile
+rather than a laser), so the level presents none of the beam-crossing structure the laser was
 meant to introduce. Exits and agent starts may likewise fall on beam tiles (the LLE engine
 silently relocates an agent start that would be killed on spawn). These are exactly the
 degeneracies that the geometric filters of the Constrained Random generator
@@ -809,8 +809,8 @@ Pools are generated by `src/scripts/generate_appendix_galleries.py`.
 
 Random sampling plus geometric filters (no laser pointing immediately out of bounds, no
 zero-length beam, no exit on an unavoidable beam segment, etc.). Compared with the Base Random
-generator of @appendix-gallery-random — which uses the identical grid, agent, laser, and wall
-parameters but no geometric pre-filter — these filters remove the cosmetically degenerate layouts
+generator of @appendix-gallery-random (which uses the identical grid, agent, laser, and wall
+parameters but no geometric pre-filter), these filters remove the cosmetically degenerate layouts
 (inert laser sources that emit no beam, exits stranded on beam tiles) so that accepted levels
 actually exhibit the beam-crossing structure the experiments rely on. Pools are generated by
 `src/scripts/generate_appendix_galleries.py`.
@@ -964,7 +964,47 @@ inspired by the hand-crafted LLE Level 6.
 #figure(gallery_params(_g17), caption: [Parameters and seed for the Level-6-Style 12×13 gallery pool.])
 #figure(
   pool_grid("../../results/appendix_galleries/17_level6_style_12x13_4a_3L/images", 16, cols: 4),
-  caption: [16 Level-6-Style 12×13 (4 agents, 3 lasers) levels — same footprint as the hand-crafted LLE Level 6.],
+  caption: [16 Level-6-Style 12×13 (4 agents, 3 lasers) levels, the same footprint as the hand-crafted LLE Level 6.],
 )
+
+
+= Solver solutions for the default levels <appendix-solved-levels>
+
+The bounded-horizon SAT solver of @sat-reduction certifies a level as solvable by exhibiting an
+explicit joint plan. The filmstrips below replay that plan for each of the six default LLE levels.
+Each frame is the world rendered at a timestep $t$, sampled evenly across the solution horizon, and
+the final frame shows every agent standing on an exit. A static document cannot animate the plans,
+so these sampled frames are the portable substitute.
+
+#figure(
+  image("../../results/solved_levels/level_1_filmstrip.pdf", width: 100%),
+  caption: [LLE Level 1 solved within $T_("max") = 10$ steps.],
+) <fig-solved-level-1>
+
+#figure(
+  image("../../results/solved_levels/level_2_filmstrip.pdf", width: 100%),
+  caption: [LLE Level 2 solved within $T_("max") = 10$ steps.],
+) <fig-solved-level-2>
+
+#figure(
+  image("../../results/solved_levels/level_3_filmstrip.pdf", width: 100%),
+  caption: [LLE Level 3 solved within $T_("max") = 10$ steps.],
+) <fig-solved-level-3>
+
+#figure(
+  image("../../results/solved_levels/level_4_filmstrip.pdf", width: 100%),
+  caption: [LLE Level 4 solved within $T_("max") = 10$ steps.],
+) <fig-solved-level-4>
+
+#figure(
+  image("../../results/solved_levels/level_5_filmstrip.pdf", width: 100%),
+  caption: [LLE Level 5 solved within $T_("max") = 19$ steps.],
+) <fig-solved-level-5>
+
+#figure(
+  image("../../results/solved_levels/level_6_filmstrip.pdf", width: 100%),
+  caption: [LLE Level 6 solved within $T_("max") = 21$ steps; the four agents descend through the laser corridors and reach the exit block together.],
+) <fig-solved-level-6>
+
 
 

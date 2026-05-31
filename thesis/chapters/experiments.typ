@@ -129,32 +129,26 @@ part.
 
 === Generator rejection rates <generator-rejection-rates>
 
-Acceptance rates determine the practical cost of the rejection-sampling strategy used by the
-generators. A generator with a 1 % acceptance rate requires approximately one hundred solver
-calls per usable level, which directly affects generation throughput. This experiment measures,
-for each generator and grid size, how many attempts are needed to find one accepted level and how
-much wall-clock time those attempts consume.
+Acceptance rate sets the practical cost of rejection sampling: a generator accepting 1 % of
+candidates needs about a hundred solver calls per usable level. This experiment measures, per
+generator and grid size, how many attempts and how much wall-clock time one accepted level costs.
 
 ==== Protocol
 
-For each generator and grid-size combination, a fixed number of independent trials is executed:
-200 trials for the $3 times 3$ and $5 times 5$ grids, and 20 trials for the $8 times 8$ grid.
-Each trial searches for one accepted level by repeatedly drawing a fresh single-attempt
-candidate until one is accepted. A trial ends when one level is accepted or a per-trial budget
-is exhausted (500 attempts for the small grids; 100 attempts or 30 seconds for the
-$8 times 8$ grid). Failed trials are excluded from the mean attempt count and reported
+Each (generator, grid) combination runs a fixed number of independent trials: 200 for the
+$3 times 3$ and $5 times 5$ grids, 20 for $8 times 8$. A trial draws fresh single-attempt
+candidates until one is accepted, or until a budget is exhausted (500 attempts on the small grids;
+100 attempts or 30 seconds on $8 times 8$). Failed trials are excluded from the mean and reported
 separately.
 
-Each attempt samples a candidate layout, validates geometric constraints (where applicable),
-constructs the corresponding LLE world, and runs the SAT-based acceptance test of the
-generator. The mean number of attempts per accepted level is the direct measurement of the
-rejection cost: it is approximately the reciprocal of the acceptance rate.
+Each attempt samples a layout, validates geometric constraints where applicable, builds the LLE
+world, and runs the generator's SAT acceptance test. The mean attempts per accepted level measures
+the rejection cost directly, being roughly the reciprocal of the acceptance rate.
 
-Five generator settings are evaluated, drawn from the four families of @generators: the
-Constrained Random generator in solvable and cooperative settings, the Constructive generator
-in solvable and cooperative settings, and the Level-6-Style generator. Three grid
-configurations are used: $3 times 3$ with 2 agents and 1 laser, $5 times 5$ with 3 agents and
-2 lasers, and $8 times 8$ with 4 agents and 3 lasers.
+Five generator settings from the four families of @generators are evaluated: the Constrained
+Random generator (solvable and cooperative), the Constructive generator (solvable and
+cooperative), and the Level-6-Style generator. Three grids are used: $3 times 3$ (2 agents, 1
+laser), $5 times 5$ (3 agents, 2 lasers), and $8 times 8$ (4 agents, 3 lasers).
 
 ==== Results
 
@@ -188,27 +182,23 @@ configurations are used: $3 times 3$ with 2 agents and 1 laser, $5 times 5$ with
 
 The results split the five generators into three regimes.
 
-The Constrained Random generator in *solvable* mode has rejection rates of 68.8 %, 86.9 %, and
-84.5 % across the three grid sizes, with mean attempts of 3.2, 7.6, and 6.5. Rejection here is
-driven by the fact that random layouts rarely admit a valid joint trajectory within the
-requested horizon.
+The Constrained Random generator in *solvable* mode rejects 68.8 %, 86.9 %, and 84.5 % across the
+three grids (3.2, 7.6, 6.5 mean attempts): random layouts rarely admit a valid joint trajectory
+within the horizon.
 
-The two Constructive variants are the cheapest in the family. The Constructive generator in
-*solvable* mode runs at 0.0 %, 10.3 %, and 16.7 % rejection across the three grid sizes (1.00,
-1.11, and 1.20 mean attempts), and in *cooperative* mode at 0.0 %, 5.7 %, and 0.0 % (1.00, 1.06,
-and 1.00 mean attempts). Both settings stay cheap, at or near a single attempt per accepted
-level: the multi-colour structural-laser construction of @generators guarantees that every
-accepted candidate satisfies the binary cooperation criterion by construction, so the SAT
-acceptance step rejects only the small fraction of candidates whose random wall sample happens to
-produce an unsolvable or trivial layout. The residual differences between the two settings on the
-$5 times 5$ and $8 times 8$ grids fall within the sampling noise of the 20-trial large-grid
-budget.
+The two Constructive variants are the cheapest in the family. In *solvable* mode the Constructive
+generator rejects 0.0 %, 10.3 %, and 16.7 % across the three grids (1.00, 1.11, 1.20 mean
+attempts), and in *cooperative* mode 0.0 %, 5.7 %, and 0.0 % (1.00, 1.06, 1.00 mean attempts).
+Both stay near a single attempt per accepted level: the structural-laser construction of
+@generators guarantees cooperation by construction, so the SAT step rejects only candidates whose
+random wall sample is unsolvable or trivial. Residual differences between the two settings on
+$5 times 5$ and $8 times 8$ fall within the 20-trial sampling noise.
 
-The Constrained Random generator in *cooperative* mode has 98.7 % rejection at $3 times 3$ (74.8
-mean attempts), 98.7 % at $5 times 5$ (77.5 mean attempts), and 93.3 % at $8 times 8$ (14.8 mean
-attempts over the 12 of 20 trials that completed within budget). The high cost reflects the strict
-subset structure: cooperation-requiring layouts are a strict subset of solvable layouts, and a
-uniformly sampled candidate is unlikely to require beam-blocking.#footnote[
+The Constrained Random generator in *cooperative* mode rejects 98.7 % at $3 times 3$ (74.8 mean
+attempts), 98.7 % at $5 times 5$ (77.5 mean attempts), and 93.3 % at $8 times 8$ (14.8 mean
+attempts over the 12 of 20 trials that completed within budget). The high cost reflects a subset
+effect: cooperation-requiring layouts are a strict subset of solvable ones, so a uniformly sampled
+candidate rarely requires beam-blocking.#footnote[
   The $8 times 8$ configuration of the Constrained Random generator in cooperative mode is the
   most expensive setting measured: 8 of its 20 trials exhausted the 30-second per-trial budget
   without finding an accepted level and are excluded from the reported mean, so that figure is an
@@ -285,12 +275,10 @@ two Constructive families therefore split their cooperative output as follows: t
 generator favours the mutual pattern by design (92 % mutual), and the Level-6-Style generator
 favours it by geometric pressure (68 % mutual).
 
-Across the three generators, no level was classified as `fully_coupled` in this benchmark.
-That family requires a strongly connected dependency graph of size at least three, which neither
-the lane template nor the cluster template targets by construction; reliably generating
-fully-coupled instances would require either a larger laser count or the profile-targeted
-generation mode, in which the generator's acceptance filter explicitly rejects non-matching
-profiles. The raw per-(generator, grid) profile counts are tabulated in
+No level was classified as `fully_coupled`. That family needs a strongly connected dependency
+graph over at least three agents, which neither template targets; producing it reliably would
+require more lasers or the profile-targeted generation mode, whose acceptance filter rejects
+non-matching profiles. The raw per-(generator, grid) counts are tabulated in
 @appendix-profile-detail.
 
 
@@ -298,25 +286,20 @@ profiles. The raw per-(generator, grid) profile counts are tabulated in
 
 The two benchmarks above characterise complementary aspects of the generation framework.
 
-The rejection-rate experiment measures *generation efficiency*: how many candidate
-layouts a generator must propose before one is accepted. The headline finding is that the
-Constructive generator in cooperative mode runs at near-zero rejection (0–6 % across the
-three grid sizes, comparable to the solvable setting), thanks to the multi-colour
-structural-laser construction that guarantees cooperation by construction rather than by
-rejection sampling. This near-zero rejection rate makes the Constructive generator practical
-for producing large pools at scale.
+The rejection-rate experiment measures *generation efficiency*: how many candidates a generator
+proposes per accepted level. Its headline is that the Constructive generator in cooperative mode
+runs at near-zero rejection (0–6 % across grids, comparable to its solvable setting), because the
+structural-laser construction guarantees cooperation rather than relying on rejection sampling.
+This makes it practical for producing large pools at scale.
 
-The profile-distribution experiment measures *output diversity*. The headline finding is that
-the same Constructive cooperative generator produces predominantly `mutual` levels (92 % mutual
-on $8 times 8$ with two lasers). Together with the Level-6-Style generator (68 % mutual on the
-same grid), the family spans the asymmetric / mutual / distributed range of the analyser's
-classification.
+The profile-distribution experiment measures *output diversity*. The same Constructive cooperative
+generator produces predominantly `mutual` levels (92 % on $8 times 8$ with two lasers); with the
+Level-6-Style generator (68 % mutual), the family spans the asymmetric, mutual, and distributed
+range of the analyser's classification.
 
-What these experiments do not establish is whether certified levels are useful for training. The
-generator framework guarantees formal properties of accepted levels, but whether those properties
-translate into better or faster learning for MARL agents compared to uncertified baselines
-remains an open empirical question, addressed in @learnability-experiment and
-@transfer-experiment.
+What these experiments do not establish is whether certified levels help training: whether the
+guaranteed properties translate into better or faster MARL learning than uncertified baselines
+remains open, and is addressed in @learnability-experiment and @transfer-experiment.
 
 
 == Learning generated levels with MARL
@@ -331,14 +314,12 @@ A joint discussion closes the part.
 
 === Learnability of generated cooperative levels <learnability-experiment>
 
-We now ask whether off-the-shelf MARL agents can learn to solve levels produced by the
-Constructive generator in cooperative mode, and whether the choice of MARL algorithm matters as
-the cooperation requirement scales up in grid size and agent count. The cooperative generator certifies every
-accepted level under the binary criterion of @cooperation-detection: standard SAT and strict
-UNSAT, so every training and evaluation level requires at least one same-colour beam-blocking
-step. The learnability question is therefore not whether the levels are solvable in principle
-(they are, by construction), but whether the joint policy that solves them is reachable by
-common value-based methods within a modest training budget.
+We ask whether off-the-shelf MARL agents can learn the levels the Constructive generator
+certifies, and whether the algorithm matters. Every accepted level meets the binary criterion of
+@cooperation-detection (standard SAT and strict UNSAT), so it requires at least one same-colour
+beam-blocking step. The question is therefore not whether the levels are solvable (they are, by
+construction) but whether the joint policy that solves them is reachable by common value-based
+methods within a modest budget.
 
 We restrict ourselves to three baseline cooperative-MARL algorithms: independent
 $Q$-learning (IQL), in which each agent runs a separate deep $Q$-network @Mnih2015;
@@ -386,14 +367,11 @@ size 64, discount factor $gamma = 0.95$, a gradient update every 5 environment s
 clipping at 10, an $epsilon$-greedy training policy decaying linearly from 1.0 to 0.05 over the
 first 100,000 environment steps, and a fully greedy evaluation policy.
 
-Within each training run, every episode samples one level $L in cal(D)_("train")$ uniformly with
-replacement; the episode horizon equals the generator's $T_("max")$. Every 10,000 environment
-steps we run a greedy evaluation of 50 episodes on $cal(D)_("train")$ and 50 episodes on
-$cal(D)_("test")$, sampling levels uniformly from each pool. After the final training step we
-run a longer evaluation of 200 episodes per pool. We use the success-rate metric defined in
-@lle-background: the success rate $hat(s)$ reported below is the fraction of these 200
-final-evaluation episodes in which the whole team reaches its exits, computed separately on the
-train and test pools, with one estimate per (algorithm, seed) cell.
+Each episode samples one level from $cal(D)_("train")$ uniformly with replacement, with horizon
+$T_("max")$. Every 10,000 steps we evaluate greedily on 50 episodes per pool, and after the final
+step on 200 episodes per pool. The reported success rate $hat(s)$ (@lle-background) is the
+fraction of those 200 episodes in which the whole team exits, one estimate per (algorithm, seed)
+cell on each pool.
 
 The headline aggregate per algorithm $a in cal(A)$ is the mean and standard deviation over the
 20 seeds. We also report a 95 % confidence interval $plus.minus t^* sigma / sqrt(20)$ in the
@@ -552,17 +530,14 @@ property of the data regime rather than of any single learning algorithm.
 === Discussion
 
 Together the two experiments isolate the practical payoff of the generator. The learnability
-ceiling reported in @learnability-experiment is not an intrinsic limit of the value-based
-algorithms on cooperative levels; it is a consequence of training on too few distinct instances. Because the
-constructive cooperative generator emits an effectively unlimited supply of certified levels
-(solvable and cooperation-requiring, @cooperation-detection) at near-zero rejection cost, it
-directly supplies the quantity of training data needed to close the gap, something a fixed library
-of hand-crafted levels cannot. The generator's formal guarantees thus translate into a concrete
-downstream benefit: scaling generated training data converts overfitting into generalisation. This
-also delimits the role of the curriculum studied next: curricula target either the *ordering* of
-staged exposure on a target that is already reachable (@curriculum-strategy-experiment) or levels
-too *hard* to learn directly (@transfer-experiment), whereas data scaling targets levels that are
-learnable but not yet *generalised*.
+ceiling of @learnability-experiment is not an intrinsic limit of the algorithms; it is a
+consequence of training on too few distinct levels. Because the constructive cooperative generator
+emits an effectively unlimited supply of certified levels at near-zero cost, it supplies the data
+needed to close the gap, which a fixed library of hand-crafted levels cannot. Scaling generated
+training data thus converts overfitting into generalisation. This also delimits the curriculum
+studied next: curricula address either the *ordering* of staged exposure on a reachable target
+(@curriculum-strategy-experiment) or targets too *hard* to learn directly (@transfer-experiment),
+whereas data scaling addresses targets that are learnable but not yet *generalised*.
 
 
 == Curriculum learning
@@ -575,17 +550,12 @@ target they cannot learn directly (@transfer-experiment). A joint discussion clo
 
 === Curriculum ordering on a reachable $6 times 6$ cooperative target <curriculum-strategy-experiment>
 
-@data-scaling-experiment showed that the learnability ceiling on *reachable* generated levels is
-a data-quantity effect rather than an intrinsic algorithmic limit. RQ6 (@transfer-experiment) asks
-the harder question of whether a staged curriculum transfers to the hand-crafted LLE Level 6, a
-target on which direct training is expected to fail outright. As a controlled precursor we first
-isolate the curriculum *mechanism itself* on a target that direct training can already reach.
-Holding the task, the difficulty ladder, the total training budget, and the held-out evaluation
-fixed, we vary only *how* the budget is allocated across a ladder of growing geometric and
-cooperative complexity, and ask whether the *ordering* of staged exposure changes final
-performance or sample efficiency on the target. Because the target is reachable by the direct
-baseline, any difference between conditions is attributable to scheduling alone rather than to the
-target being unreachable.
+@transfer-experiment asks whether a staged curriculum reaches the hand-crafted LLE Level 6, on
+which direct training is expected to fail. As a controlled precursor, this experiment isolates the
+curriculum *mechanism* on a target direct training can already reach. Holding the task, the ladder,
+the budget, and the evaluation fixed, we vary only *how* the budget is allocated across rungs of
+growing complexity, and ask whether the *ordering* of staged exposure changes final performance.
+Because the target is reachable, any difference between conditions is due to scheduling alone.
 
 ==== Protocol
 
@@ -630,23 +600,27 @@ rungs in random order throughout training.
 #figure(
   table(
     columns: 5,
-    stroke: black,
-    inset: 8pt,
+    stroke: none,
+    inset: (x: 10pt, y: 4pt),
     align: horizon,
+    table.hline(stroke: 1pt),
     table.header(
       [*Condition*], [*$n$*], [*Train mean $plus.minus$ CI95*], [*Test mean $plus.minus$ CI95*], [*Train $-$ test gap*]
     ),
+    table.hline(stroke: 0.5pt),
     [direct], [24], [$0.41 plus.minus 0.05$], [$0.17 plus.minus 0.03$], [$0.24$],
     [forward], [24], [$0.39 plus.minus 0.06$], [$0.15 plus.minus 0.03$], [$0.24$],
     [mixed], [24], [$0.39 plus.minus 0.07$], [$0.22 plus.minus 0.04$], [$0.17$],
     [reverse], [24], [$0.10 plus.minus 0.02$], [$0.07 plus.minus 0.02$], [$0.03$],
+    table.hline(stroke: 1pt),
   ),
   caption: [
     Final greedy success rate on the $6 times 6$ / 2-agent / 1-laser target per scheduling
     condition, aggregated over three algorithms and eight seeds ($n = 24$ runs per condition).
     The 200-episode greedy evaluation is summarised as a mean and a $95%$ confidence interval
-    ($plus.minus t_(23,0.025) sigma / sqrt(24)$, $t_(23,0.025) approx 2.07$). Per-(condition,
-    algorithm) numbers are in @appendix-curriculum-strategy-detail.
+    $plus.minus t^* sigma / sqrt(24)$ ($t^* approx 2.07$, the 0.975 quantile of Student's $t$ with
+    23 degrees of freedom). Per-(condition, algorithm) numbers are in
+    @appendix-curriculum-strategy-detail.
   ],
 ) <tab-curriculum-strategy>
 
@@ -700,10 +674,9 @@ designed for: a target the agent *cannot* reach directly, addressed in @transfer
 
 === The limits of curriculum learning on mutually-cooperative targets <transfer-experiment>
 
-This section addresses RQ6 of @introduction.
-
-@curriculum-strategy-experiment isolated the curriculum *mechanism* on a target that direct
-training can already reach, and found that ordering confers no advantage. The motivating promise
+This section addresses RQ6 of @introduction. @curriculum-strategy-experiment isolated the
+curriculum *mechanism* on a target that direct training can already reach, and found that ordering
+confers no advantage. The motivating promise
 of curriculum learning is different, however: that staged exposure can make *reachable* a target
 that direct training cannot solve at all. The canonical such target in this thesis is the
 hand-crafted LLE Level 6, a $12 times 13$ map with four agents and three lasers whose solution
@@ -757,15 +730,18 @@ budget is increased tenfold.
 #figure(
   table(
     columns: 5,
-    stroke: black,
-    inset: 8pt,
+    stroke: none,
+    inset: (x: 10pt, y: 4pt),
     align: horizon,
+    table.hline(stroke: 1pt),
     table.header([*Task (grid / agents / lasers)*], [*Cooperation*], [*Budget*], [*Train*], [*Test*]),
+    table.hline(stroke: 0.5pt),
     [5×5 / 2 / 1], [asymmetric], [200k], [$0.63$], [$0.20$],
     [6×6 / 2 / 1], [asymmetric], [400k], [$0.41$], [$0.17$],
     [6×6 / 2 / 2], [*mutual*], [600k], [$0.08$], [$0.00$],
     [5×5 / 2 / 2], [*mutual*], [200k], [$0.00$], [$0.00$],
     [12×13 / 4 / 3 (Level 6)], [*mutual*], [2M], [$0.00$], [$0.00$],
+    table.hline(stroke: 1pt),
   ),
   caption: [
     Greedy success rate as the cooperation requirement increases, pooled over algorithms and

@@ -38,10 +38,12 @@
 
   table(
     columns: 2,
-    stroke: black,
+    stroke: none,
     inset: 6pt,
     align: (left, left),
+    table.hline(stroke: 1pt),
     ..rows.map(r => (r.at(0), r.at(1))).flatten(),
+    table.hline(stroke: 1pt),
   )
 }
 
@@ -55,14 +57,17 @@ exact parameters.
 #figure(
   table(
     columns: 5,
-    stroke: black,
+    stroke: none,
     inset: 8pt,
     align: horizon,
+    table.hline(stroke: 1pt),
     table.header([*Level*], [*Grid*], [*Agents*], [*Lasers*], [*Horizon $T_"max"$*]),
+    table.hline(stroke: 0.5pt),
     [Synthetic 3×3],     [3×3],   [2], [1], [4],
     [Synthetic 5×5],     [5×5],   [3], [2], [5],
     [Synthetic 8×8],     [8×8],   [4], [3], [15],
     [Benchmark Level 6], [12×13], [4], [3], [21],
+    table.hline(stroke: 1pt),
   ),
   caption: [Parameters of the four benchmark levels used in the SAT encoding comparison.],
 )
@@ -90,10 +95,12 @@ seed conventions are summarised below.
 #figure(
   table(
     columns: 2,
-    stroke: black,
+    stroke: none,
     inset: 8pt,
     align: (left, left),
+    table.hline(stroke: 1pt),
     table.header([*Component*], [*Version / Value*]),
+    table.hline(stroke: 0.5pt),
     [Python],                          [3.12 or later (3.13 used for the runs reported here)],
     [SAT solver],                      [Minisat22 via the PySAT interface @Ignatiev2018],
     [LLE engine],                      [`laser-learning-environment` (Python + Rust bindings)],
@@ -109,6 +116,7 @@ seed conventions are summarised below.
     [Curriculum-strategy seeds],       [$cal(S) = {0, 1, ..., 7}$ (eight seeds per condition and algorithm)],
     [Curriculum two-laser / Level-6 seeds], [Small per-condition sets ($1$–$6$ seeds); see @appendix-transfer-detail],
     [Appendix-gallery pool seeds],     [Distinct per pool, listed in each gallery parameter table],
+    table.hline(stroke: 1pt),
   ),
   caption: [
     Software components and seed conventions. Hardware specifications are deferred; the SAT
@@ -132,10 +140,12 @@ described in @curriculum-strategy-experiment.
 #figure(
   table(
     columns: 3,
-    stroke: black,
+    stroke: none,
     inset: 8pt,
     align: (horizon, center, left),
+    table.hline(stroke: 1pt),
     table.header([*Hyperparameter*], [*Value*], [*Source*]),
+    table.hline(stroke: 0.5pt),
     [Optimiser],                                  [Adam],                       [`marl.algos.{DQN,VDN,QMix}` default],
     [Learning rate],                              [$5 times 10^(-4)$],          [`run_experiment.py` (`lr=5e-4`)],
     [Batch size],                                 [64],                         [`run_experiment.py` (`batch_size=64`)],
@@ -150,6 +160,7 @@ described in @curriculum-strategy-experiment.
     [Mixer (IQL)],                                [none],                       [`run_experiment.py` (`mixer=None`)],
     [Independent $Q$-network heads (IQL, VDN)],   [yes],                        [`qnetworks.from_env(..., independent=True)`],
     [Independent $Q$-network heads (QMIX)],       [no (shared)],                [`qnetworks.from_env(...)` default],
+    table.hline(stroke: 1pt),
   ),
   caption: [
     Hyperparameters used in the learnability experiment (@learnability-experiment) and reused
@@ -168,10 +179,12 @@ training-pool size. @tab-data-scaling-config lists the full configuration.
 #figure(
   table(
     columns: 2,
-    stroke: black,
+    stroke: none,
     inset: 8pt,
     align: (left, left),
+    table.hline(stroke: 1pt),
     table.header([*Field*], [*Value*]),
+    table.hline(stroke: 0.5pt),
     [Grid / agents / lasers],                       [5 × 5 / 2 / 1],
     [Horizon $T_("max")$],                          [10],
     [Generator],                                    [Constructive (cooperative mode)],
@@ -183,6 +196,7 @@ training-pool size. @tab-data-scaling-config lists the full configuration.
     [Algorithms],                                   [IQL, VDN, QMIX],
     [Training seeds],                               [$cal(S) = {0, 1, ..., 19}$],
     [Runs per pool size],                           [60 (3 algorithms × 20 seeds)],
+    table.hline(stroke: 1pt),
   ),
   caption: [Configuration of the data-scaling experiment (@data-scaling-experiment).],
 ) <tab-data-scaling-config>
@@ -241,20 +255,23 @@ pooled summary of @tab-curriculum-strategy.
 #figure(
   table(
     columns: 2,
-    stroke: black,
+    stroke: none,
     inset: 8pt,
     align: (left, left),
+    table.hline(stroke: 1pt),
     table.header([*Field*], [*Value*]),
+    table.hline(stroke: 0.5pt),
     [Difficulty ladder],          [$4 times 4$/0L (random, $T_("max")=8$) $arrow.r$ $5 times 5$/1L (cooperative, $T_("max")=10$) $arrow.r$ $6 times 6$/1L target (cooperative, $T_("max")=12$)],
-    [Agents],                     [2 (fixed across rungs; smaller observations zero-padded)],
-    [Train pool per rung],        [100 certified levels],
+    [Agents],                     [2 (fixed across stages; smaller observations zero-padded)],
+    [Train pool per stage],        [100 certified levels],
     [Held-out target pool],       [50 levels],
-    [Conditions],                 [direct, forward $(50,150,200) times 10^3$, reverse (same per-rung budgets, reversed), mixed (uniform rung per episode)],
+    [Conditions],                 [direct, forward $(50,150,200) times 10^3$, reverse (same per-stage budgets, reversed), mixed (uniform stage per episode)],
     [Total budget per run],       [400,000 environment steps],
     [Algorithms],                 [IQL, VDN, QMIX],
     [Seeds],                      [$cal(S) = {0, 1, ..., 7}$ (eight per condition and algorithm)],
-    [Exploration],                [$epsilon$ reset to $1.0$ at each stage boundary, decayed to $0.05$ over $30%$ of that rung's budget],
+    [Exploration],                [$epsilon$ reset to $1.0$ at each stage boundary, decayed to $0.05$ over $30%$ of that stage's budget],
     [Evaluation],                 [greedy, on the $6 times 6$ target; 50 episodes every 10,000 steps and 200 episodes at the end],
+    table.hline(stroke: 1pt),
   ),
   caption: [Configuration of the curriculum-strategy experiment (@curriculum-strategy-experiment).],
 ) <tab-curriculum-strategy-config>
@@ -262,13 +279,15 @@ pooled summary of @tab-curriculum-strategy.
 #figure(
   table(
     columns: 5,
-    stroke: black,
+    stroke: none,
     inset: 6pt,
     align: (left, center, center, center, center),
+    table.hline(stroke: 1pt),
     table.header(
       [*Condition*], [*Algorithm*], [*$n$*],
       [*Train mean $plus.minus$ CI95*], [*Test mean $plus.minus$ CI95*],
     ),
+    table.hline(stroke: 0.5pt),
     [direct],  [IQL],  [8], [$0.30 plus.minus 0.06$], [$0.13 plus.minus 0.03$],
     [direct],  [VDN],  [8], [$0.43 plus.minus 0.08$], [$0.16 plus.minus 0.04$],
     [direct],  [QMIX], [8], [$0.50 plus.minus 0.05$], [$0.22 plus.minus 0.05$],
@@ -281,6 +300,7 @@ pooled summary of @tab-curriculum-strategy.
     [reverse], [IQL],  [8], [$0.06 plus.minus 0.03$], [$0.03 plus.minus 0.02$],
     [reverse], [VDN],  [8], [$0.12 plus.minus 0.04$], [$0.09 plus.minus 0.04$],
     [reverse], [QMIX], [8], [$0.12 plus.minus 0.04$], [$0.09 plus.minus 0.06$],
+    table.hline(stroke: 1pt),
   ),
   caption: [
     Final greedy success rate per (condition, algorithm) on the $6 times 6$ / 2-agent / 1-laser
@@ -292,29 +312,32 @@ pooled summary of @tab-curriculum-strategy.
 
 === Generated training pools
 
-Each rung is SAT-generated once from the master seed `RNG_SEED = 20260521`; the per-rung training
+Each stage is SAT-generated once from the master seed `RNG_SEED = 20260521`; the per-stage training
 pool uses the derived seed $20260521 + 100 times "stage"$ and the held-out target pool the same
 expression $+ 1$, so every draw is reproducible and the target's train and eval pools never
 coincide. Unspecified wall budgets fall back to the generator default $floor("grid area" \/ 10)$.
-@tab-cs-pools lists the per-rung parameters; @fig-cs-pool-s1, @fig-cs-pool-s2, and
-@fig-cs-pool-s3 show sixteen representative training levels from each rung.
+@tab-cs-pools lists the per-stage parameters; @fig-cs-pool-s1, @fig-cs-pool-s2, and
+@fig-cs-pool-s3 show sixteen representative training levels from each stage.
 
 #figure(
   table(
     columns: 9,
-    stroke: black,
-    inset: 6pt,
+    stroke: none,
+    inset: (x: 5pt, y: 4pt),
     align: horizon,
+    table.hline(stroke: 1pt),
     table.header(
-      [*Rung*], [*Grid*], [*Agents*], [*Lasers*], [*$T_("max")$*], [*Walls*],
+      [*Stage*], [*Grid*], [*Agents*], [*Lasers*], [*$T_("max")$*], [*Walls*],
       [*Generator*], [*Train*], [*Eval*],
     ),
-    [S1], [4×4], [2], [0], [8],  [1], [Random (solvable)],       [100], [0],
-    [S2], [5×5], [2], [1], [10], [2], [Constructive (cooperative)], [100], [0],
-    [S3], [6×6], [2], [1], [12], [3], [Constructive (cooperative)], [100], [50],
+    table.hline(stroke: 0.5pt),
+    [S1], [4×4], [2], [0], [8],  [1], [Random (solv.)],       [100], [0],
+    [S2], [5×5], [2], [1], [10], [2], [Constructive (coop.)], [100], [0],
+    [S3], [6×6], [2], [1], [12], [3], [Constructive (coop.)], [100], [50],
+    table.hline(stroke: 1pt),
   ),
   caption: [
-    Per-rung generation parameters for the curriculum-strategy pools
+    Per-stage generation parameters for the curriculum-strategy pools
     (@curriculum-strategy-experiment). Source: `src/experiments/curriculum_strategy/configs.py`;
     pools rendered by `src/scripts/render_curriculum_strategy_pools.py`.
   ],
@@ -355,13 +378,16 @@ shown in @fig-frontier-pool.
 #figure(
   table(
     columns: 4,
-    stroke: black,
+    stroke: none,
     inset: 6pt,
     align: (left, center, center, center),
+    table.hline(stroke: 1pt),
     table.header([*Algorithm*], [*$n$*], [*Train (mean)*], [*Test (mean)*]),
+    table.hline(stroke: 0.5pt),
     [IQL],  [3], [$0.09$], [$0.00$],
     [VDN],  [3], [$0.06$], [$0.00$],
     [QMIX], [3], [$0.08$], [$0.00$],
+    table.hline(stroke: 1pt),
   ),
   caption: [
     Frontier probe: final greedy success on the $6 times 6$ / 2-agent / 2-laser mutual target,
@@ -397,14 +423,17 @@ with VDN (three seeds each). @tab-2laser-curriculum reports the final held-out s
 #figure(
   table(
     columns: 4,
-    stroke: black,
+    stroke: none,
     inset: 6pt,
     align: (left, left, center, center),
+    table.hline(stroke: 1pt),
     table.header([*Condition*], [*Algorithms (seeds)*], [*Held-out test (mean)*], [*Train (mean)*]),
+    table.hline(stroke: 0.5pt),
     [direct],  [VDN (6), QMIX (3)], [$0.00$], [$0.08$],
     [forward], [VDN (3)],           [$0.00$], [$0.05$],
     [mixed],   [VDN (3)],           [$0.01$], [$0.01$],
     [reverse], [VDN (3)],           [$0.00$], [$0.00$],
+    table.hline(stroke: 1pt),
   ),
   caption: [
     Two-laser curriculum: final greedy success on the $6 times 6$ / 2-agent / 2-laser mutual
@@ -412,29 +441,32 @@ with VDN (three seeds each). @tab-2laser-curriculum reports the final held-out s
   ],
 ) <tab-2laser-curriculum>
 
-The fixed-grid ladder is SAT-generated once from `RNG_SEED = 20260523` (per-rung seed
+The fixed-grid ladder is SAT-generated once from `RNG_SEED = 20260523` (per-stage seed
 $20260523 + 100 times "stage"$, $+ 1$ for the held-out target pool). Only the two-laser target
-rung (S3) is constrained to the `fully_coupled` cooperation profile; the lower rungs accept any
-solvable (S1) or cooperative (S2) level. @tab-cs2l-pools lists the per-rung parameters and
+stage (S3) is constrained to the `fully_coupled` cooperation profile; the lower stages accept any
+solvable (S1) or cooperative (S2) level. @tab-cs2l-pools lists the per-stage parameters and
 @fig-cs2l-pool-s1, @fig-cs2l-pool-s2, and @fig-cs2l-pool-s3 show sixteen representative training
-levels from each rung.
+levels from each stage.
 
 #figure(
   table(
     columns: 10,
-    stroke: black,
-    inset: 6pt,
+    stroke: none,
+    inset: (x: 5pt, y: 4pt),
     align: horizon,
+    table.hline(stroke: 1pt),
     table.header(
-      [*Rung*], [*Grid*], [*Agents*], [*Lasers*], [*$T_("max")$*], [*Walls*],
+      [*Stage*], [*Grid*], [*Agents*], [*Lasers*], [*$T_("max")$*], [*Walls*],
       [*Generator*], [*Profile*], [*Train*], [*Eval*],
     ),
-    [S1], [6×6], [2], [0], [12], [3], [Random (solvable)],          [n/a],             [100], [0],
-    [S2], [6×6], [2], [1], [14], [3], [Constructive (cooperative)], [any],           [100], [0],
-    [S3], [6×6], [2], [2], [18], [3], [Constructive (cooperative)], [`fully_coupled`], [100], [50],
+    table.hline(stroke: 0.5pt),
+    [S1], [6×6], [2], [0], [12], [3], [Random (solv.)],       [n/a],             [100], [0],
+    [S2], [6×6], [2], [1], [14], [3], [Constructive (coop.)], [any],           [100], [0],
+    [S3], [6×6], [2], [2], [18], [3], [Constructive (coop.)], [`fully_coupled`], [100], [50],
+    table.hline(stroke: 1pt),
   ),
   caption: [
-    Per-rung generation parameters for the two-laser curriculum pools (@transfer-experiment).
+    Per-stage generation parameters for the two-laser curriculum pools (@transfer-experiment).
     Source: `src/experiments/curriculum_strategy_2L/configs.py`; pools rendered by
     `src/scripts/render_curriculum_strategy_2L_pools.py`.
   ],
@@ -475,14 +507,17 @@ levels for the four stage generators at comparable grid sizes appear in
 #figure(
   table(
     columns: 4,
-    stroke: black,
+    stroke: none,
     inset: 6pt,
     align: (center, center, center, left),
+    table.hline(stroke: 1pt),
     table.header([*Stage*], [*Grid*], [*Lasers*], [*Generator*]),
+    table.hline(stroke: 0.5pt),
     [1], [$6 times 6$],   [1], [Random (solvable)],
     [2], [$8 times 8$],   [2], [Constructive (cooperative)],
     [3], [$10 times 10$], [3], [Constructive (cooperative)],
     [4], [$12 times 13$], [3], [Level-6-Style],
+    table.hline(stroke: 1pt),
   ),
   caption: [
     Level-6 transfer curriculum stages (condition CURR). Four agents throughout. Source:
@@ -493,17 +528,20 @@ levels for the four stage generators at comparable grid sizes appear in
 #figure(
   table(
     columns: 5,
-    stroke: black,
+    stroke: none,
     inset: 6pt,
     align: (left, left, center, center, center),
+    table.hline(stroke: 1pt),
     table.header(
       [*Condition*], [*Description*], [*Steps*],
       [*SR Level 6*], [*SR generated pool*],
     ),
+    table.hline(stroke: 0.5pt),
     [B1],   [Hardest stage only],          [750k],      [$0.00$], [$0.00$],
     [B2],   [Anti-curriculum (hard→easy)], [750k–2M],   [$0.00$], [$0.00$],
     [B3],   [Direct on Level 6],           [750k],      [$0.00$], [$0.00$],
     [CURR], [Four-stage curriculum],       [up to 2M],  [$0.00$], [$0.00$],
+    table.hline(stroke: 1pt),
   ),
   caption: [
     Level-6 transfer: greedy success rate (200 episodes) on the hand-crafted Level 6 and on the
@@ -525,13 +563,15 @@ those totals.
 #figure(
   table(
     columns: 6,
-    stroke: black,
+    stroke: none,
     inset: 6pt,
     align: (left, center, right, right, right, right),
+    table.hline(stroke: 1pt),
     table.header(
       [*Level*], [*Method*],
       [*Initialisation*], [*Movement*], [*Laser*], [*Total*],
     ),
+    table.hline(stroke: 0.5pt),
     [3×3],     [local],  [23],     [537],     [225],    [785],
     [3×3],     [global], [23],     [505],     [225],    [753],
     [5×5],     [local],  [87],     [4 233],   [1 884],  [6 204],
@@ -540,6 +580,7 @@ those totals.
     [8×8],     [global], [304],    [143 296], [23 136], [166 736],
     [Level 6], [local],  [690],    [174 592], [77 682], [252 964],
     [Level 6], [global], [690],    [1 089 268], [77 682], [1 167 640],
+    table.hline(stroke: 1pt),
   ),
   caption: [
     Clause counts per constraint family for the two SAT movement formulations on the four
@@ -559,13 +600,15 @@ pauses inflate the mean), as the boxplots of @experiments make visible.
 #figure(
   table(
     columns: 5,
-    stroke: black,
+    stroke: none,
     inset: 6pt,
     align: (left, center, right, right, right),
+    table.hline(stroke: 1pt),
     table.header(
       [*Level*], [*Method*],
       [*Generation (ms)*], [*Solve (ms)*], [*Total (ms)*],
     ),
+    table.hline(stroke: 0.5pt),
     [3×3],     [local],  [0.16 (0.16–0.17)],   [0.010 (0.010–0.011)], [0.17],
     [3×3],     [global], [0.13 (0.12–0.14)],   [0.012 (0.011–0.015)], [0.14],
     [5×5],     [local],  [1.26 (1.23–1.47)],   [0.062 (0.060–0.065)], [1.32],
@@ -574,6 +617,7 @@ pauses inflate the mean), as the boxplots of @experiments make visible.
     [8×8],     [global], [75 (26–78)],         [48 (48–49)],          [123],
     [Level 6], [local],  [111 (60–114)],       [4.6 (4.3–5.0)],       [115],
     [Level 6], [global], [466 (457–485)],      [38 (37–40)],          [505],
+    table.hline(stroke: 1pt),
   ),
   caption: [
     Median CNF generation, SAT solve, and total durations (milliseconds) per level and movement
@@ -593,13 +637,15 @@ mean number of attempts per accepted level.
 #figure(
   table(
     columns: 6,
-    stroke: black,
+    stroke: none,
     inset: 6pt,
     align: (left, center, right, right, right, right),
+    table.hline(stroke: 1pt),
     table.header(
       [*Generator*], [*Grid*],
       [*Success*], [*Fail*], [*Mean attempts*], [*Rejection (%)*],
     ),
+    table.hline(stroke: 0.5pt),
     [Constrained Random (solvable)],   [3×3], [200], [0],  [3.2],   [68.8],
     [Constrained Random (solvable)],   [5×5], [200], [0],  [7.6],   [86.9],
     [Constrained Random (solvable)],   [8×8], [20],  [0],  [6.5],   [84.5],
@@ -615,6 +661,7 @@ mean number of attempts per accepted level.
     [Level-6-Style],                   [3×3], [200], [0],  [74.8],  [98.7],
     [Level-6-Style],                   [5×5], [200], [0],  [5.7],   [82.5],
     [Level-6-Style],                   [8×8], [20],  [0],  [4.1],   [75.3],
+    table.hline(stroke: 1pt),
   ),
   caption: [
     Detailed rejection-benchmark numbers per generator setting and grid size. "Success" is
@@ -640,19 +687,22 @@ the raw counts.
 #figure(
   table(
     columns: 8,
-    stroke: black,
+    stroke: none,
     inset: 6pt,
     align: (left, center, right, right, right, right, right, right),
+    table.hline(stroke: 1pt),
     table.header(
       [*Generator*], [*Grid*],
       [*$n$*], [*asym.*], [*mutual*], [*chain*], [*distr.*], [*full*],
     ),
+    table.hline(stroke: 0.5pt),
     [Constrained Random (cooperative)], [5×5], [100], [100], [0],  [0], [0], [0],
     [Constrained Random (cooperative)], [8×8], [50],  [46],  [0],  [1], [3], [0],
     [Constructive (cooperative)],       [5×5], [100], [100], [0],  [0], [0], [0],
     [Constructive (cooperative)],       [8×8], [50],  [2],   [46], [0], [2], [0],
     [Level-6-Style],                    [5×5], [100], [100], [0],  [0], [0], [0],
     [Level-6-Style],                    [8×8], [50],  [13],  [34], [0], [3], [0],
+    table.hline(stroke: 1pt),
   ),
   caption: [
     Raw profile-count breakdown per generator and grid size. The columns *asym.*, *mutual*,
@@ -676,16 +726,19 @@ in the learnability experiment of @learnability-experiment. Each row is one trai
 #figure(
   table(
     columns: 4,
-    stroke: black,
+    stroke: none,
     inset: 4pt,
     align: (left, center, center, center),
+    table.hline(stroke: 1pt),
     table.header([*Algorithm*], [*Seed*], [*Train*], [*Test*]),
+    table.hline(stroke: 0.5pt),
     ..(_runs.map(r => (
       r.algorithm,
       str(r.seed),
       str(calc.round(r.train_success, digits: 2)),
       str(calc.round(r.test_success, digits: 2)),
     )).flatten()),
+    table.hline(stroke: 1pt),
   ),
   caption: [
     Per-(algorithm, seed) final greedy success rates from the learnability experiment of
@@ -705,10 +758,12 @@ Cooperative pool used as $cal(D)_("train")$ for @learnability-experiment.
 #figure(
   table(
     columns: 2,
-    stroke: black,
+    stroke: none,
     inset: 8pt,
     align: (left, left),
+    table.hline(stroke: 1pt),
     table.header([*Field*], [*Value*]),
+    table.hline(stroke: 0.5pt),
     [Pool path],          [`results/learnability_5x5/levels/5x5_2a_1L_cooperative/train`],
     [Grid],               [5 × 5],
     [Agents],             [2],
@@ -717,6 +772,7 @@ Cooperative pool used as $cal(D)_("train")$ for @learnability-experiment.
     [Generator],          [Constructive (cooperative mode)],
     [Pool seed],          [20260618],
     [Number of levels],   [20],
+    table.hline(stroke: 1pt),
   ),
   caption: [Parameters of the learnability training pool.],
 )
@@ -734,10 +790,12 @@ Held-out cooperative pool used as $cal(D)_("test")$ for @learnability-experiment
 #figure(
   table(
     columns: 2,
-    stroke: black,
+    stroke: none,
     inset: 8pt,
     align: (left, left),
+    table.hline(stroke: 1pt),
     table.header([*Field*], [*Value*]),
+    table.hline(stroke: 0.5pt),
     [Pool path],          [`results/learnability_5x5/levels/5x5_2a_1L_cooperative/test`],
     [Grid],               [5 × 5],
     [Agents],             [2],
@@ -746,6 +804,7 @@ Held-out cooperative pool used as $cal(D)_("test")$ for @learnability-experiment
     [Generator],          [Constructive (cooperative mode)],
     [Pool seed],          [20260619],
     [Number of levels],   [20],
+    table.hline(stroke: 1pt),
   ),
   caption: [Parameters of the learnability test pool.],
 )

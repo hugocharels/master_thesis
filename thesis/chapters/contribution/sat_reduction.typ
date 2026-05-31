@@ -1,4 +1,4 @@
-#import "../../macros.typ": formalbox, proofbox, fref
+#import "../../macros.typ": formalbox, fref, proofbox
 
 == Notation <notation>
 
@@ -10,22 +10,20 @@ The SAT reduction introduces a finite horizon $T_("max") in NN^+$, which is the 
 joint moves allowed in the bounded decision problem, together with the discrete time-step set
 $T = {0, 1, ..., T_("max")}$.
 
-The sets $P_("src")$ and $C_("src")$ are as defined in @formalization. We recall that each colour
-appears in at most one laser source; under this assumption, when a source of colour $c$ exists, its
-position and direction are uniquely determined by $c$. We write $s(c)$ for the initial position of
-agent $c in C$, as defined in #fref(<def-3-1>, [Definition 3.1]).
+The sets $P_("src")$ and $C_("src")$ are as defined in @formalization. We write $s(c)$ for the
+initial position of agent $c in C$, as defined in #fref(<def-3-1>, [Definition 3.1]).
 
 For the clause-count and complexity statements throughout this chapter, we use the following
 shorthand:
 
 #formalbox([Shorthand notation], [
   $
-    n_a &= |C| && quad "number of agents (and exits, since" |cal(E)| = |C| ")" \
-    p &= |P| = H W && quad "number of grid positions" \
-    s &= |cal(S)| && quad "number of laser sources" \
-    e &= |cal(E)| && quad "number of exits" \
-    tau &= T_("max") + 1 && quad "number of time steps in" T = {0, ..., T_("max")} \
-    V &= P without (cal(W) union P_("src")) && quad "walkable cells (no walls, no laser sources)"
+    n_a & = |C|                                && quad "number of agents (and exits, since" |cal(E)| = |C| ")" \
+      p & = |P| = H W                          && quad "number of grid positions" \
+      s & = |cal(S)|                           && quad "number of laser sources" \
+      e & = |cal(E)|                           && quad "number of exits" \
+    tau & = T_("max") + 1                      && quad "number of time steps in" T = {0, ..., T_("max")} \
+      V & = P without (cal(W) union P_("src")) && quad "walkable cells (no walls, no laser sources)"
   $
 ])
 
@@ -35,8 +33,8 @@ shorthand:
 We introduce three families of propositional variables.
 
 - $a_(c,x,y,t)$: true iff agent $c in C$ occupies position $(x, y) in P$ at time step $t in T$.
-- $b_(c,d,x,y,t)$: true iff the beam emitted by the source $(c, d, p_s) in cal(S)$ is active at
-  position $(x, y) in P$ at time $t in T$.
+- $b_(c,d,x,y,t)$: true iff some source of colour $c$ emitting in direction $d$ has an active beam
+  at position $(x, y) in P$ at time $t in T$.
 - $l_(c,x,y,t)$: true iff a laser of colour $c in C_("src")$ is active at position $(x, y) in P$
   at time $t in T$.
 
@@ -258,21 +256,26 @@ $
 ]) <constraint-4-11>
 
 #formalbox(kind: "constraint", [Constraint 4.12 (Link between beam and laser variables)], [
-  Since each colour has at most one source in the instances considered here, the laser variable
-  $l_(c,x,y,t)$ is true at a position iff the beam of the unique source of colour $c$ is active
+  Let $D_c = {d in D | exists p_s, (c, d, p_s) in cal(S)}$ be the directions of the sources of
+  colour $c$. The laser of colour $c$ is active at a position iff *some* colour-$c$ beam is active
   there:
   $
-    and.big_((c,d,p_s) in cal(S)) and.big_((x,y) in P) and.big_(t in T)
-    b_(c,d,x,y,t) arrow.l.r l_(c,x,y,t)
+    and.big_(c in C_("src")) and.big_((x,y) in P) and.big_(t in T)
+    l_(c,x,y,t) arrow.l.r or.big_(d in D_c) b_(c,d,x,y,t)
   $
   $
     arrow.t.b.double
   $
   $
-    and.big_((c,d,p_s) in cal(S)) and.big_((x,y) in P) and.big_(t in T)
-    (not b_(c,d,x,y,t) or l_(c,x,y,t)) and (not l_(c,x,y,t) or b_(c,d,x,y,t))
+    and.big_(c in C_("src")) and.big_((x,y) in P) and.big_(t in T)
+    (not l_(c,x,y,t) or or.big_(d in D_c) b_(c,d,x,y,t))
+    and and.big_(d in D_c) (not b_(c,d,x,y,t) or l_(c,x,y,t))
   $
-  *Bounds.* Exactly $2 s tau p$ clauses; 2 literals per clause.
+  When a colour has a single source, $D_c$ is a singleton and the family collapses to the
+  equivalence $b_(c,d,x,y,t) arrow.l.r l_(c,x,y,t)$.
+
+  *Bounds.* At most $s tau p + |D_c| s tau p$ clauses ($2 s tau p$ for a single source per colour,
+  at most $5 s tau p$ since $|D_c| <= 4$); at most $|D_c| + 1 <= 5$ literals per clause.
 ]) <constraint-4-12>
 
 #formalbox(kind: "constraint", [Constraint 4.13 (Agents cannot step on active lasers)], [
@@ -302,9 +305,10 @@ generated as a function of the input parameters introduced in @notation.
 We count *clauses* rather than *literals*. A CNF formula is a conjunction of clauses, each
 clause being a disjunction of literals. The total literal count is at most a constant factor
 larger than the clause count in our encoding, since every clause family generated above contains
-at most $max(|"next"(u)| + 1, n_a) <= 6$ literals per clause (the worst case is forward or
-backward consistency, with one head literal and $|"next"(u)| <= 5$ disjuncts). Counting clauses
-is therefore sufficient to bound the formula size polynomially.
+at most $max(|"next"(u)| + 1, n_a, |D_c| + 1) <= 6$ literals per clause (the worst case is forward
+or backward consistency, with one head literal and $|"next"(u)| <= 5$ disjuncts; the laser link
+contributes at most $|D_c| + 1 <= 5$). Counting clauses is therefore sufficient to bound the
+formula size polynomially.
 
 Summing the per-constraint bounds reported in @sat-reduction (the *Bounds* lines of
 #fref(<constraint-4-1>, [Constraints 4.1])--#fref(<constraint-4-13>, [4.13])) gives the total

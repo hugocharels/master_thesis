@@ -58,15 +58,18 @@ class LaserConstraints(Constraint):
         laser_var = self.ctx.laser_var
         all_positions = self.ctx.all_positions
 
+        directions_by_color: dict[int, set] = {}
         for laser, _ in self.ctx.lasers:
-            c = laser.color
-            d = laser.direction
+            directions_by_color.setdefault(laser.color, set()).add(laser.direction)
+
+        for c, directions in directions_by_color.items():
             for x, y in all_positions:
                 for t in range(self.T_MAX + 1):
-                    bv = beam_var[c, d, x, y, t]
                     lv = laser_var[c, x, y, t]
-                    yield [-bv, lv]
-                    yield [bv, -lv]
+                    bvs = [beam_var[c, d, x, y, t] for d in directions]
+                    yield [-lv, *bvs]
+                    for bv in bvs:
+                        yield [-bv, lv]
 
 
 class StrictLaserConstraints(LaserConstraints):

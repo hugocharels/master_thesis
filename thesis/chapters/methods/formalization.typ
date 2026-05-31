@@ -26,18 +26,15 @@ correct for any finite $n_a$.
   index and $y$ the row index, image-coordinates convention) and $D = {N, S, E, W}$ is the set of
   laser directions. We further denote by
   $
-    P_("src") &= {p in P | exists c in C, d in D : (c, d, p) in cal(S)} \
-    C_("src") &= {c in C | exists d in D, p in P : (c, d, p) in cal(S)}
+    P_("src") & = {p in P | exists c in C, d in D : (c, d, p) in cal(S)} \
+    C_("src") & = {c in C | exists d in D, p in P : (c, d, p) in cal(S)}
   $
   the set of grid positions that hold a laser source and the set of colours that have one,
   respectively.
 
-  We assume the following structural invariants on every level:
-
-  + the sets $s(C)$, $cal(W)$, $cal(E)$, and $P_("src")$ are pairwise disjoint;
-  + each colour has at most one laser source. This is a simplifying assumption of the present
-    thesis, used by the SAT encoding of @sat-reduction; the LLE engine itself permits multiple
-    sources per colour.
+  We assume one structural invariant on every level: the sets $s(C)$, $cal(W)$, $cal(E)$, and
+  $P_("src")$ are pairwise disjoint. A colour may have any number of laser sources, in any
+  directions.
 ]) <def-3-1>
 
 We define two beam-propagation rules. The *standard* rule mirrors the actual LLE behaviour: an
@@ -58,8 +55,9 @@ relies on the blocking mechanism.
   - Under the *strict beam semantics*, the beam of source $(c, d, p_s)$ is active on every cell of
     that ray up to, but not including, the first wall.
 
-  For $c in C_("src")$, a laser of colour $c$ is active at a position when the beam of the
-  unique source of colour $c$ is active there.
+  For $c in C_("src")$, a laser of colour $c$ is active at a position when the beam of *some*
+  source of colour $c$ is active there; when a colour has several sources this is the disjunction
+  over them.
 ]) <def-3-2>
 
 #formalbox(kind: "definition", [Definition 3.3 (Valid Joint Trajectory)], [

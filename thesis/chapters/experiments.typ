@@ -546,14 +546,15 @@ takes each in turn, asking whether ordering matters on a reachable target
 (@curriculum-strategy-experiment) and whether a curriculum lets agents reach a mutual-cooperation
 target they cannot learn directly (@transfer-experiment). A joint discussion closes the part.
 
-=== Curriculum ordering on a reachable $6 times 6$ cooperative target <curriculum-strategy-experiment>
+=== Curriculum ordering on a reachable 6×6 cooperative target <curriculum-strategy-experiment>
 
-@transfer-experiment asks whether a staged curriculum reaches the hand-crafted LLE Level 6, on
-which direct training is expected to fail. As a controlled precursor, this experiment isolates the
-curriculum *mechanism* on a target direct training can already reach. Holding the task, the ladder,
-the budget, and the evaluation fixed, we vary only *how* the budget is allocated across rungs of
-growing complexity, and ask whether the *ordering* of staged exposure changes final performance.
-Because the target is reachable, any difference between conditions is due to scheduling alone.
+Curriculum learning is meant to help on targets too hard to learn directly, the case
+@transfer-experiment tackles on LLE Level 6. First we test a simpler question on a target the
+agents can already learn unaided: does the order in which a curriculum presents its easy-to-hard
+levels matter? We fix the task, the ladder of difficulty levels, the total training budget, and
+the evaluation, and vary only how that budget is split across the ladder. Because the target is
+reachable without any curriculum, any difference between schedules measures the effect of ordering
+alone.
 
 ==== Protocol
 
@@ -606,10 +607,10 @@ rungs in random order throughout training.
       [*Condition*], [*$n$*], [*Train mean $plus.minus$ CI95*], [*Test mean $plus.minus$ CI95*], [*Train $-$ test gap*]
     ),
     table.hline(stroke: 0.5pt),
-    [direct], [24], [$0.41 plus.minus 0.05$], [$0.17 plus.minus 0.03$], [$0.24$],
-    [forward], [24], [$0.39 plus.minus 0.06$], [$0.15 plus.minus 0.03$], [$0.24$],
-    [mixed], [24], [$0.39 plus.minus 0.07$], [$0.22 plus.minus 0.04$], [$0.17$],
-    [reverse], [24], [$0.10 plus.minus 0.02$], [$0.07 plus.minus 0.02$], [$0.03$],
+    [Direct], [24], [$0.41 plus.minus 0.05$], [$0.17 plus.minus 0.03$], [$0.24$],
+    [Forward], [24], [$0.39 plus.minus 0.06$], [$0.15 plus.minus 0.03$], [$0.24$],
+    [Mixed], [24], [$0.39 plus.minus 0.07$], [$0.22 plus.minus 0.04$], [$0.17$],
+    [Reverse], [24], [$0.10 plus.minus 0.02$], [$0.07 plus.minus 0.02$], [$0.03$],
     table.hline(stroke: 1pt),
   ),
   caption: [
@@ -661,13 +662,13 @@ which reaches the target early and then trains on the easier rungs, collapses to
 its training-pool success ($0.10$) is far below the others, the signature of catastrophic
 forgetting, since the network overwrites the target competence acquired early while fine-tuning on
 the navigation rung. The one condition that helps, *mixed*, is domain randomisation rather than a
-curriculum: its benefit comes from the *diversity* of exposure, not from any easy-to-hard
+curriculum: its benefit comes from the diversity of exposure, not from any easy-to-hard
 ordering, and it is the same data-variety effect already isolated in @data-scaling-experiment.
 
-The practical conclusion is that on a target the agent can already reach, scheduling the *order*
+The practical conclusion is that on a target the agent can already reach, scheduling the order
 of staged exposure offers no advantage over training directly on the target, and a poorly chosen
 order (reverse) is actively harmful. This leaves open the case curriculum learning is actually
-designed for: a target the agent *cannot* reach directly, addressed in @transfer-experiment.
+designed for: a target the agent cannot reach directly, addressed in @transfer-experiment.
 
 
 === The limits of curriculum learning on mutually-cooperative targets <transfer-experiment>

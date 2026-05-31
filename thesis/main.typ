@@ -4,7 +4,9 @@
   number-align: center,
 )
 #set heading(
-  numbering: "1.1",
+  // Number parts/sections/subsections (depth 1-3); leave the ==== Protocol /
+  // Results subsubsections unnumbered so references stay at the 7.x.y form.
+  numbering: (..n) => if n.pos().len() <= 3 { numbering("1.1", ..n) } else { none },
 )
 
 #set text(lang: "en")

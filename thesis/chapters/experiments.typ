@@ -1,4 +1,11 @@
-== Experimental question <encoding-comparison>
+== Solver experiments
+
+This part evaluates the SAT solver that every generator relies on. The operating protocol is the
+one defined in @benchmarking; here we report only the benchmark levels, the clause counts and
+solving times of the global and local movement formulations of @sat-reduction, and what they
+imply for the default encoding.
+
+=== Experimental question <encoding-comparison>
 
 The experiment asks whether the *global* and *local* movement formulations introduced in
 @sat-reduction differ materially in CNF size and runtime on levels of increasing complexity.
@@ -11,7 +18,7 @@ subpart of it. The protocol itself is defined in @benchmarking; the present chap
 the level set, the observed results, and their interpretation.
 
 
-== Benchmark instances
+=== Benchmark instances
 
 Four levels of increasing size and complexity were used:
 
@@ -44,9 +51,9 @@ included to assess solver behaviour on a realistic cooperative instance. Per-lev
 (grid, agent and laser counts, horizon) are tabulated in @appendix-benchmark-levels.
 
 
-== Results
+=== Results
 
-=== Clause count
+==== Clause count
 
 #figure(
   image("../../results/sat_encoding/clauses_per_level.pdf", width: 90%),
@@ -57,26 +64,23 @@ included to assess solver behaviour on a realistic cooperative instance. Per-lev
   ],
 )
 
-The clause-count results closely follow the theoretical expectation of @clause-complexity. As shown
-there, the global formulation's uniqueness clauses grow quadratically in the position count $p$
-while the local formulation's grow only linearly, so the global formulation is *asymptotically* the
-larger of the two; the local formulation, however, pays a fixed overhead the global one avoids,
-namely its backward-consistency clauses and a per-cell neighbour-pair sum, which dominates on very
-small grids. The *crossover* is the grid size at which the global formulation's quadratic growth overtakes
-this local overhead: below it the global formulation is the more compact. The $3 times 3$ instance
-sits below the crossover, which is why the global formulation is slightly more compact there
-(753 clauses versus 785). From the $5 times 5$ level onward the trend reverses, as the asymptotic
-regime takes over: the local formulation generates 6,204 clauses versus 8,214 for the global one,
-then 77,516 versus 166,736 on the $8 times 8$ level, and finally 252,964 versus 1,167,640 on LLE
-Level 6.
+The clause counts follow the theoretical expectation of @clause-complexity: the global
+formulation's uniqueness clauses grow quadratically in the position count $p$, the local
+formulation's only linearly, so the global formulation is *asymptotically* larger. The local
+formulation pays a fixed overhead the global one avoids (its backward-consistency clauses and a
+per-cell neighbour-pair sum), which dominates on small grids. Below the *crossover* grid size,
+where the quadratic growth has yet to overtake this overhead, the global formulation is more
+compact: at $3 times 3$ it produces 753 clauses versus 785. From $5 times 5$ onward the trend
+reverses: the local formulation generates 6,204 clauses versus 8,214, then 77,516 versus 166,736
+at $8 times 8$, and 252,964 versus 1,167,640 on LLE Level 6.
 
-This widening gap is the main structural result of the experiment. The local formulation scales much
-better because its exclusivity clauses are tied to neighbourhood-sized successor sets, while the
-global formulation introduces pairwise exclusions across the full position set. The
-per-constraint-family decomposition behind these totals is reported in @appendix-sat-clauses.
+This widening gap is the main result: the local formulation scales better because its exclusivity
+clauses are tied to neighbourhood-sized successor sets, whereas the global one introduces pairwise
+exclusions across the full position set. The per-constraint-family decomposition is reported in
+@appendix-sat-clauses.
 
 
-=== Solving duration
+==== Solving duration
 
 #figure(
   image("../../results/sat_encoding/times_per_level.pdf", width: 90%),
@@ -88,41 +92,42 @@ per-constraint-family decomposition behind these totals is reported in @appendix
   ],
 )
 
-The timing results show the same qualitative pattern. On the smallest synthetic instances, both
-methods solve essentially instantaneously and the difference is negligible. Once the levels become
-moderately large, however, the local formulation is consistently faster both to generate and to
-solve. The contrast is especially visible on the $8 times 8$ level and on LLE Level 6, where the
-much larger global CNF induces a clear runtime penalty.
+Timing follows the same pattern. On the smallest instances both methods are essentially
+instantaneous; once levels grow, the local formulation is consistently faster to generate and to
+solve, most visibly on $8 times 8$ and LLE Level 6, where the larger global CNF carries a clear
+runtime penalty.
 
-One subtlety deserves comment. On LLE Level 6 the global formulation produces about 7 times more
-clauses than on the synthetic $8 times 8$ instance, yet it solves *faster*. This is not
-a contradiction: SAT solver runtime is driven by the search structure, not strictly by formula size.
-Hand-crafted levels such as Level 6 admit propagation-friendly satisfying assignments that modern
-CDCL solvers find quickly, while randomly structured large instances can expose pathological
-search behaviour even at smaller clause counts.
+One subtlety: on LLE Level 6 the global formulation produces about 7 times more clauses than on the
+synthetic $8 times 8$ instance, yet solves *faster*. Runtime is driven by search structure, not
+formula size: hand-crafted levels admit propagation-friendly assignments that CDCL solvers find
+quickly, while randomly structured instances can trigger pathological search at smaller clause
+counts.
 
-The practical conclusion is therefore the same as the analytical one: the local formulation is
-not merely a cleaner theoretical encoding, but the preferable default implementation choice
-for the solver developed in this thesis. The raw generation and solve durations for every level
-and movement formulation are reported in @appendix-sat-times.
+The practical conclusion matches the analytical one: the local formulation is the preferable
+default for the solver. Raw per-level durations are reported in @appendix-sat-times.
 
 
-== Interpretation and scope
+=== Discussion
 
-The current results support one claim strongly and several others only weakly.
+The experiment establishes one claim: the internal SAT formulation matters. The choice between
+local and global uniqueness affects both CNF size and runtime, and the effect is already
+substantial on realistic LLE instances, which fixes the local formulation as the solver's default.
 
-What is established is that the internal SAT formulation matters. The choice between local and
-global uniqueness has a direct effect on both CNF size and runtime, and that effect is already
-substantial on realistic LLE instances.
-
-What is *not* yet established empirically is the broader quality of the generator framework. The
-present experiment does not measure generator acceptance rates, diversity of accepted levels,
-distribution of cooperation profiles, or any downstream training effect on MARL agents. The
-following two sections address the first two of these open questions; the downstream MARL
-question is addressed in @learnability-experiment and @transfer-experiment.
+It says nothing about the broader quality of the generator framework: it does not measure
+acceptance rates, the diversity of accepted levels, or any downstream training effect. The
+Generator and Learning parts that follow address these questions in turn.
 
 
-== Generator rejection rates <generator-rejection-rates>
+== Generator experiments
+
+This part evaluates the generators of @generators. Both experiments draw candidates from the same
+generator families and accept or reject each one with the SAT test of @sat-reduction. They differ
+only in what they measure on the accepted stream: its production cost (@generator-rejection-rates)
+and its structural diversity (@profile-distribution). Each protocol below gives the generator
+settings and grid configurations specific to that experiment, and a joint discussion closes the
+part.
+
+=== Generator rejection rates <generator-rejection-rates>
 
 Acceptance rates determine the practical cost of the rejection-sampling strategy used by the
 generators. A generator with a 1 % acceptance rate requires approximately one hundred solver
@@ -130,7 +135,7 @@ calls per usable level, which directly affects generation throughput. This exper
 for each generator and grid size, how many attempts are needed to find one accepted level and how
 much wall-clock time those attempts consume.
 
-=== Protocol
+==== Protocol
 
 For each generator and grid-size combination, a fixed number of independent trials is executed:
 200 trials for the $3 times 3$ and $5 times 5$ grids, and 20 trials for the $8 times 8$ grid.
@@ -151,7 +156,7 @@ in solvable and cooperative settings, and the Level-6-Style generator. Three gri
 configurations are used: $3 times 3$ with 2 agents and 1 laser, $5 times 5$ with 3 agents and
 2 lasers, and $8 times 8$ with 4 agents and 3 lasers.
 
-=== Results
+==== Results
 
 #figure(
   image("../../results/rejection_benchmark/rejection_rate_by_generator.pdf", width: 90%),
@@ -180,8 +185,6 @@ configurations are used: $3 times 3$ with 2 agents and 1 laser, $5 times 5$ with
     times the interquartile range and outliers are plotted as points, over the successful trials.
   ],
 )
-
-=== Interpretation
 
 The results split the five generators into three regimes.
 
@@ -224,7 +227,7 @@ for the richer cooperation profile reported in @profile-distribution. Detailed p
 grid) numbers are tabulated in @appendix-rejection-detail.
 
 
-== Cooperation profile distribution <profile-distribution>
+=== Cooperation profile distribution <profile-distribution>
 
 The binary cooperation detector of @cooperation-detection certifies that every accepted
 cooperative level requires at least one same-colour beam-blocking step, but it does not
@@ -232,7 +235,7 @@ distinguish *which* structural pattern of inter-agent dependency the level exhib
 experiment measures the distribution of cooperation profiles among accepted levels, using the
 cooperation profile analyser also introduced in @cooperation-detection.
 
-=== Protocol
+==== Protocol
 
 For each of the three cooperative generators (Constrained Random, Constructive, and Level-6-Style,
 all in cooperative mode) and two grid configurations ($5 times 5$ with 2 agents and 1 laser,
@@ -240,7 +243,7 @@ $8 times 8$ with 3 agents and 2 lasers), the script accepts 100 cooperative leve
 grid and 50 on the large grid, then classifies each into one of the analyser's profile families:
 `asymmetric`, `mutual`, `chain`, `distributed`, or `fully_coupled`.
 
-=== Results
+==== Results
 
 @fig-profile-distribution reports the profile breakdown for each generator and grid
 configuration. The two regimes behave very differently, and we discuss each in turn.
@@ -256,8 +259,8 @@ configuration. The two regimes behave very differently, and we discuss each in t
 
 On the $5 times 5$ grid every accepted level from all three generators is classified as
 `asymmetric` (100 out of 100 in each case). With only 2 agents, the families `chain`,
-`distributed`, and `fully_coupled` are *structurally impossible* by construction — they require
-at least 3 agents — and the `mutual` family is in principle reachable but does not appear: with a
+`distributed`, and `fully_coupled` are *structurally impossible* by construction (they require
+at least 3 agents), and the `mutual` family, though reachable in principle, does not appear: with a
 single laser the cooperation pattern is restricted to a one-way blocking action by the laser's
 colour-matched agent.
 
@@ -266,8 +269,8 @@ generators. The Constructive generator produces 46 `mutual`, 2 `asymmetric`, and
 levels out of 50, i.e. a 92 % majority of mutual cooperation. This reflects the multi-colour
 structural-laser construction: with two distinct-colour lasers each crossing the entire lane
 band, the red agent must block the red laser for the other agents to pass, and symmetrically
-the green agent must block the green laser, so two helpers act on their own beams in turn — the canonical mutual
-pattern.
+the green agent must block the green laser, so two helpers act on their own beams in turn, the
+canonical mutual pattern.
 
 The Constrained Random generator produces 46 `asymmetric`, 3 `distributed`, and 1 `chain` level
 out of 50 on the same $8 times 8$ configuration. Random layouts that happen to require
@@ -291,7 +294,7 @@ profiles. The raw per-(generator, grid) profile counts are tabulated in
 @appendix-profile-detail.
 
 
-== Discussion
+=== Discussion
 
 The two benchmarks above characterise complementary aspects of the generation framework.
 
@@ -316,7 +319,17 @@ remains an open empirical question, addressed in @learnability-experiment and
 @transfer-experiment.
 
 
-== Learnability of generated cooperative levels <learnability-experiment>
+== Learning generated levels with MARL
+
+This part asks whether the certified levels are useful for training MARL agents. The two
+experiments share one operating protocol, stated in full in @learnability-experiment and reused
+by @data-scaling-experiment: the same $5 times 5$ / 2-agent / 1-laser cooperative task and
+constructive cooperative generator, the same three value-based algorithms (IQL, VDN, QMIX)
+trained over 20 seeds, the same hyperparameters, and the success-rate metric of @lle-background.
+Each section reports only the parameters it changes, the training-pool size and the step budget.
+A joint discussion closes the part.
+
+=== Learnability of generated cooperative levels <learnability-experiment>
 
 We now ask whether off-the-shelf MARL agents can learn to solve levels produced by the
 Constructive generator in cooperative mode, and whether the choice of MARL algorithm matters as
@@ -333,7 +346,7 @@ value-decomposition networks (VDN) @Sunehag2018; and QMIX @Rashid2018. They form
 progression in the strength of the credit-assignment assumption: from none (IQL), to additive
 team-value (VDN), to a monotonic mixing network (QMIX).
 
-=== Protocol
+==== Protocol
 
 The experiment fixes a single small-grid configuration that exercises the cooperation pressure
 end-to-end while remaining within reach of a 200,000-step budget: a $5 times 5$ grid with two
@@ -388,7 +401,7 @@ per-seed appendix tables, where $sigma$ is the across-seed standard deviation an
 $t^* approx 2.093$ is the 0.975 quantile of Student's $t$ distribution with $20 - 1 = 19$
 degrees of freedom.
 
-=== Results
+==== Results
 
 @fig-learnability-curves reports the train- and test-pool success rates as a function of
 environment steps, averaged over the 20 seeds with a 95 % confidence band. All three
@@ -460,7 +473,7 @@ fixed and varies $|cal(D)_("train")|$.
 ) <tab-learnability-final>
 
 
-== Scaling the training pool closes the generalisation gap <data-scaling-experiment>
+=== Scaling the training pool closes the generalisation gap <data-scaling-experiment>
 
 The learnability experiment of @learnability-experiment isolated *generalisation*, rather than
 credit assignment, as the dominant failure mode: all three algorithms reached a non-trivial
@@ -470,7 +483,7 @@ marginal cost (@generator-rejection-rates), the natural remedy is simply more *t
 therefore ask whether enlarging the training pool, holding the task, the budget regime, and the
 held-out test pool fixed, closes the generalisation gap.
 
-=== Protocol
+==== Protocol
 
 The task, generator, horizon, and hyperparameters are exactly those of @learnability-experiment
 (a $5 times 5$ grid, two agents, one laser, $T_("max") = 10$, constructive cooperative
@@ -486,7 +499,7 @@ For each pool size we train $|cal(A)| times |cal(S)| = 3 times 20 = 60$ independ
 report the final $200$-episode greedy success rate on each pool. Aggregates are taken over all
 sixty runs per pool size, summarised as a mean and a $95%$ confidence interval.
 
-=== Results
+==== Results
 
 #figure(
   image("../../results/data_scaling/data_scaling_curve.pdf", width: 90%),
@@ -536,9 +549,11 @@ property of the data regime rather than of any single learning algorithm.
   ],
 ) <tab-data-scaling>
 
-This experiment isolates the practical payoff of the generator. The learnability ceiling reported
-in @learnability-experiment is not an intrinsic limit of the value-based algorithms on
-cooperative levels; it is a consequence of training on too few distinct instances. Because the
+=== Discussion
+
+Together the two experiments isolate the practical payoff of the generator. The learnability
+ceiling reported in @learnability-experiment is not an intrinsic limit of the value-based
+algorithms on cooperative levels; it is a consequence of training on too few distinct instances. Because the
 constructive cooperative generator emits an effectively unlimited supply of certified levels
 (solvable and cooperation-requiring, @cooperation-detection) at near-zero rejection cost, it
 directly supplies the quantity of training data needed to close the gap, something a fixed library
@@ -550,7 +565,15 @@ too *hard* to learn directly (@transfer-experiment), whereas data scaling target
 learnable but not yet *generalised*.
 
 
-== Curriculum ordering on a reachable $6 times 6$ cooperative target <curriculum-strategy-experiment>
+== Curriculum learning
+
+Data scaling closes the gap on targets that are already learnable. This part turns to curriculum
+learning, which stages training across a ladder of growing difficulty. We ask two questions:
+whether the ordering of stages matters on a target that direct training can already reach
+(@curriculum-strategy-experiment), and whether a curriculum lets agents reach a mutual-cooperation
+target they cannot learn directly (@transfer-experiment). A joint discussion closes the part.
+
+=== Curriculum ordering on a reachable $6 times 6$ cooperative target <curriculum-strategy-experiment>
 
 @data-scaling-experiment showed that the learnability ceiling on *reachable* generated levels is
 a data-quantity effect rather than an intrinsic algorithmic limit. RQ6 (@transfer-experiment) asks
@@ -564,7 +587,7 @@ performance or sample efficiency on the target. Because the target is reachable 
 baseline, any difference between conditions is attributable to scheduling alone rather than to the
 target being unreachable.
 
-=== Protocol
+==== Protocol
 
 The difficulty ladder has three rungs, each supplied by the generators of @generators: a
 $4 times 4$ / 2-agent / 0-laser navigation warm-up (random generator, $T_("max") = 8$), a
@@ -594,7 +617,7 @@ $50$ episodes during training, and a final $200$-episode greedy success rate on 
 and held-out test pools at the end. Aggregates are reported as a mean and a $95%$ confidence
 interval over seeds.
 
-=== Results
+==== Results
 
 @tab-curriculum-strategy summarises the final greedy success rate of each scheduling condition,
 pooled over the three algorithms and the eight seeds per cell ($n = 24$ runs per condition). On
@@ -658,13 +681,11 @@ algorithm, not only in the pooled aggregate.
   ],
 ) <fig-curriculum-strategy-final>
 
-=== Interpretation
-
 Two mechanisms explain why ordering does not help on a reachable target. First, under a fixed
 budget every step *forward* spends on the easier rungs is a step it does not spend on the target;
 when the target is directly learnable, that target experience dominates any transfer benefit, so
-moving budget to warm-up rungs can only match or cost final performance. Second, *reverse* —
-which reaches the target early and then trains on the easier rungs — collapses to near the floor:
+moving budget to warm-up rungs can only match or cost final performance. Second, *reverse*,
+which reaches the target early and then trains on the easier rungs, collapses to near the floor:
 its training-pool success ($0.10$) is far below the others, the signature of catastrophic
 forgetting, since the network overwrites the target competence acquired early while fine-tuning on
 the navigation rung. The one condition that helps, *mixed*, is domain randomisation rather than a
@@ -673,12 +694,11 @@ ordering, and it is the same data-variety effect already isolated in @data-scali
 
 The practical conclusion is that on a target the agent can already reach, scheduling the *order*
 of staged exposure offers no advantage over training directly on the target, and a poorly chosen
-order (reverse) is actively harmful. This leaves open the case that curriculum learning is
-actually designed for — a target the agent *cannot* reach directly — which @transfer-experiment
-addresses.
+order (reverse) is actively harmful. This leaves open the case curriculum learning is actually
+designed for: a target the agent *cannot* reach directly, addressed in @transfer-experiment.
 
 
-== The limits of curriculum Learning on mutually-cooperative targets <transfer-experiment>
+=== The limits of curriculum learning on mutually-cooperative targets <transfer-experiment>
 
 This section addresses RQ6 of @introduction.
 
@@ -686,28 +706,28 @@ This section addresses RQ6 of @introduction.
 training can already reach, and found that ordering confers no advantage. The motivating promise
 of curriculum learning is different, however: that staged exposure can make *reachable* a target
 that direct training cannot solve at all. The canonical such target in this thesis is the
-hand-crafted LLE Level 6 — a $12 times 13$ map with four agents and three lasers whose solution
-requires *mutual* cooperation, the dependency pattern in which several agents must each block a
+hand-crafted LLE Level 6, a $12 times 13$ map with four agents and three lasers whose solution
+requires *mutual* cooperation: the dependency pattern in which several agents must each block a
 beam for the others before anyone can exit (@cooperation-detection). We therefore ask whether a
 curriculum of generated levels of growing cooperative complexity enables value-based
 agents to solve Level 6, and, more generally, whether such agents can cross the
 mutual-cooperation boundary at all.
 
-=== Protocol
+==== Protocol
 
 We approached the question in three stages of increasing ambition, each reusing the trainer,
 hyperparameters (@appendix-learnability-hyperparams), and greedy 200-episode evaluation of the
 preceding experiments.
 
 + *Frontier probe.* Direct training from scratch on a fixed $6 times 6$ grid with two agents and
-  two lasers — the smallest instance whose solution requires *mutual* cooperation — for IQL, VDN,
+  two lasers (the smallest instance whose solution requires *mutual* cooperation), for IQL, VDN,
   and QMIX. This isolates whether the mutual target carries any learnable signal at all before a
   curriculum is layered on top, holding the grid fixed so that the laser count is the only change
   from the reachable asymmetric target of @curriculum-strategy-experiment.
 
 + *Two-laser curriculum.* The four scheduling conditions of @curriculum-strategy-experiment
   (direct, forward, reverse, mixed) on a fixed $6 times 6$ grid, with a three-rung ladder that
-  ramps only the cooperation requirement — zero, one, then two lasers — toward the mutual
+  ramps only the cooperation requirement (zero, one, then two lasers) toward the mutual
   two-laser target, under a budget-matched $600","000$-step budget.
 
 + *Level-6 transfer.* A four-stage curriculum of generated levels growing in both geometry and
@@ -716,7 +736,7 @@ preceding experiments.
   hand-crafted Level 6. The curriculum condition (CURR) is compared against three baselines that
   isolate the contribution of staging: training only on the hardest stage (B1), an anti-curriculum
   hard-to-easy ordering (B2), and direct training on Level 6 (B3). Runs use up to $2","000","000$
-  environment steps — an order of magnitude beyond the reachable-target budget.
+  environment steps, an order of magnitude beyond the reachable-target budget.
 
 Because every preliminary condition returned zero success (below), and because a single run at the
 Level-6 budget is computationally expensive, we deliberately limited each sweep to a small number
@@ -725,12 +745,12 @@ results show, the conclusion rests on the *uniformity* of the zero across grids,
 algorithms, budgets, and schedules, not on seed-level precision. Full per-run numbers and the
 exact stage configurations are tabulated in @appendix-transfer-detail.
 
-=== Results
+==== Results
 
 Across all three stages, no configuration learned to solve a mutually-cooperative target.
 @tab-cliff places these outcomes next to the *reachable* results of the preceding sections on a
 single axis of increasing cooperation difficulty. The contrast is the result: success is
-non-trivial as long as cooperation is *asymmetric* — a one-way blocking action — and collapses to
+non-trivial as long as cooperation is *asymmetric* (a one-way blocking action) and collapses to
 zero the moment the target requires *mutual* blocking, and it stays at zero even when the training
 budget is increased tenfold.
 
@@ -762,26 +782,26 @@ budget is increased tenfold.
 
 On the *frontier probe*, all three algorithms occasionally solved a *training* level (a peak
 greedy success of $0.06$–$0.09$) but never generalised: held-out success was exactly zero for
-every algorithm and seed. Shrinking the grid to $5 times 5$ did not help — two lasers suffice to
+every algorithm and seed. Shrinking the grid to $5 times 5$ did not help: two lasers suffice to
 drive success to zero regardless of grid size. Two diagnostic checks confirm that this is a
 learnability wall rather than a budget shortfall: training on a *single* fixed mutual level
 (removing the need to generalise entirely) still plateaued below $0.12$ success, and extending the
 budget to $1","500","000$ steps left success flat, with the success curve peaking early and then
 *decaying* rather than climbing.
 
-On the *two-laser curriculum*, every scheduling condition — including forward staging — finished
+On the *two-laser curriculum*, every scheduling condition, including forward staging, finished
 at essentially zero held-out success (the best condition reached $0.01$). Ordering a curriculum
 toward a target that carries no learnable signal does not create one.
 
 On the *Level-6 transfer*, every condition reached $0.0$ success on Level 6 and, tellingly, $0.0$
 success on the in-distribution held-out *generated* pool as well, even after $2","000","000$
 steps. The full four-stage curriculum (CURR) was no better than direct training on Level 6 (B3),
-and the agents' mean episode return stayed negative throughout — they accumulated step penalties
+and the agents' mean episode return stayed negative throughout: they accumulated step penalties
 without ever assembling the coordinated double-blocking sequence the level requires.
 
-=== Why curriculum Learning does not help here
+=== Discussion
 
-The two regimes of @curriculum-strategy-experiment and this section fail for complementary
+The two regimes of @curriculum-strategy-experiment and @transfer-experiment fail for complementary
 reasons. On a *reachable* target, a curriculum is unnecessary: ordering trades budget away from
 the target and, hard-to-easy, induces catastrophic forgetting, so it can only match or
 underperform direct training. On an *unreachable* mutual target, a curriculum is powerless, for
@@ -789,13 +809,13 @@ three reasons that the experiments above separate.
 
 - *There is no signal to amplify.* A curriculum works by transporting a policy with non-zero value
   from an easy stage to a harder one, where it stumbles onto reward more often and bootstraps. The
-  mutual target returns reward only after a long, jointly-gated sequence — both lasers must be
-  blocked before any agent can exit — so a from-scratch or warm-started policy receives
+  mutual target returns reward only after a long, jointly-gated sequence (both lasers must be
+  blocked before any agent can exit), so a from-scratch or warm-started policy receives
   identically zero reward (the negative returns above). A curriculum can make a faint signal
   louder; it cannot manufacture one from zero.
 
 - *The missing skill is absent from every easier stage.* The easier rungs teach navigation and
-  *asymmetric* cooperation, in which one agent blocks and the other passes — a pattern with a
+  *asymmetric* cooperation, in which one agent blocks and the other passes. That pattern has a
   partial-credit path, since the passing agent can be rewarded before coordination is perfect. The
   mutual target requires a *deadlock-style* interdependency in which neither agent can make
   progress first. This is a discontinuity, not a ramp: no easy-to-hard ordering of asymmetric
@@ -804,8 +824,9 @@ three reasons that the experiments above separate.
 
 - *The algorithm cannot represent the solution.* Value-decomposition methods (VDN, QMIX) assume
   the joint action-value factorises monotonically into per-agent utilities. Mutual cooperation
-  requires both agents to take individually-costly actions simultaneously — standing in a beam so
-  the other may pass — the canonical case that monotonic factorisation cannot represent. The
+  requires both agents to take individually-costly actions simultaneously, such as standing in a
+  beam so the other may pass. This is the canonical case that monotonic factorisation cannot
+  represent. The
   nonzero *training* but zero *held-out* success on the frontier probe is the fingerprint: the rare
   successes are memorised joint trajectories, not a generalisable coordination policy. Reordering
   the training data does not change the function class, so the representational bottleneck is left
@@ -813,22 +834,20 @@ three reasons that the experiments above separate.
 
 The decisive observation is the zero held-out *generated*-pool success in the Level-6 transfer:
 the failure is not one of *transfer* or distribution shift between generated levels and the
-hand-crafted target — the agents never learned the base mutually-cooperative task at all. The
+hand-crafted target: the agents never learned the base mutually-cooperative task at all. The
 failure of curriculum learning here is therefore not a failure of curriculum design but a
 consequence of the target lying beyond the reach of the underlying MARL method.
 
-=== Scope and threats to validity
-
-We are careful not to overclaim. These experiments establish that the value-based
+*Scope and threats to validity.* We are careful not to overclaim. These experiments establish that the value-based
 algorithms evaluated here (IQL, VDN, QMIX), under a fixed set of hyperparameters and a sparse
 joint-exit reward, do not solve mutually-cooperative LLE targets, and that no curriculum over
-generated levels changes this — *not* that curriculum learning can never succeed on such targets.
-Three caveats bound the claim. First, the algorithm family is narrow; centralised-critic
+generated levels changes this. We do *not* claim that curriculum learning can never succeed on
+such targets. Three caveats bound the claim. First, the algorithm family is narrow; centralised-critic
 actor-critic methods and approaches with explicit coordinated exploration were not tested and
 might cross the wall (@conclusion). Second, the reward is sparse and unshaped; a dense or intrinsic
 signal that credits partial coordination would change the very signal whose absence we identify as
-the bottleneck. Third, the seed counts on the mutual targets are small — a deliberate choice given
-the cost of each run and the uniformity of the zero outcome; they suffice to establish that
+the bottleneck. Third, the seed counts on the mutual targets are small, a deliberate choice given
+the cost of each run and the uniformity of the zero outcome. They suffice to establish that
 success is zero, but not to measure small effects between equally-failing conditions. Directions
-that target the actual bottleneck — base learnability rather than curriculum ordering — are
+that target the actual bottleneck, base learnability rather than curriculum ordering, are
 discussed in @conclusion.

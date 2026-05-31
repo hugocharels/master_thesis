@@ -139,33 +139,34 @@ described in @curriculum-strategy-experiment.
 
 #figure(
   table(
-    columns: 3,
+    columns: (auto, auto, 1fr),
     stroke: none,
-    inset: 8pt,
+    inset: (x: 6pt, y: 5pt),
     align: (horizon, center, left),
     table.hline(stroke: 1pt),
     table.header([*Hyperparameter*], [*Value*], [*Source*]),
     table.hline(stroke: 0.5pt),
-    [Optimiser],                                  [Adam],                       [`marl.algos.{DQN,VDN,QMix}` default],
-    [Learning rate],                              [$5 times 10^(-4)$],          [`run_experiment.py` (`lr=5e-4`)],
-    [Batch size],                                 [64],                         [`run_experiment.py` (`batch_size=64`)],
-    [Discount factor $gamma$],                    [0.95],                       [`run_experiment.py` (`gamma=0.95`)],
-    [Train interval],                             [1 update / 5 env steps],     [`run_experiment.py` (`train_interval=(5,"step")`)],
-    [Gradient-norm clipping],                     [10.0],                       [`run_experiment.py` (`grad_norm_clipping=10`)],
-    [$epsilon$ schedule (train)],                 [linear $1.0 -> 0.05$ over 100,000 steps], [`EpsilonGreedy.linear(1.0, 0.05, 100_000)`],
-    [Evaluation policy],                          [greedy ($epsilon = 0$)],     [`ArgMax()`],
-    [Q-network architecture],                     [marl `qnetworks.from_env` default], [marl framework default],
-    [Mixer (QMIX)],                               [`mixers.QMix.from_env`],     [`run_experiment.py`],
-    [Mixer (VDN)],                                [sum of agent $Q$-values],    [`marl.algos.VDN` implicit mixer],
-    [Mixer (IQL)],                                [none],                       [`run_experiment.py` (`mixer=None`)],
-    [Independent $Q$-network heads (IQL, VDN)],   [yes],                        [`qnetworks.from_env(..., independent=True)`],
-    [Independent $Q$-network heads (QMIX)],       [no (shared)],                [`qnetworks.from_env(...)` default],
+    [Optimiser],                    [Adam],                            [`marl.algos` default],
+    [Learning rate],                [$5 times 10^(-4)$],               [`lr=5e-4`],
+    [Batch size],                   [64],                              [`batch_size=64`],
+    [Discount factor $gamma$],      [0.95],                            [`gamma=0.95`],
+    [Train interval],               [1 update / 5 env steps],          [`train_interval=(5,"step")`],
+    [Gradient-norm clipping],       [10.0],                            [`grad_norm_clipping=10`],
+    [$epsilon$ schedule (train)],   [linear $1.0 -> 0.05$, 100k steps], [`EpsilonGreedy.linear(1.0, 0.05, 100_000)`],
+    [Evaluation policy],            [greedy ($epsilon = 0$)],          [`ArgMax()`],
+    [Q-network architecture],       [`qnetworks.from_env` default],    [marl framework],
+    [Mixer (QMIX)],                 [`mixers.QMix.from_env`],          [marl framework],
+    [Mixer (VDN)],                  [sum of agent $Q$-values],         [`marl.algos.VDN`],
+    [Mixer (IQL)],                  [none],                            [`mixer=None`],
+    [Independent heads (IQL, VDN)], [yes],                             [`independent=True`],
+    [Independent heads (QMIX)],     [no (shared)],                     [`qnetworks.from_env`],
     table.hline(stroke: 1pt),
   ),
   caption: [
     Hyperparameters used in the learnability experiment (@learnability-experiment) and reused
     unchanged for the data-scaling (@data-scaling-experiment) and curriculum
-    (@curriculum-strategy-experiment, @transfer-experiment) experiments.
+    (@curriculum-strategy-experiment, @transfer-experiment) experiments. Source values without a
+    module prefix are keyword arguments to `run_experiment.py`.
   ],
 ) <tab-learnability-hyperparams>
 
@@ -717,34 +718,44 @@ the raw counts.
 == Learnability: per-seed final success rates <appendix-learnability-detail>
 
 @tab-learnability-perseed lists the final greedy success rate of every (algorithm, seed) cell
-in the learnability experiment of @learnability-experiment. Each row is one trained agent;
-"Train" is the success rate on the 20-level training pool and "Test" the success rate on the
-20-level held-out pool, each estimated from 200 greedy evaluation episodes.
+in the learnability experiment of @learnability-experiment. Each row is one seed, giving the
+train- and test-pool success rate for IQL, VDN, and QMIX. "Train" is the success rate on the
+20-level training pool and "Test" on the 20-level held-out pool, each estimated from 200 greedy
+evaluation episodes.
 
 #let _runs = json("../../results/learnability_5x5/aggregated.json")
 
 #figure(
   table(
-    columns: 4,
+    columns: 7,
     stroke: none,
-    inset: 4pt,
-    align: (left, center, center, center),
+    inset: (x: 7pt, y: 4pt),
+    align: (left, center, center, center, center, center, center),
     table.hline(stroke: 1pt),
-    table.header([*Algorithm*], [*Seed*], [*Train*], [*Test*]),
+    table.header(
+      table.cell(rowspan: 2)[*Seed*],
+      table.cell(colspan: 2)[*IQL*], table.cell(colspan: 2)[*VDN*], table.cell(colspan: 2)[*QMIX*],
+      [*Train*], [*Test*], [*Train*], [*Test*], [*Train*], [*Test*],
+    ),
     table.hline(stroke: 0.5pt),
-    ..(_runs.map(r => (
-      r.algorithm,
-      str(r.seed),
-      str(calc.round(r.train_success, digits: 2)),
-      str(calc.round(r.test_success, digits: 2)),
-    )).flatten()),
+    ..(range(20).map(s => {
+      let f = a => _runs.find(r => r.algorithm == a and r.seed == s)
+      let r2 = x => str(calc.round(x, digits: 2))
+      let iql = f("IQL"); let vdn = f("VDN"); let qmix = f("QMIX")
+      (
+        str(s),
+        r2(iql.train_success), r2(iql.test_success),
+        r2(vdn.train_success), r2(vdn.test_success),
+        r2(qmix.train_success), r2(qmix.test_success),
+      )
+    }).flatten()),
     table.hline(stroke: 1pt),
   ),
   caption: [
     Per-(algorithm, seed) final greedy success rates from the learnability experiment of
-    @learnability-experiment. 60 rows total (3 algorithms × 20 seeds). Source:
-    `results/learnability_5x5/aggregated.json`, produced by
-    `src/scripts/aggregate_learnability_results.py`.
+    @learnability-experiment, one seed per row with the train- and test-pool success rate for each
+    algorithm (20 seeds × 3 algorithms). Source: `results/learnability_5x5/aggregated.json`,
+    produced by `src/scripts/aggregate_learnability_results.py`.
   ],
 ) <tab-learnability-perseed>
 

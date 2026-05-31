@@ -45,9 +45,7 @@
   )
 }
 
-
-#heading(numbering: none, level: 1)[Appendix]
-
+= Reproducibility and experiment configurations
 
 == Benchmark levels for SAT encoding comparison <appendix-benchmark-levels>
 
@@ -84,7 +82,7 @@ exact parameters.
 )
 
 
-== Reproducibility — software and seed conventions <appendix-reproducibility>
+== Reproducibility: software and seed conventions <appendix-reproducibility>
 
 All experiments are reproducible from a single Python source tree. The relevant versions and
 seed conventions are summarised below.
@@ -161,245 +159,7 @@ described in @curriculum-strategy-experiment.
 ) <tab-learnability-hyperparams>
 
 
-== SAT encoding — per-family clause counts <appendix-sat-clauses>
-
-The figures of @experiments report total CNF size for the four benchmark levels under the two
-movement formulations. @tab-sat-clauses gives the per-constraint-family decomposition behind
-those totals.
-
-#figure(
-  table(
-    columns: 6,
-    stroke: black,
-    inset: 6pt,
-    align: (left, center, right, right, right, right),
-    table.header(
-      [*Level*], [*Method*],
-      [*Initialisation*], [*Movement*], [*Laser*], [*Total*],
-    ),
-    [3×3],     [local],  [23],     [537],     [225],    [785],
-    [3×3],     [global], [23],     [505],     [225],    [753],
-    [5×5],     [local],  [87],     [4 233],   [1 884],  [6 204],
-    [5×5],     [global], [87],     [6 243],   [1 884],  [8 214],
-    [8×8],     [local],  [304],    [54 076],  [23 136], [77 516],
-    [8×8],     [global], [304],    [143 296], [23 136], [166 736],
-    [Level 6], [local],  [690],    [174 592], [77 682], [252 964],
-    [Level 6], [global], [690],    [1 089 268], [77 682], [1 167 640],
-  ),
-  caption: [
-    Clause counts per constraint family for the two SAT movement formulations on the four
-    benchmark levels. Source: `results/sat_encoding/benchmark_results.json`.
-  ],
-) <tab-sat-clauses>
-
-
-== SAT encoding — generation and solve durations <appendix-sat-times>
-
-@tab-sat-times reports the median CNF generation and SAT solve durations for each
-(level, method) pair over the 100 timing runs of the benchmark protocol described in
-@benchmarking; the interquartile range follows in parentheses. We report medians rather than means
-because the per-run generation duration is heavy-tailed (occasional warm-up and garbage-collection
-pauses inflate the mean), as the boxplots of @experiments make visible.
-
-#figure(
-  table(
-    columns: 5,
-    stroke: black,
-    inset: 6pt,
-    align: (left, center, right, right, right),
-    table.header(
-      [*Level*], [*Method*],
-      [*Generation (ms)*], [*Solve (ms)*], [*Total (ms)*],
-    ),
-    [3×3],     [local],  [0.16 (0.16–0.17)],   [0.010 (0.010–0.011)], [0.17],
-    [3×3],     [global], [0.13 (0.12–0.14)],   [0.012 (0.011–0.015)], [0.14],
-    [5×5],     [local],  [1.26 (1.23–1.47)],   [0.062 (0.060–0.065)], [1.32],
-    [5×5],     [global], [1.25 (1.20–1.45)],   [0.122 (0.120–0.127)], [1.38],
-    [8×8],     [local],  [16 (15–63)],         [3.69 (3.64–3.79)],    [20.0],
-    [8×8],     [global], [75 (26–78)],         [48 (48–49)],          [123],
-    [Level 6], [local],  [111 (60–114)],       [4.6 (4.3–5.0)],       [115],
-    [Level 6], [global], [466 (457–485)],      [38 (37–40)],          [505],
-  ),
-  caption: [
-    Median CNF generation, SAT solve, and total durations (milliseconds) per level and movement
-    formulation over 100 timing runs, with the interquartile range in parentheses. Source:
-    `results/sat_encoding/benchmark_results.json`.
-  ],
-) <tab-sat-times>
-
-
-== Generator rejection — detailed numbers <appendix-rejection-detail>
-
-The figures of @generator-rejection-rates report per-generator rejection rates and mean
-attempts. @tab-rejection-detail gives the full numbers behind those plots, including the
-number of successful trials, the number of failed trials (per-trial budget exhausted), and the
-mean number of attempts per accepted level.
-
-#figure(
-  table(
-    columns: 6,
-    stroke: black,
-    inset: 6pt,
-    align: (left, center, right, right, right, right),
-    table.header(
-      [*Generator*], [*Grid*],
-      [*Success*], [*Fail*], [*Mean attempts*], [*Rejection (%)*],
-    ),
-    [Constrained Random (solvable)],   [3×3], [200], [0],  [3.2],   [68.8],
-    [Constrained Random (solvable)],   [5×5], [200], [0],  [7.6],   [86.9],
-    [Constrained Random (solvable)],   [8×8], [20],  [0],  [6.5],   [84.5],
-    [Constrained Random (cooperative)],[3×3], [200], [0],  [74.8],  [98.7],
-    [Constrained Random (cooperative)],[5×5], [200], [0],  [77.5],  [98.7],
-    [Constrained Random (cooperative)],[8×8], [12],  [8],  [14.8],  [93.3],
-    [Constructive (solvable)],         [3×3], [200], [0],  [1.00],  [0.0],
-    [Constructive (solvable)],         [5×5], [200], [0],  [1.11],  [10.3],
-    [Constructive (solvable)],         [8×8], [20],  [0],  [1.20],  [16.7],
-    [Constructive (cooperative)],      [3×3], [200], [0],  [1.00],  [0.0],
-    [Constructive (cooperative)],      [5×5], [200], [0],  [1.06],  [5.7],
-    [Constructive (cooperative)],      [8×8], [19],  [1],  [1.00],  [0.0],
-    [Level-6-Style],                   [3×3], [200], [0],  [74.8],  [98.7],
-    [Level-6-Style],                   [5×5], [200], [0],  [5.7],   [82.5],
-    [Level-6-Style],                   [8×8], [20],  [0],  [4.1],   [75.3],
-  ),
-  caption: [
-    Detailed rejection-benchmark numbers per generator setting and grid size. "Success" is
-    the number of successful trials and "Fail" the number of trials that exhausted their
-    per-trial budget (500 attempts for the small grids; 100 attempts or 30 seconds for the
-    $8 times 8$ grid). Mean attempts and rejection rate are computed over the successful
-    trials only. The $8 times 8$ Constrained Random cooperative row is the most expensive
-    setting, with 8 of 20 trials exhausting the time budget; its mean attempts is therefore an
-    optimistic estimate over the trials that completed. That configuration also intermittently
-    crashes the SAT solver's native extension, so each attempt is run in an isolated worker
-    subprocess that discards and resamples the offending candidate. Source:
-    `results/rejection_benchmark/benchmark_results.json`.
-  ],
-) <tab-rejection-detail>
-
-
-== Cooperation profile distribution — detailed counts <appendix-profile-detail>
-
-The figure of @profile-distribution shows the cooperation-profile breakdown of accepted
-cooperative levels for three generator settings and two grid sizes. @tab-profile-detail gives
-the raw counts.
-
-#figure(
-  table(
-    columns: 8,
-    stroke: black,
-    inset: 6pt,
-    align: (left, center, right, right, right, right, right, right),
-    table.header(
-      [*Generator*], [*Grid*],
-      [*$n$*], [*asym.*], [*mutual*], [*chain*], [*distr.*], [*full*],
-    ),
-    [Constrained Random (cooperative)], [5×5], [100], [100], [0],  [0], [0], [0],
-    [Constrained Random (cooperative)], [8×8], [50],  [46],  [0],  [1], [3], [0],
-    [Constructive (cooperative)],       [5×5], [100], [100], [0],  [0], [0], [0],
-    [Constructive (cooperative)],       [8×8], [50],  [2],   [46], [0], [2], [0],
-    [Level-6-Style],                    [5×5], [100], [100], [0],  [0], [0], [0],
-    [Level-6-Style],                    [8×8], [50],  [13],  [34], [0], [3], [0],
-  ),
-  caption: [
-    Raw profile-count breakdown per generator and grid size. The columns *asym.*, *mutual*,
-    *chain*, *distr.*, *full* correspond to the five cooperation-profile labels classified by
-    the analyser of @cooperation-profiles. The 5×5 configuration uses 2 agents and 1 laser;
-    the 8×8 configuration uses 3 agents and 2 lasers. Source:
-    `results/profile_benchmark/benchmark_results.json`.
-  ],
-) <tab-profile-detail>
-
-
-== Learnability — per-seed final success rates <appendix-learnability-detail>
-
-@tab-learnability-perseed lists the final greedy success rate of every (algorithm, seed) cell
-in the learnability experiment of @learnability-experiment. Each row is one trained agent;
-"Train" is the success rate on the 20-level training pool and "Test" the success rate on the
-20-level held-out pool, each estimated from 200 greedy evaluation episodes.
-
-#let _runs = json("../../results/learnability_5x5/aggregated.json")
-
-#figure(
-  table(
-    columns: 4,
-    stroke: black,
-    inset: 4pt,
-    align: (left, center, center, center),
-    table.header([*Algorithm*], [*Seed*], [*Train*], [*Test*]),
-    ..(_runs.map(r => (
-      r.algorithm,
-      str(r.seed),
-      str(calc.round(r.train_success, digits: 2)),
-      str(calc.round(r.test_success, digits: 2)),
-    )).flatten()),
-  ),
-  caption: [
-    Per-(algorithm, seed) final greedy success rates from the learnability experiment of
-    @learnability-experiment. 60 rows total (3 algorithms × 20 seeds). Source:
-    `results/learnability_5x5/aggregated.json`, produced by
-    `src/scripts/aggregate_learnability_results.py`.
-  ],
-) <tab-learnability-perseed>
-
-
-== Learnability — training pool <appendix-learnability-train>
-
-Cooperative pool used as $cal(D)_("train")$ for @learnability-experiment.
-
-#figure(
-  table(
-    columns: 2,
-    stroke: black,
-    inset: 8pt,
-    align: (left, left),
-    table.header([*Field*], [*Value*]),
-    [Pool path],          [`results/learnability_5x5/levels/5x5_2a_1L_cooperative/train`],
-    [Grid],               [5 × 5],
-    [Agents],             [2],
-    [Lasers],             [1],
-    [$T_("max")$],        [10],
-    [Generator],          [Constructive (cooperative mode)],
-    [Pool seed],          [20260618],
-    [Number of levels],   [20],
-  ),
-  caption: [Parameters of the learnability training pool.],
-)
-
-#figure(
-  pool_grid("../../results/learnability_5x5/levels/5x5_2a_1L_cooperative/train/images", 20),
-  caption: [All 20 levels of the learnability training pool, in pool order.],
-) <fig-pool-learnability-train>
-
-
-== Learnability — test pool <appendix-learnability-test>
-
-Held-out cooperative pool used as $cal(D)_("test")$ for @learnability-experiment.
-
-#figure(
-  table(
-    columns: 2,
-    stroke: black,
-    inset: 8pt,
-    align: (left, left),
-    table.header([*Field*], [*Value*]),
-    [Pool path],          [`results/learnability_5x5/levels/5x5_2a_1L_cooperative/test`],
-    [Grid],               [5 × 5],
-    [Agents],             [2],
-    [Lasers],             [1],
-    [$T_("max")$],        [10],
-    [Generator],          [Constructive (cooperative mode)],
-    [Pool seed],          [20260619],
-    [Number of levels],   [20],
-  ),
-  caption: [Parameters of the learnability test pool.],
-)
-
-#figure(
-  pool_grid("../../results/learnability_5x5/levels/5x5_2a_1L_cooperative/test/images", 20),
-  caption: [All 20 levels of the learnability test pool, in pool order.],
-) <fig-pool-learnability-test>
-
-
-== Data-scaling experiment — configuration <appendix-data-scaling>
+== Data-scaling experiment: configuration <appendix-data-scaling>
 
 The data-scaling experiment (@data-scaling-experiment) reuses the learnability task, generator,
 and hyperparameters (@appendix-learnability-hyperparams) unchanged, and varies only the
@@ -470,7 +230,7 @@ generalisation gap closes.
 ) <fig-datascale-curves-500>
 
 
-== Curriculum-strategy experiment — configuration and per-cell results <appendix-curriculum-strategy-detail>
+== Curriculum-strategy experiment: configuration and per-cell results <appendix-curriculum-strategy-detail>
 
 The curriculum-strategy experiment (@curriculum-strategy-experiment) compares four budget-matched
 scheduling conditions on a $6 times 6$ / 2-agent / 1-laser cooperative target reachable by the
@@ -576,7 +336,7 @@ coincide. Unspecified wall budgets fall back to the generator default $floor("gr
 ) <fig-cs-pool-s3>
 
 
-== Curriculum-transfer experiments — configurations and results <appendix-transfer-detail>
+== Curriculum-transfer experiments: configurations and results <appendix-transfer-detail>
 
 This appendix collects the configurations and per-run results behind the three stages of
 @transfer-experiment: the frontier probe, the two-laser curriculum, and the Level-6 transfer.
@@ -754,7 +514,251 @@ levels for the four stage generators at comparable grid sizes appear in
 ) <tab-level6-results>
 
 
-== Generator gallery — base random generator <appendix-gallery-random>
+= Detailed experimental results
+
+== SAT encoding: per-family clause counts <appendix-sat-clauses>
+
+The figures of @experiments report total CNF size for the four benchmark levels under the two
+movement formulations. @tab-sat-clauses gives the per-constraint-family decomposition behind
+those totals.
+
+#figure(
+  table(
+    columns: 6,
+    stroke: black,
+    inset: 6pt,
+    align: (left, center, right, right, right, right),
+    table.header(
+      [*Level*], [*Method*],
+      [*Initialisation*], [*Movement*], [*Laser*], [*Total*],
+    ),
+    [3×3],     [local],  [23],     [537],     [225],    [785],
+    [3×3],     [global], [23],     [505],     [225],    [753],
+    [5×5],     [local],  [87],     [4 233],   [1 884],  [6 204],
+    [5×5],     [global], [87],     [6 243],   [1 884],  [8 214],
+    [8×8],     [local],  [304],    [54 076],  [23 136], [77 516],
+    [8×8],     [global], [304],    [143 296], [23 136], [166 736],
+    [Level 6], [local],  [690],    [174 592], [77 682], [252 964],
+    [Level 6], [global], [690],    [1 089 268], [77 682], [1 167 640],
+  ),
+  caption: [
+    Clause counts per constraint family for the two SAT movement formulations on the four
+    benchmark levels. Source: `results/sat_encoding/benchmark_results.json`.
+  ],
+) <tab-sat-clauses>
+
+
+== SAT encoding: generation and solve durations <appendix-sat-times>
+
+@tab-sat-times reports the median CNF generation and SAT solve durations for each
+(level, method) pair over the 100 timing runs of the benchmark protocol described in
+@benchmarking; the interquartile range follows in parentheses. We report medians rather than means
+because the per-run generation duration is heavy-tailed (occasional warm-up and garbage-collection
+pauses inflate the mean), as the boxplots of @experiments make visible.
+
+#figure(
+  table(
+    columns: 5,
+    stroke: black,
+    inset: 6pt,
+    align: (left, center, right, right, right),
+    table.header(
+      [*Level*], [*Method*],
+      [*Generation (ms)*], [*Solve (ms)*], [*Total (ms)*],
+    ),
+    [3×3],     [local],  [0.16 (0.16–0.17)],   [0.010 (0.010–0.011)], [0.17],
+    [3×3],     [global], [0.13 (0.12–0.14)],   [0.012 (0.011–0.015)], [0.14],
+    [5×5],     [local],  [1.26 (1.23–1.47)],   [0.062 (0.060–0.065)], [1.32],
+    [5×5],     [global], [1.25 (1.20–1.45)],   [0.122 (0.120–0.127)], [1.38],
+    [8×8],     [local],  [16 (15–63)],         [3.69 (3.64–3.79)],    [20.0],
+    [8×8],     [global], [75 (26–78)],         [48 (48–49)],          [123],
+    [Level 6], [local],  [111 (60–114)],       [4.6 (4.3–5.0)],       [115],
+    [Level 6], [global], [466 (457–485)],      [38 (37–40)],          [505],
+  ),
+  caption: [
+    Median CNF generation, SAT solve, and total durations (milliseconds) per level and movement
+    formulation over 100 timing runs, with the interquartile range in parentheses. Source:
+    `results/sat_encoding/benchmark_results.json`.
+  ],
+) <tab-sat-times>
+
+
+== Generator rejection: detailed numbers <appendix-rejection-detail>
+
+The figures of @generator-rejection-rates report per-generator rejection rates and mean
+attempts. @tab-rejection-detail gives the full numbers behind those plots, including the
+number of successful trials, the number of failed trials (per-trial budget exhausted), and the
+mean number of attempts per accepted level.
+
+#figure(
+  table(
+    columns: 6,
+    stroke: black,
+    inset: 6pt,
+    align: (left, center, right, right, right, right),
+    table.header(
+      [*Generator*], [*Grid*],
+      [*Success*], [*Fail*], [*Mean attempts*], [*Rejection (%)*],
+    ),
+    [Constrained Random (solvable)],   [3×3], [200], [0],  [3.2],   [68.8],
+    [Constrained Random (solvable)],   [5×5], [200], [0],  [7.6],   [86.9],
+    [Constrained Random (solvable)],   [8×8], [20],  [0],  [6.5],   [84.5],
+    [Constrained Random (cooperative)],[3×3], [200], [0],  [74.8],  [98.7],
+    [Constrained Random (cooperative)],[5×5], [200], [0],  [77.5],  [98.7],
+    [Constrained Random (cooperative)],[8×8], [12],  [8],  [14.8],  [93.3],
+    [Constructive (solvable)],         [3×3], [200], [0],  [1.00],  [0.0],
+    [Constructive (solvable)],         [5×5], [200], [0],  [1.11],  [10.3],
+    [Constructive (solvable)],         [8×8], [20],  [0],  [1.20],  [16.7],
+    [Constructive (cooperative)],      [3×3], [200], [0],  [1.00],  [0.0],
+    [Constructive (cooperative)],      [5×5], [200], [0],  [1.06],  [5.7],
+    [Constructive (cooperative)],      [8×8], [19],  [1],  [1.00],  [0.0],
+    [Level-6-Style],                   [3×3], [200], [0],  [74.8],  [98.7],
+    [Level-6-Style],                   [5×5], [200], [0],  [5.7],   [82.5],
+    [Level-6-Style],                   [8×8], [20],  [0],  [4.1],   [75.3],
+  ),
+  caption: [
+    Detailed rejection-benchmark numbers per generator setting and grid size. "Success" is
+    the number of successful trials and "Fail" the number of trials that exhausted their
+    per-trial budget (500 attempts for the small grids; 100 attempts or 30 seconds for the
+    $8 times 8$ grid). Mean attempts and rejection rate are computed over the successful
+    trials only. The $8 times 8$ Constrained Random cooperative row is the most expensive
+    setting, with 8 of 20 trials exhausting the time budget; its mean attempts is therefore an
+    optimistic estimate over the trials that completed. That configuration also intermittently
+    crashes the SAT solver's native extension, so each attempt is run in an isolated worker
+    subprocess that discards and resamples the offending candidate. Source:
+    `results/rejection_benchmark/benchmark_results.json`.
+  ],
+) <tab-rejection-detail>
+
+
+== Cooperation profile distribution: detailed counts <appendix-profile-detail>
+
+The figure of @profile-distribution shows the cooperation-profile breakdown of accepted
+cooperative levels for three generator settings and two grid sizes. @tab-profile-detail gives
+the raw counts.
+
+#figure(
+  table(
+    columns: 8,
+    stroke: black,
+    inset: 6pt,
+    align: (left, center, right, right, right, right, right, right),
+    table.header(
+      [*Generator*], [*Grid*],
+      [*$n$*], [*asym.*], [*mutual*], [*chain*], [*distr.*], [*full*],
+    ),
+    [Constrained Random (cooperative)], [5×5], [100], [100], [0],  [0], [0], [0],
+    [Constrained Random (cooperative)], [8×8], [50],  [46],  [0],  [1], [3], [0],
+    [Constructive (cooperative)],       [5×5], [100], [100], [0],  [0], [0], [0],
+    [Constructive (cooperative)],       [8×8], [50],  [2],   [46], [0], [2], [0],
+    [Level-6-Style],                    [5×5], [100], [100], [0],  [0], [0], [0],
+    [Level-6-Style],                    [8×8], [50],  [13],  [34], [0], [3], [0],
+  ),
+  caption: [
+    Raw profile-count breakdown per generator and grid size. The columns *asym.*, *mutual*,
+    *chain*, *distr.*, *full* correspond to the five cooperation-profile labels classified by
+    the analyser of @cooperation-profiles. The 5×5 configuration uses 2 agents and 1 laser;
+    the 8×8 configuration uses 3 agents and 2 lasers. Source:
+    `results/profile_benchmark/benchmark_results.json`.
+  ],
+) <tab-profile-detail>
+
+
+== Learnability: per-seed final success rates <appendix-learnability-detail>
+
+@tab-learnability-perseed lists the final greedy success rate of every (algorithm, seed) cell
+in the learnability experiment of @learnability-experiment. Each row is one trained agent;
+"Train" is the success rate on the 20-level training pool and "Test" the success rate on the
+20-level held-out pool, each estimated from 200 greedy evaluation episodes.
+
+#let _runs = json("../../results/learnability_5x5/aggregated.json")
+
+#figure(
+  table(
+    columns: 4,
+    stroke: black,
+    inset: 4pt,
+    align: (left, center, center, center),
+    table.header([*Algorithm*], [*Seed*], [*Train*], [*Test*]),
+    ..(_runs.map(r => (
+      r.algorithm,
+      str(r.seed),
+      str(calc.round(r.train_success, digits: 2)),
+      str(calc.round(r.test_success, digits: 2)),
+    )).flatten()),
+  ),
+  caption: [
+    Per-(algorithm, seed) final greedy success rates from the learnability experiment of
+    @learnability-experiment. 60 rows total (3 algorithms × 20 seeds). Source:
+    `results/learnability_5x5/aggregated.json`, produced by
+    `src/scripts/aggregate_learnability_results.py`.
+  ],
+) <tab-learnability-perseed>
+
+
+= Generated level pools
+
+== Learnability: training pool <appendix-learnability-train>
+
+Cooperative pool used as $cal(D)_("train")$ for @learnability-experiment.
+
+#figure(
+  table(
+    columns: 2,
+    stroke: black,
+    inset: 8pt,
+    align: (left, left),
+    table.header([*Field*], [*Value*]),
+    [Pool path],          [`results/learnability_5x5/levels/5x5_2a_1L_cooperative/train`],
+    [Grid],               [5 × 5],
+    [Agents],             [2],
+    [Lasers],             [1],
+    [$T_("max")$],        [10],
+    [Generator],          [Constructive (cooperative mode)],
+    [Pool seed],          [20260618],
+    [Number of levels],   [20],
+  ),
+  caption: [Parameters of the learnability training pool.],
+)
+
+#figure(
+  pool_grid("../../results/learnability_5x5/levels/5x5_2a_1L_cooperative/train/images", 20),
+  caption: [All 20 levels of the learnability training pool, in pool order.],
+) <fig-pool-learnability-train>
+
+
+== Learnability: test pool <appendix-learnability-test>
+
+Held-out cooperative pool used as $cal(D)_("test")$ for @learnability-experiment.
+
+#figure(
+  table(
+    columns: 2,
+    stroke: black,
+    inset: 8pt,
+    align: (left, left),
+    table.header([*Field*], [*Value*]),
+    [Pool path],          [`results/learnability_5x5/levels/5x5_2a_1L_cooperative/test`],
+    [Grid],               [5 × 5],
+    [Agents],             [2],
+    [Lasers],             [1],
+    [$T_("max")$],        [10],
+    [Generator],          [Constructive (cooperative mode)],
+    [Pool seed],          [20260619],
+    [Number of levels],   [20],
+  ),
+  caption: [Parameters of the learnability test pool.],
+)
+
+#figure(
+  pool_grid("../../results/learnability_5x5/levels/5x5_2a_1L_cooperative/test/images", 20),
+  caption: [All 20 levels of the learnability test pool, in pool order.],
+) <fig-pool-learnability-test>
+
+
+= Generator gallery
+
+== Generator gallery: base random generator <appendix-gallery-random>
 
 Pure random sampling with *no* geometric validation: the generator places agents, exits, walls,
 and laser sources uniformly at random and accepts any layout the SAT oracle certifies as
@@ -773,7 +777,7 @@ degeneracies that the geometric filters of the Constrained Random generator
 wall parameters are used here as in that section, so the two galleries can be read side by side.
 Pools are generated by `src/scripts/generate_appendix_galleries.py`.
 
-=== Base random — 3×3, 2 agents, 1 laser
+=== Base random: 3×3, 2 agents, 1 laser
 
 #let _g01 = json("../../results/appendix_galleries/01_random_3x3_2a_1L/params.json")
 #figure(gallery_params(_g01), caption: [Parameters and seed for the Base Random 3×3 gallery pool.])
@@ -782,7 +786,7 @@ Pools are generated by `src/scripts/generate_appendix_galleries.py`.
   caption: [16 Base Random 3×3 (2 agents, 1 laser) levels, no geometric validation.],
 )
 
-=== Base random — 5×5, 3 agents, 2 lasers
+=== Base random: 5×5, 3 agents, 2 lasers
 
 #let _g02 = json("../../results/appendix_galleries/02_random_5x5_3a_2L/params.json")
 #figure(gallery_params(_g02), caption: [Parameters and seed for the Base Random 5×5 gallery pool.])
@@ -791,7 +795,7 @@ Pools are generated by `src/scripts/generate_appendix_galleries.py`.
   caption: [16 Base Random 5×5 (3 agents, 2 lasers) levels, no geometric validation.],
 )
 
-=== Base random — 7×7, 4 agents, 2 lasers
+=== Base random: 7×7, 4 agents, 2 lasers
 
 #let _g03 = json("../../results/appendix_galleries/03_random_7x7_4a_2L/params.json")
 #figure(gallery_params(_g03), caption: [Parameters and seed for the Base Random 7×7 gallery pool.])
@@ -801,7 +805,7 @@ Pools are generated by `src/scripts/generate_appendix_galleries.py`.
 )
 
 
-== Generator gallery — constrained random generator <appendix-gallery-constrained-random>
+== Generator gallery: constrained random generator <appendix-gallery-constrained-random>
 
 Random sampling plus geometric filters (no laser pointing immediately out of bounds, no
 zero-length beam, no exit on an unavoidable beam segment, etc.). Compared with the Base Random
@@ -811,7 +815,7 @@ parameters but no geometric pre-filter — these filters remove the cosmetically
 actually exhibit the beam-crossing structure the experiments rely on. Pools are generated by
 `src/scripts/generate_appendix_galleries.py`.
 
-=== Constrained random — 3×3, 2 agents, 1 laser
+=== Constrained random: 3×3, 2 agents, 1 laser
 
 #let _g04 = json("../../results/appendix_galleries/04_constrained_random_3x3_2a_1L/params.json")
 #figure(gallery_params(_g04), caption: [Parameters and seed for the Constrained Random 3×3 gallery pool.])
@@ -820,7 +824,7 @@ actually exhibit the beam-crossing structure the experiments rely on. Pools are 
   caption: [16 Constrained Random 3×3 (2 agents, 1 laser) levels.],
 )
 
-=== Constrained random — 5×5, 3 agents, 2 lasers
+=== Constrained random: 5×5, 3 agents, 2 lasers
 
 #let _g05 = json("../../results/appendix_galleries/05_constrained_random_5x5_3a_2L/params.json")
 #figure(gallery_params(_g05), caption: [Parameters and seed for the Constrained Random 5×5 gallery pool.])
@@ -829,7 +833,7 @@ actually exhibit the beam-crossing structure the experiments rely on. Pools are 
   caption: [16 Constrained Random 5×5 (3 agents, 2 lasers) levels.],
 )
 
-=== Constrained random — 7×7, 4 agents, 2 lasers
+=== Constrained random: 7×7, 4 agents, 2 lasers
 
 #let _g06 = json("../../results/appendix_galleries/06_constrained_random_7x7_4a_2L/params.json")
 #figure(gallery_params(_g06), caption: [Parameters and seed for the Constrained Random 7×7 gallery pool.])
@@ -839,13 +843,13 @@ actually exhibit the beam-crossing structure the experiments rely on. Pools are 
 )
 
 
-== Generator gallery — constructive generator (solvable) <appendix-gallery-constructive-solvable>
+== Generator gallery: constructive generator (solvable) <appendix-gallery-constructive-solvable>
 
 Lane-based construction (one disjoint lane per agent) followed by random wall placement on
 the remaining cells. Cooperation is not required at generation time; only solvability is
 certified by the SAT oracle.
 
-=== Constructive solvable — 5×5, 3 agents, 1 laser
+=== Constructive solvable: 5×5, 3 agents, 1 laser
 
 #let _g07 = json("../../results/appendix_galleries/07_constructive_5x5_3a_1L/params.json")
 #figure(gallery_params(_g07), caption: [Parameters and seed for the Constructive Solvable 5×5 gallery pool.])
@@ -854,7 +858,7 @@ certified by the SAT oracle.
   caption: [16 Constructive Solvable 5×5 (3 agents, 1 laser) levels.],
 )
 
-=== Constructive solvable — 7×7, 4 agents, 2 lasers
+=== Constructive solvable: 7×7, 4 agents, 2 lasers
 
 #let _g08 = json("../../results/appendix_galleries/08_constructive_7x7_4a_2L/params.json")
 #figure(gallery_params(_g08), caption: [Parameters and seed for the Constructive Solvable 7×7 gallery pool.])
@@ -863,7 +867,7 @@ certified by the SAT oracle.
   caption: [16 Constructive Solvable 7×7 (4 agents, 2 lasers) levels.],
 )
 
-=== Constructive solvable — 9×9, 4 agents, 3 lasers
+=== Constructive solvable: 9×9, 4 agents, 3 lasers
 
 #let _g09 = json("../../results/appendix_galleries/09_constructive_9x9_4a_3L/params.json")
 #figure(gallery_params(_g09), caption: [Parameters and seed for the Constructive Solvable 9×9 gallery pool.])
@@ -873,13 +877,13 @@ certified by the SAT oracle.
 )
 
 
-== Generator gallery — constructive generator (cooperative) <appendix-gallery-constructive-cooperative>
+== Generator gallery: constructive generator (cooperative) <appendix-gallery-constructive-cooperative>
 
 Lane-based construction with planted same-colour structural lasers, certified to satisfy the
 binary cooperation criterion of #fref(<thm-5-1>, [Theorem 5.1]). No profile filter is applied;
 the gallery shows what the generator produces when any cooperation profile is admissible.
 
-=== Constructive cooperative — 5×5, 2 agents, 1 laser
+=== Constructive cooperative: 5×5, 2 agents, 1 laser
 
 #let _g10 = json("../../results/appendix_galleries/10_cooperative_5x5_2a_1L/params.json")
 #figure(gallery_params(_g10, profile: "cooperative"), caption: [Parameters and seed for the Constructive Cooperative 5×5 gallery pool.])
@@ -888,7 +892,7 @@ the gallery shows what the generator produces when any cooperation profile is ad
   caption: [16 Constructive Cooperative 5×5 (2 agents, 1 laser) levels.],
 )
 
-=== Constructive cooperative — 7×7, 3 agents, 2 lasers
+=== Constructive cooperative: 7×7, 3 agents, 2 lasers
 
 #let _g11 = json("../../results/appendix_galleries/11_cooperative_7x7_3a_2L/params.json")
 #figure(gallery_params(_g11, profile: "cooperative"), caption: [Parameters and seed for the Constructive Cooperative 7×7 gallery pool.])
@@ -897,7 +901,7 @@ the gallery shows what the generator produces when any cooperation profile is ad
   caption: [16 Constructive Cooperative 7×7 (3 agents, 2 lasers) levels.],
 )
 
-=== Constructive cooperative — 9×9, 4 agents, 3 lasers
+=== Constructive cooperative: 9×9, 4 agents, 3 lasers
 
 #let _g12 = json("../../results/appendix_galleries/12_cooperative_9x9_4a_3L/params.json")
 #figure(gallery_params(_g12, profile: "cooperative"), caption: [Parameters and seed for the Constructive Cooperative 9×9 gallery pool.])
@@ -907,12 +911,12 @@ the gallery shows what the generator produces when any cooperation profile is ad
 )
 
 
-== Generator gallery — constructive cooperative with profile filter <appendix-gallery-constructive-profile>
+== Generator gallery: constructive cooperative with profile filter <appendix-gallery-constructive-profile>
 
 Same Constructive Cooperative generator as the previous section, but with an explicit profile
 filter so accepted levels match a single label (e.g. *mutual* or *distributed*).
 
-=== Constructive cooperative — 8×8, 3 agents, 2 lasers, profile = `mutual`
+=== Constructive cooperative: 8×8, 3 agents, 2 lasers, profile = `mutual`
 
 #let _g13 = json("../../results/appendix_galleries/13_cooperative_mutual_8x8_3a_2L/params.json")
 #figure(gallery_params(_g13, profile: "mutual"), caption: [Parameters and seed for the profile-filtered (mutual) 8×8 gallery pool.])
@@ -921,7 +925,7 @@ filter so accepted levels match a single label (e.g. *mutual* or *distributed*).
   caption: [16 profile-filtered (mutual) 8×8 (3 agents, 2 lasers) levels.],
 )
 
-=== Constructive cooperative — 10×10, 4 agents, 3 lasers, profile = `distributed`
+=== Constructive cooperative: 10×10, 4 agents, 3 lasers, profile = `distributed`
 
 #let _g14 = json("../../results/appendix_galleries/14_cooperative_distributed_10x10_4a_3L/params.json")
 #figure(gallery_params(_g14, profile: "distributed"), caption: [Parameters and seed for the profile-filtered (distributed) 10×10 gallery pool.])
@@ -931,12 +935,12 @@ filter so accepted levels match a single label (e.g. *mutual* or *distributed*).
 )
 
 
-== Generator gallery — Level-6-style generator <appendix-gallery-level6>
+== Generator gallery: Level-6-style generator <appendix-gallery-level6>
 
 Clustered starts and exits on opposing sides of the grid with a corridor of lasers in between,
 inspired by the hand-crafted LLE Level 6.
 
-=== Level-6-style — 8×8, 4 agents, 2 lasers
+=== Level-6-style: 8×8, 4 agents, 2 lasers
 
 #let _g15 = json("../../results/appendix_galleries/15_level6_style_8x8_4a_2L/params.json")
 #figure(gallery_params(_g15), caption: [Parameters and seed for the Level-6-Style 8×8 gallery pool.])
@@ -945,7 +949,7 @@ inspired by the hand-crafted LLE Level 6.
   caption: [16 Level-6-Style 8×8 (4 agents, 2 lasers) levels.],
 )
 
-=== Level-6-style — 10×10, 4 agents, 3 lasers
+=== Level-6-style: 10×10, 4 agents, 3 lasers
 
 #let _g16 = json("../../results/appendix_galleries/16_level6_style_10x10_4a_3L/params.json")
 #figure(gallery_params(_g16), caption: [Parameters and seed for the Level-6-Style 10×10 gallery pool.])
@@ -954,7 +958,7 @@ inspired by the hand-crafted LLE Level 6.
   caption: [16 Level-6-Style 10×10 (4 agents, 3 lasers) levels.],
 )
 
-=== Level-6-style — 12×13, 4 agents, 3 lasers (Level 6 footprint)
+=== Level-6-style: 12×13, 4 agents, 3 lasers (Level 6 footprint)
 
 #let _g17 = json("../../results/appendix_galleries/17_level6_style_12x13_4a_3L/params.json")
 #figure(gallery_params(_g17), caption: [Parameters and seed for the Level-6-Style 12×13 gallery pool.])
@@ -962,3 +966,5 @@ inspired by the hand-crafted LLE Level 6.
   pool_grid("../../results/appendix_galleries/17_level6_style_12x13_4a_3L/images", 16, cols: 4),
   caption: [16 Level-6-Style 12×13 (4 agents, 3 lasers) levels — same footprint as the hand-crafted LLE Level 6.],
 )
+
+

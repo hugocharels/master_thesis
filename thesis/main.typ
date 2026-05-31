@@ -25,26 +25,39 @@
 // to the right place and read naturally.
 #show heading.where(level: 1): set heading(supplement: [Chapter])
 
+// Appendix groups (the flag is set inside the appendix block below) render as
+// "Appendix A", "Appendix B", ... rather than as numbered chapters.
+#let in-appendix = state("in-appendix", false)
+
 #show heading: it => {
   if it.depth == 1 {
-    let chapter_num = counter(heading.where(level: 1)).at(it.location()).at(0)
-
-    if { 0 < chapter_num and chapter_num < 8 } {
+    if in-appendix.at(it.location()) {
       pagebreak()
       v(100pt)
-
-      let chapter = text(strong("Chapter " + str(chapter_num)), 22pt)
-      let content = text(strong(it.body), 30pt)
-      chapter + [ \ \ ] + content + [ \ \ ]
+      let n = counter(heading).at(it.location()).at(0)
+      let letters = ("A", "B", "C", "D", "E", "F", "G", "H")
+      let label = text(strong("Appendix " + letters.at(n - 1, default: "?")), 22pt)
+      label + [ \ \ ] + text(strong(it.body), 30pt) + [ \ \ ]
     } else {
-      if it.body == [Conclusion] or it.body == [Appendix] {
+      let chapter_num = counter(heading.where(level: 1)).at(it.location()).at(0)
+
+      if { 0 < chapter_num and chapter_num < 8 } {
         pagebreak()
         v(100pt)
 
+        let chapter = text(strong("Chapter " + str(chapter_num)), 22pt)
         let content = text(strong(it.body), 30pt)
-        content + [ \ \ ]
+        chapter + [ \ \ ] + content + [ \ \ ]
       } else {
-        it
+        if it.body == [Conclusion] or it.body == [Appendix] {
+          pagebreak()
+          v(100pt)
+
+          let content = text(strong(it.body), 30pt)
+          content + [ \ \ ]
+        } else {
+          it
+        }
       }
     }
   } else {
@@ -210,11 +223,12 @@ Software versions and seed conventions for every experiment in this chapter are 
 #bibliography("bibliography.bib", full: true)
 
 #[
-  // The `Appendix` heading inside appendix.typ uses `numbering: none`, so it
-  // does NOT advance the depth-1 counter. We therefore reset the counter to 1
-  // here, which leaves the Appendix heading sitting at chapter 1; the first
-  // depth-2 heading then lands at (1, 1) -> "A.1".
-  #counter(heading).update(1)
+  // The appendix is split into lettered groups (Appendix A, B, ...), each a
+  // depth-1 heading. Reset the counter to 0 so the first group is "A", and flag
+  // the appendix context so the heading show rule renders "Appendix X" titles
+  // and the depth-2 sections number as "A.1", "B.1", ...
+  #in-appendix.update(true)
+  #counter(heading).update(0)
   #set heading(numbering: (..nums) => {
     let n = nums.pos()
     let letters = ("A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M",

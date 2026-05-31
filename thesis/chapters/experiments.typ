@@ -752,13 +752,15 @@ budget is increased tenfold.
   ),
   caption: [
     Greedy success rate as the cooperation requirement increases, pooled over algorithms and
-    seeds. "Train" is success on the levels seen during training (the held-out *generated* pool for
-    the Level-6 transfer); "Test" is success on the held-out target (Level 6 for that row). The
-    first two rows are the reachable asymmetric targets of @learnability-experiment and
-    @curriculum-strategy-experiment; the last three are the mutual targets of this section. For the
+    seeds. The Experiment column names the source of each row: the Learnability and
+    Curriculum-ordering rows give the best result on the reachable asymmetric targets of
+    @learnability-experiment and @curriculum-strategy-experiment; the two Frontier-probe rows and
+    the Level-6-transfer row are this section's mutual targets, both defined in the protocol above.
+    "Train" is success on the levels seen during training (the held-out generated pool for the
+    Level-6 transfer); "Test" is success on the held-out target (Level 6 for that row). For the
     mutual rows the value is the mean over the available algorithm and seed runs; for the Level-6
-    transfer it is the best achieved over the four conditions (B1, B2, B3, CURR). In every case
-    held-out success is zero. Per-run numbers are in @appendix-transfer-detail.
+    transfer it is the best over the four conditions (B1, B2, B3, CURR). In every case held-out
+    success is zero. Per-run numbers are in @appendix-transfer-detail.
   ],
 ) <tab-cliff>
 
@@ -784,41 +786,54 @@ without ever assembling the coordinated double-blocking sequence the level requi
 === Discussion
 
 The two regimes of @curriculum-strategy-experiment and @transfer-experiment fail for complementary
-reasons. On a *reachable* target, a curriculum is unnecessary: ordering trades budget away from
-the target and, hard-to-easy, induces catastrophic forgetting, so it can only match or
-underperform direct training. On an *unreachable* mutual target, a curriculum is powerless, for
-three reasons that the experiments above separate.
+reasons. On a reachable target, a curriculum is unnecessary: ordering trades budget away from the
+target and, hard-to-easy, induces catastrophic forgetting, so it can only match or underperform
+direct training. On a mutual target, by which we mean one whose solution requires mutual
+cooperation (several agents must each block a beam for the others before anyone can exit, as in the
+two-laser $6 times 6$ instance and Level 6), a curriculum is powerless. The experiments above
+separate three reasons, each grounded in a specific result.
 
-- *There is no signal to amplify.* A curriculum works by transporting a policy with non-zero value
-  from an easy stage to a harder one, where it stumbles onto reward more often and bootstraps. The
-  mutual target returns reward only after a long, jointly-gated sequence (both lasers must be
-  blocked before any agent can exit), so a from-scratch or warm-started policy receives
-  identically zero reward (the negative returns above). A curriculum can make a faint signal
-  louder; it cannot manufacture one from zero.
+First, there is no reward signal for a curriculum to amplify. A curriculum bootstraps by carrying
+a policy that already earns some reward on an easy stage into a harder one, where the same
+behaviour earns reward more often. A mutual target offers no such starting point: its reward
+arrives only at the end of a long, jointly-gated sequence, because every laser must be blocked by
+its colour-matched agent before any agent can exit, so until the agents perform the whole
+coordinated sequence at once they receive nothing. The frontier probe makes this concrete, with
+mean episode return staying negative throughout: the agents only ever accumulated step penalties.
+A from-scratch and a warm-started policy therefore see the same zero reward, and a curriculum can
+amplify a faint signal but cannot create one from nothing.
 
-- *The missing skill is absent from every easier stage.* The easier stages teach navigation and
-  *asymmetric* cooperation, in which one agent blocks and the other passes. That pattern has a
-  partial-credit path, since the passing agent can be rewarded before coordination is perfect. The
-  mutual target requires a *deadlock-style* interdependency in which neither agent can make
-  progress first. This is a discontinuity, not a ramp: no easy-to-hard ordering of asymmetric
-  stages gradually constructs the mutual behaviour, because that behaviour is qualitatively absent
-  below the final stage.
+Second, the missing skill is absent from every easier stage. Navigation and asymmetric
+cooperation, the content of the lower stages, both admit partial credit: in asymmetric cooperation
+one agent blocks while the other passes, and the passing agent can be rewarded before the
+coordination is perfect. Mutual cooperation instead requires a deadlock-style interdependency in
+which neither agent can make progress until both commit at once. This is a discontinuity rather
+than a ramp, so no easy-to-hard ordering of asymmetric stages gradually constructs the mutual
+behaviour. The two-laser curriculum confirms it: staging the laser count from zero to one to two
+ended at essentially zero success, no better than training directly on the two-laser target.
 
-- *The algorithm cannot represent the solution.* Value-decomposition methods (VDN, QMIX) assume
-  the joint action-value factorises monotonically into per-agent utilities. Mutual cooperation
-  requires both agents to take individually-costly actions simultaneously, such as standing in a
-  beam so the other may pass. This is the canonical case that monotonic factorisation cannot
-  represent. The
-  nonzero *training* but zero *held-out* success on the frontier probe is the fingerprint: the rare
-  successes are memorised joint trajectories, not a generalisable coordination policy. Reordering
-  the training data does not change the function class, so the representational bottleneck is left
-  untouched.
+Third, the value-based algorithms cannot represent the optimal mutual policy, independently of
+data or ordering. VDN and QMIX factorise the joint action-value as a monotonic combination of
+per-agent utilities @Sunehag2018 @Rashid2018, which forces each agent's individually-greedy action
+to belong to the jointly-optimal action (the individual-global-max property). Mutual cooperation
+violates this property: the jointly-optimal move is for both agents to take an action that is
+individually costly and individually wrong (standing in a beam so a teammate may pass), one that
+pays off only if the other agent does the same. A monotonic mixer cannot assign the highest joint
+value to a pair of individually-suboptimal actions, so it cannot represent the solution; this is
+the relative-overgeneralisation failure of monotonic factorisation that motivates richer mixers
+(@Mahajan2019MAVEN). IQL, which learns no joint value at all, is no better placed. The fingerprint
+is in the frontier probe: nonzero training success but exactly zero held-out success means the
+rare wins are joint trajectories memorised on individual levels, not a coordination policy that
+transfers. Reordering the training data does not change the function class, so a curriculum leaves
+this bottleneck untouched.
 
-The decisive observation is the zero held-out *generated*-pool success in the Level-6 transfer:
-the failure is not one of *transfer* or distribution shift between generated levels and the
-hand-crafted target: the agents never learned the base mutually-cooperative task at all. The
-failure of curriculum learning here is therefore not a failure of curriculum design but a
-consequence of the target lying beyond the reach of the underlying MARL method.
+These three failures converge on one conclusion, and the Level-6 transfer pins it down. Every
+condition reached zero not only on Level 6 but also on the in-distribution held-out generated pool,
+and the full curriculum (CURR) did no better than training directly on Level 6 (B3). The failure is
+therefore neither one of transfer or distribution shift between generated levels and the
+hand-crafted target, nor one of curriculum design: the agents never learned the base
+mutually-cooperative task at all, because it lies beyond the reach of the value-based methods
+evaluated here.
 
 *Scope and threats to validity.* We are careful not to overclaim. These experiments establish that the value-based
 algorithms evaluated here (IQL, VDN, QMIX), under a fixed set of hyperparameters and a sparse

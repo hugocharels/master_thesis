@@ -529,23 +529,21 @@ property of the data regime rather than of any single learning algorithm.
 
 === Discussion
 
-Together the two experiments isolate the practical payoff of the generator. The learnability
-ceiling of @learnability-experiment is not an intrinsic limit of the algorithms; it is a
-consequence of training on too few distinct levels. Because the constructive cooperative generator
-emits an effectively unlimited supply of certified levels at near-zero cost, it supplies the data
-needed to close the gap, which a fixed library of hand-crafted levels cannot. Scaling generated
-training data thus converts overfitting into generalisation. This also delimits the curriculum
-studied next: curricula address either the *ordering* of staged exposure on a reachable target
-(@curriculum-strategy-experiment) or targets too *hard* to learn directly (@transfer-experiment),
-whereas data scaling addresses targets that are learnable but not yet *generalised*.
+The learnability ceiling of @learnability-experiment is not an intrinsic limit of the algorithms;
+it is a consequence of training on too few distinct levels. Because the constructive cooperative
+generator emits an effectively unlimited supply of certified levels at near-zero cost, it supplies
+the data needed to close the gap, which a fixed library of hand-crafted levels cannot. This is the
+generator's practical payoff: scaling generated training data converts overfitting into
+generalisation.
 
 
 == Curriculum learning
 
-Data scaling closes the gap on targets that are already learnable. This part turns to curriculum
-learning, which stages training across a ladder of growing difficulty. We ask two questions:
-whether the ordering of stages matters on a target that direct training can already reach
-(@curriculum-strategy-experiment), and whether a curriculum lets agents reach a mutual-cooperation
+Data scaling closes the gap on targets that are already learnable but not yet generalised.
+Curriculum learning targets the other two regimes: the *ordering* of staged exposure on a target
+direct training can already reach, and targets too *hard* to learn directly at all. This part
+takes each in turn, asking whether ordering matters on a reachable target
+(@curriculum-strategy-experiment) and whether a curriculum lets agents reach a mutual-cooperation
 target they cannot learn directly (@transfer-experiment). A joint discussion closes the part.
 
 === Curriculum ordering on a reachable $6 times 6$ cooperative target <curriculum-strategy-experiment>

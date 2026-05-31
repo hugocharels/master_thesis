@@ -36,8 +36,16 @@ matplotlib.use("Agg")
 
 import matplotlib.pyplot as plt
 import numpy as np
+from matplotlib.ticker import FuncFormatter
 
 from experiments.curriculum_strategy.configs import ALGORITHMS, CONDITIONS, TARGET_RUNG
+
+
+def _step_fmt(v, _):
+    """Short environment-step tick labels: 50000 -> '50k'."""
+    if v == 0:
+        return "0"
+    return f"{v / 1000:g}k"
 
 plt.rcParams.update({
     "text.usetex": shutil.which("latex") is not None,
@@ -162,12 +170,12 @@ def plot_final(runs_dir: Path, out_path: Path) -> None:
                    color=ALGO_COLORS.get(algo, "#999"), edgecolor="#333",
                    linewidth=0.7, label=algo, alpha=0.88)
         ax.set_xticks(x)
-        ax.set_xticklabels(conds)
-        ax.set_title(f"{split} success")
+        ax.set_xticklabels([c.capitalize() for c in conds])
+        ax.set_title(f"{split.capitalize()} success")
         ax.margins(x=0.02)
-    axes[0].set_ylabel("success rate (greedy exit rate)")
+    axes[0].set_ylabel("Success rate (greedy exit rate)")
     axes[0].set_ylim(0.0, min(1.0, ymax * 1.25 + 0.02))
-    axes[1].legend(loc="upper right", fontsize="small", title="algorithm")
+    axes[1].legend(loc="upper right", fontsize="small", title="Algorithm")
     fig.suptitle(f"Curriculum strategy on the {_TARGET} target (n={n_max} seeds, 95% CI)")
     fig.tight_layout()
     fig.savefig(out_path)
@@ -244,16 +252,17 @@ def plot_test_curves_pooled(runs_dir: Path, out_path: Path, split: str = "test")
         steps, mean, ci, n = stacked
         n_max = max(n_max, n)
         color = CONDITION_COLORS[cond]
-        ax.plot(steps, mean, label=cond, color=color, linewidth=1.8)
+        ax.plot(steps, mean, label=cond.capitalize(), color=color, linewidth=1.8)
         ax.fill_between(steps, mean - ci, mean + ci, color=color, alpha=0.18)
         ymax = max(ymax, float((mean + ci).max()))
-    ax.set_xlabel("environment step")
-    ax.set_ylabel(f"held-out {split} success")
+    ax.set_xlabel("Environment step")
+    ax.set_ylabel(f"Held-out {split} success")
     ax.set_ylim(0.0, min(1.0, ymax * 1.25 + 0.02))
     ax.margins(x=0.01)
+    ax.xaxis.set_major_formatter(FuncFormatter(_step_fmt))
     ax.grid(True, alpha=0.25)
-    ax.legend(loc="upper left", fontsize="small", title="condition")
-    ax.set_title(f"Curriculum strategy on {_TARGET}  (pooled over algorithms, n={n_max}, 95% CI)")
+    ax.legend(loc="upper left", fontsize="small", title="Condition")
+    ax.set_title(f"Curriculum strategy on {_TARGET}  (averaged over algorithms, n={n_max}, 95% CI)")
     fig.tight_layout()
     fig.savefig(out_path)
     plt.close(fig)
@@ -279,16 +288,17 @@ def plot_test_curves_by_algo(runs_dir: Path, out_path: Path, split: str = "test"
                 continue
             steps, mean, ci, _ = stacked
             color = CONDITION_COLORS[cond]
-            ax.plot(steps, mean, label=cond, color=color, linewidth=1.6)
+            ax.plot(steps, mean, label=cond.capitalize(), color=color, linewidth=1.6)
             ax.fill_between(steps, mean - ci, mean + ci, color=color, alpha=0.16)
             ymax = max(ymax, float((mean + ci).max()))
         ax.set_title(algo)
-        ax.set_xlabel("environment step")
+        ax.set_xlabel("Environment step")
         ax.grid(True, alpha=0.25)
         ax.margins(x=0.01)
-    axes[0][0].set_ylabel(f"held-out {split} success")
-    axes[0][0].set_ylim(0.0, min(1.0, ymax * 1.25 + 0.02))
-    axes[0][-1].legend(loc="upper left", fontsize="small", title="condition")
+        ax.xaxis.set_major_formatter(FuncFormatter(_step_fmt))
+    axes[0][0].set_ylabel(f"Held-out {split} success")
+    axes[0][0].set_ylim(0.0, 0.4)
+    axes[0][-1].legend(loc="upper left", fontsize="small", title="Condition")
     fig.tight_layout()
     fig.savefig(out_path)
     plt.close(fig)

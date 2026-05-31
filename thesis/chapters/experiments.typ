@@ -558,29 +558,29 @@ alone.
 
 ==== Protocol
 
-The difficulty ladder has three rungs, each supplied by the generators of @generators: a
+The difficulty ladder has three stages, each supplied by the generators of @generators: a
 $4 times 4$ / 2-agent / 0-laser navigation warm-up (random generator, $T_("max") = 8$), a
-$5 times 5$ / 2-agent / 1-laser cooperative rung ($T_("max") = 10$), and the $6 times 6$ /
-2-agent / 1-laser cooperative *target* rung ($T_("max") = 12$). The agent count is fixed at two
-across all rungs so the $Q$-network input shape is constant; smaller observations are zero-padded
-to the target geometry. Each rung draws $100$ distinct certified levels for training, and the
-target rung additionally holds out an independent pool of $50$ levels for the generalisation
+$5 times 5$ / 2-agent / 1-laser cooperative stage ($T_("max") = 10$), and the $6 times 6$ /
+2-agent / 1-laser cooperative *target* stage ($T_("max") = 12$). The agent count is fixed at two
+across all stages so the $Q$-network input shape is constant; smaller observations are zero-padded
+to the target geometry. Each stage draws $100$ distinct certified levels for training, and the
+target stage additionally holds out an independent pool of $50$ levels for the generalisation
 metric.
 
 We compare four budget-matched scheduling conditions, each trained for a total of $400","000$
 environment steps:
 
-- *direct* spends the entire budget on the $6 times 6$ target rung;
+- *direct* spends the entire budget on the $6 times 6$ target stage;
 - *forward* walks the ladder easy-to-hard, allocating $(50, 150, 200) times 10^3$ steps to the
-  three rungs in order;
-- *reverse* uses the same per-rung budgets but visits the rungs hard-to-easy, so it reaches the
-  target early and ends on the navigation rung, arriving at the held-out evaluation cold;
-- *mixed* draws a rung uniformly at random each episode (domain randomisation) for the whole
+  three stages in order;
+- *reverse* uses the same per-stage budgets but visits the stages hard-to-easy, so it reaches the
+  target early and ends on the navigation stage, arriving at the held-out evaluation cold;
+- *mixed* draws a stage uniformly at random each episode (domain randomisation) for the whole
   budget.
 
 Each condition is run with all three algorithms ($cal(A) = {"IQL", "VDN", "QMIX"}$) and eight
 seeds, for $96$ runs in total. The exploration rate is reset at every stage boundary and decayed independently within
-each rung's budget, so that early rungs are not starved of exploitation nor the target of
+each stage's budget, so that early stages are not starved of exploitation nor the target of
 exploration. Evaluation is always performed on the $6 times 6$ target: every $10","000$ steps on
 $50$ episodes during training, and a final $200$-episode greedy success rate on both the training
 and held-out test pools at the end. Aggregates are reported as a mean and a $95%$ confidence
@@ -589,12 +589,12 @@ interval over seeds.
 ==== Results
 
 @tab-curriculum-strategy summarises the final greedy success rate of each scheduling condition,
-pooled over the three algorithms and the eight seeds per cell ($n = 24$ runs per condition). On
+averaged over the three algorithms and the eight seeds per cell ($n = 24$ runs per condition). On
 the held-out $6 times 6$ target the ranking is *mixed* ($0.22 plus.minus 0.04$), then *direct*
 ($0.17 plus.minus 0.03$), then *forward* ($0.15 plus.minus 0.03$), and last *reverse*
 ($0.07 plus.minus 0.02$). The ordered easy-to-hard curriculum (*forward*) does not beat the
 *direct* baseline; the only condition that improves on direct is *mixed*, which exposes all three
-rungs in random order throughout training.
+stages in random order throughout training.
 
 #figure(
   table(
@@ -632,7 +632,7 @@ algorithm, not only in the pooled aggregate.
   image("../../results/curriculum_strategy/figures/test_curves_pooled.pdf", width: 80%),
   caption: [
     Held-out test success on the $6 times 6$ / 2-agent / 1-laser target as a function of
-    environment step, one line per scheduling condition (direct, forward, reverse, mixed) pooled
+    environment step, one line per scheduling condition (Direct, Forward, Reverse, Mixed), averaged
     over the three algorithms and the eight seeds. Shaded bands are $95%$ confidence intervals.
   ],
 ) <fig-curriculum-strategy-pooled>
@@ -641,7 +641,7 @@ algorithm, not only in the pooled aggregate.
   image("../../results/curriculum_strategy/figures/test_curves_by_algo.pdf", width: 100%),
   caption: [
     The same held-out test learning curves as @fig-curriculum-strategy-pooled, shown per algorithm
-    (IQL, VDN, QMIX) rather than pooled.
+    (IQL, VDN, QMIX) rather than averaged across them.
   ],
 ) <fig-curriculum-strategy-by-algo>
 
@@ -655,60 +655,66 @@ algorithm, not only in the pooled aggregate.
 ) <fig-curriculum-strategy-final>
 
 Two mechanisms explain why ordering does not help on a reachable target. First, under a fixed
-budget every step *forward* spends on the easier rungs is a step it does not spend on the target;
+budget every step *forward* spends on the easier stages is a step it does not spend on the target;
 when the target is directly learnable, that target experience dominates any transfer benefit, so
-moving budget to warm-up rungs can only match or cost final performance. Second, *reverse*,
-which reaches the target early and then trains on the easier rungs, collapses to near the floor:
+moving budget to warm-up stages can only match or cost final performance. Second, *reverse*,
+which reaches the target early and then trains on the easier stages, collapses to near the floor:
 its training-pool success ($0.10$) is far below the others, the signature of catastrophic
-forgetting, since the network overwrites the target competence acquired early while fine-tuning on
-the navigation rung. The one condition that helps, *mixed*, is domain randomisation rather than a
+forgetting @French1999, since the network overwrites the target competence acquired early while
+fine-tuning on the navigation stage. The one condition that helps, *mixed*, is domain randomisation rather than a
 curriculum: its benefit comes from the diversity of exposure, not from any easy-to-hard
 ordering, and it is the same data-variety effect already isolated in @data-scaling-experiment.
 
 The practical conclusion is that on a target the agent can already reach, scheduling the order
 of staged exposure offers no advantage over training directly on the target, and a poorly chosen
-order (reverse) is actively harmful. This leaves open the case curriculum learning is actually
-designed for: a target the agent cannot reach directly, addressed in @transfer-experiment.
+order (reverse) is actively harmful. This leaves open the case that curriculum learning is
+actually designed for, namely a target the agent cannot reach directly, which @transfer-experiment
+addresses.
 
 
 === The limits of curriculum learning on mutually-cooperative targets <transfer-experiment>
 
-This section addresses RQ6 of @introduction. @curriculum-strategy-experiment isolated the
-curriculum *mechanism* on a target that direct training can already reach, and found that ordering
-confers no advantage. The motivating promise
-of curriculum learning is different, however: that staged exposure can make *reachable* a target
-that direct training cannot solve at all. The canonical such target in this thesis is the
-hand-crafted LLE Level 6, a $12 times 13$ map with four agents and three lasers whose solution
-requires *mutual* cooperation: the dependency pattern in which several agents must each block a
+This section addresses RQ6 of @introduction: does a staged curriculum of generated levels of
+growing geometric and cooperative complexity reach the hand-crafted LLE Level 6 more successfully
+than a baseline trained directly on Level 6, at the same total budget? @curriculum-strategy-experiment
+isolated the curriculum mechanism on a target direct training can already reach, and found that
+ordering confers no advantage. The motivating promise of curriculum learning is different: that
+staged exposure can make reachable a target direct training cannot solve at all. The canonical such
+target here is the hand-crafted LLE Level 6, a $12 times 13$ map with four agents and three lasers
+whose solution requires *mutual* cooperation, the pattern in which several agents must each block a
 beam for the others before anyone can exit (@cooperation-detection). We therefore ask whether a
-curriculum of generated levels of growing cooperative complexity enables value-based
-agents to solve Level 6, and, more generally, whether such agents can cross the
-mutual-cooperation boundary at all.
+curriculum of generated levels of growing cooperative complexity lets value-based agents solve
+Level 6, and whether such agents can cross the mutual-cooperation boundary at all.
 
 ==== Protocol
 
-We approached the question in three stages of increasing ambition, each reusing the trainer,
-hyperparameters (@appendix-learnability-hyperparams), and greedy 200-episode evaluation of the
-preceding experiments.
+We answer this in three steps of increasing ambition, each reusing the trainer, hyperparameters
+(@appendix-learnability-hyperparams), and greedy 200-episode evaluation of the preceding
+experiments.
 
-+ *Frontier probe.* Direct training from scratch on a fixed $6 times 6$ grid with two agents and
-  two lasers (the smallest instance whose solution requires *mutual* cooperation), for IQL, VDN,
-  and QMIX. This isolates whether the mutual target carries any learnable signal at all before a
-  curriculum is layered on top, holding the grid fixed so that the laser count is the only change
-  from the reachable asymmetric target of @curriculum-strategy-experiment.
++ *Frontier probe: is the mutual target learnable at all?* Before asking whether a curriculum
+  helps, we check whether direct training can solve the simplest mutual target unaided. Each
+  algorithm (IQL, VDN, QMIX) trains from scratch on a fixed $6 times 6$ grid with two agents and
+  two lasers, the smallest instance whose solution requires mutual cooperation. Keeping the grid at
+  the reachable $6 times 6$ asymmetric target of @curriculum-strategy-experiment and adding only a
+  second laser makes the mutual requirement the single change between the two. A curriculum can
+  only help if this target turns out to be unlearnable directly.
 
-+ *Two-laser curriculum.* The four scheduling conditions of @curriculum-strategy-experiment
-  (direct, forward, reverse, mixed) on a fixed $6 times 6$ grid, with a three-rung ladder that
-  ramps only the cooperation requirement (zero, one, then two lasers) toward the mutual
-  two-laser target, under a budget-matched $600","000$-step budget.
++ *Two-laser curriculum: can staging build the mutual skill?* We apply the four schedules of
+  @curriculum-strategy-experiment (direct, forward, reverse, mixed) to a three-stage curriculum on
+  the same fixed $6 times 6$ grid that ramps only the cooperation requirement (zero, then one, then
+  two lasers) toward the two-laser mutual target, under a budget-matched $600","000$-step budget.
+  This asks whether staging the cooperation requirement alone lets the agents acquire mutual
+  cooperation gradually.
 
-+ *Level-6 transfer.* A four-stage curriculum of generated levels growing in both geometry and
-  cooperation ($6 times 6$/1 laser $arrow.r$ $8 times 8$/2 lasers $arrow.r$ $10 times 10$/3 lasers
-  $arrow.r$ a $12 times 13$ Level-6-style stage), with four agents throughout, evaluated on the
-  hand-crafted Level 6. The curriculum condition (CURR) is compared against three baselines that
-  isolate the contribution of staging: training only on the hardest stage (B1), an anti-curriculum
-  hard-to-easy ordering (B2), and direct training on Level 6 (B3). Runs use up to $2","000","000$
-  environment steps, an order of magnitude beyond the reachable-target budget.
++ *Level-6 transfer: does a full curriculum reach Level 6?* A four-stage curriculum of generated
+  levels growing in both geometry and cooperation ($6 times 6$/1 laser $arrow.r$ $8 times 8$/2
+  lasers $arrow.r$ $10 times 10$/3 lasers $arrow.r$ a $12 times 13$ Level-6-style stage), with four
+  agents throughout, evaluated on the hand-crafted Level 6. The curriculum (CURR) is compared
+  against three baselines that isolate the contribution of staging: training only on the hardest
+  stage (B1), an anti-curriculum hard-to-easy ordering (B2), and direct training on Level 6 (B3).
+  Runs use up to $2","000","000$ environment steps, an order of magnitude beyond the
+  reachable-target budget.
 
 Because every preliminary condition returned zero success (below), and because a single run at the
 Level-6 budget is computationally expensive, we deliberately limited each sweep to a small number
@@ -789,13 +795,13 @@ three reasons that the experiments above separate.
   identically zero reward (the negative returns above). A curriculum can make a faint signal
   louder; it cannot manufacture one from zero.
 
-- *The missing skill is absent from every easier stage.* The easier rungs teach navigation and
+- *The missing skill is absent from every easier stage.* The easier stages teach navigation and
   *asymmetric* cooperation, in which one agent blocks and the other passes. That pattern has a
   partial-credit path, since the passing agent can be rewarded before coordination is perfect. The
   mutual target requires a *deadlock-style* interdependency in which neither agent can make
   progress first. This is a discontinuity, not a ramp: no easy-to-hard ordering of asymmetric
   stages gradually constructs the mutual behaviour, because that behaviour is qualitatively absent
-  below the final rung.
+  below the final stage.
 
 - *The algorithm cannot represent the solution.* Value-decomposition methods (VDN, QMIX) assume
   the joint action-value factorises monotonically into per-agent utilities. Mutual cooperation

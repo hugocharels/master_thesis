@@ -460,15 +460,15 @@ fixed and varies $|cal(D)_("train")|$.
 ) <tab-learnability-final>
 
 
-== Training-pool scaling restores generalisation <data-scaling-experiment>
+== Scaling the training pool closes the generalisation gap <data-scaling-experiment>
 
 The learnability experiment of @learnability-experiment isolated *generalisation*, rather than
 credit assignment, as the dominant failure mode: all three algorithms reached a non-trivial
 training-pool success rate but overfit the twenty training levels, with a train–test gap of up to
 $0.52$. Because the constructive cooperative generator produces certified levels at near-zero
 marginal cost (@generator-rejection-rates), the natural remedy is simply more *training data*. We
-therefore ask whether enlarging the training pool — holding the task, the budget regime, and the
-held-out test pool fixed — closes the generalisation gap.
+therefore ask whether enlarging the training pool, holding the task, the budget regime, and the
+held-out test pool fixed, closes the generalisation gap.
 
 === Protocol
 
@@ -492,29 +492,30 @@ sixty runs per pool size, summarised as a mean and a $95%$ confidence interval.
   image("../../results/data_scaling/data_scaling_curve.pdf", width: 90%),
   caption: [
     Final greedy success rate on the training and held-out test pools as a function of the number
-    of training levels (log scale), for the $5 times 5$ / 2-agent / 1-laser cooperative task. Each
-    point aggregates the runs over three algorithms and twenty seeds; shaded bands are $95%$
-    confidence intervals. As the pool grows, training success falls while held-out success rises,
-    and the two meet.
+    of training levels (log scale), for the $5 times 5$ / 2-agent / 1-laser cooperative task.
+    Colour encodes the algorithm (IQL, VDN, QMIX) and line style the pool (solid: train; dashed:
+    test). As the pool grows, training success falls while held-out success rises, and the two
+    meet.
   ],
 ) <fig-data-scaling>
 
 @fig-data-scaling and @tab-data-scaling show a clear monotone effect. Held-out test success rises
-from $0.14$ at twenty levels to $0.28$ at one hundred and $0.43$ at five hundred — roughly a
-threefold improvement — while training success *falls* from $0.65$ to $0.43$ over the same range.
+from $0.14$ at twenty levels to $0.28$ at one hundred and $0.43$ at five hundred, roughly a
+threefold improvement, while training success *falls* from $0.65$ to $0.43$ over the same range.
 The train–test gap therefore collapses from $0.50$ to $0.19$ to approximately zero: at five hundred
 levels the agent performs essentially identically on training and held-out levels, i.e. it has
 stopped memorising the training pool and learned a policy that transfers across the level
 distribution. The monotone increase in held-out success holds for each algorithm individually (IQL
 $0.16 -> 0.26 -> 0.38$; VDN $0.14 -> 0.26 -> 0.42$; QMIX $0.13 -> 0.31 -> 0.49$), so the effect is a
-property of the data regime rather than of any single credit-assignment scheme.
+property of the data regime rather than of any single learning algorithm.
 
 #figure(
   table(
     columns: 5,
-    stroke: black,
-    inset: 8pt,
+    stroke: none,
+    inset: (x: 10pt, y: 4pt),
     align: horizon,
+    table.hline(stroke: 1pt),
     table.header(
       [*$|cal(D)_("train")|$*],
       [*$n$*],
@@ -522,24 +523,24 @@ property of the data regime rather than of any single credit-assignment scheme.
       [*Test mean $plus.minus$ CI95*],
       [*Train $-$ test gap*],
     ),
+    table.hline(stroke: 0.5pt),
     [20], [60], [$0.65 plus.minus 0.02$], [$0.14 plus.minus 0.01$], [$0.50$],
     [100], [60], [$0.47 plus.minus 0.02$], [$0.28 plus.minus 0.02$], [$0.19$],
     [500], [60], [$0.43 plus.minus 0.02$], [$0.43 plus.minus 0.03$], [$0.00$],
+    table.hline(stroke: 1pt),
   ),
   caption: [
     Final success rates on the $5 times 5$ cooperative task as the training-pool size grows, with a
-    fixed $50$-level held-out test pool. Each row aggregates the runs over three algorithms and
-    twenty seeds.
+    fixed $50$-level held-out test pool. Each row is the mean over all three algorithms (IQL, VDN,
+    QMIX) and 20 seeds ($n = 60$ runs).
   ],
 ) <tab-data-scaling>
-
-=== Interpretation
 
 This experiment isolates the practical payoff of the generator. The learnability ceiling reported
 in @learnability-experiment is not an intrinsic limit of the value-based algorithms on
 cooperative levels; it is a consequence of training on too few distinct instances. Because the
-constructive cooperative generator emits an effectively unlimited supply of certified — solvable
-and cooperation-requiring (@cooperation-detection) — levels at near-zero rejection cost, it
+constructive cooperative generator emits an effectively unlimited supply of certified levels
+(solvable and cooperation-requiring, @cooperation-detection) at near-zero rejection cost, it
 directly supplies the quantity of training data needed to close the gap, something a fixed library
 of hand-crafted levels cannot. The generator's formal guarantees thus translate into a concrete
 downstream benefit: scaling generated training data converts overfitting into generalisation. This

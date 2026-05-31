@@ -26,8 +26,12 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
+from matplotlib.lines import Line2D
 
 plt.rcParams.update({"font.family": "serif"})
+
+ALGORITHMS = ["IQL", "VDN", "QMIX"]
+ALGO_COLORS = {"IQL": "#4C78A8", "VDN": "#F58518", "QMIX": "#54A24B"}
 
 # Two-sided t_{n-1, 0.025} for the small samples we use here.
 _T = {5: 2.776, 10: 2.262, 14: 2.145, 15: 2.131, 29: 2.045, 30: 2.042, 44: 2.015}
@@ -40,16 +44,25 @@ def _t(n: int) -> float:
 
 
 def _collect(pattern: str):
-    data = defaultdict(lambda: {"train": [], "test": []})
+    """Return (per_algo, pooled).
+
+    per_algo[n][algo] = {"train": [...], "test": [...]} over seeds;
+    pooled[n]         = {"train": [...], "test": [...]} over all runs.
+    """
+    per_algo = defaultdict(lambda: defaultdict(lambda: {"train": [], "test": []}))
+    pooled = defaultdict(lambda: {"train": [], "test": []})
     for f in glob.glob(f"{pattern}/runs/*/final_results.json"):
         m = re.search(r"_n(\d+)", f)
         if not m:
             continue
         n = int(m.group(1))
         d = json.loads(Path(f).read_text())
-        data[n]["train"].append(d["success_rate_train"])
-        data[n]["test"].append(d["success_rate_test"])
-    return data
+        algo = d.get("algo", "?")
+        per_algo[n][algo]["train"].append(d["success_rate_train"])
+        per_algo[n][algo]["test"].append(d["success_rate_test"])
+        pooled[n]["train"].append(d["success_rate_train"])
+        pooled[n]["test"].append(d["success_rate_test"])
+    return per_algo, pooled
 
 
 def _stats(vals):
@@ -66,43 +79,60 @@ def main() -> None:
     p.add_argument("--out", type=Path, default=Path("results/data_scaling/data_scaling_curve.pdf"))
     args = p.parse_args()
 
-    data = _collect(args.glob)
-    if not data:
+    per_algo, pooled = _collect(args.glob)
+    if not pooled:
         print(f"[plot] no runs matched {args.glob!r}", file=sys.stderr)
         return
-    sizes = sorted(data)
+    sizes = sorted(pooled)
 
-    rows = []
-    for n in sizes:
-        trm, trc, k = _stats(data[n]["train"])
-        tem, tec, _ = _stats(data[n]["test"])
-        rows.append((n, k, trm, trc, tem, tec))
-
-    # Console table (for the thesis numbers).
+    # Console table (pooled over all algorithms and seeds, for the thesis numbers).
     print(f"{'#train':>7} {'runs':>5} {'train(CI95)':>16} {'test(CI95)':>16} {'gap':>6}")
-    for n, k, trm, trc, tem, tec in rows:
+    pooled_tr, pooled_trc, pooled_te, pooled_tec = [], [], [], []
+    for n in sizes:
+        trm, trc, k = _stats(pooled[n]["train"])
+        tem, tec, _ = _stats(pooled[n]["test"])
+        pooled_tr.append(trm); pooled_trc.append(trc)
+        pooled_te.append(tem); pooled_tec.append(tec)
         print(f"{n:>7} {k:>5} {trm:>7.3f}+-{trc:<6.3f} {tem:>7.3f}+-{tec:<6.3f} {trm - tem:>6.3f}")
 
-    x = [r[0] for r in rows]
-    tr = [r[2] for r in rows]; trc = [r[3] for r in rows]
-    te = [r[4] for r in rows]; tec = [r[5] for r in rows]
-
+    x = np.asarray(sizes, dtype=float)
     args.out.parent.mkdir(parents=True, exist_ok=True)
-    fig, ax = plt.subplots(figsize=(7, 4.5))
-    ax.plot(x, tr, "o--", color="#4C78A8", label="train pool")
-    ax.fill_between(x, np.array(tr) - np.array(trc), np.array(tr) + np.array(trc),
-                    color="#4C78A8", alpha=0.18)
-    ax.plot(x, te, "o-", color="#F58518", label="held-out test pool")
-    ax.fill_between(x, np.array(te) - np.array(tec), np.array(te) + np.array(tec),
-                    color="#F58518", alpha=0.18)
+    fig, ax = plt.subplots(figsize=(8, 5))
+
+    # Per-algorithm means at each pool size (rows = algorithms).
+    train_stack = np.array(
+        [[float(np.mean(per_algo[n][a]["train"])) for n in sizes] for a in ALGORITHMS]
+    )
+    test_stack = np.array(
+        [[float(np.mean(per_algo[n][a]["test"])) for n in sizes] for a in ALGORITHMS]
+    )
+
+    # Per-algorithm curves: colour = algorithm, solid = train, dashed = test.
+    for i, algo in enumerate(ALGORITHMS):
+        color = ALGO_COLORS[algo]
+        ax.plot(x, train_stack[i], "-", color=color, lw=1.6, marker="o", ms=4)
+        ax.plot(x, test_stack[i], "--", color=color, lw=1.6, marker="o", ms=4)
+
     ax.set_xscale("log")
-    ax.set_xticks(x); ax.set_xticklabels([str(v) for v in x])
-    ax.set_xlabel("number of training levels")
-    ax.set_ylabel("success rate (greedy exit rate)")
+    ax.set_xticks(sizes); ax.set_xticklabels([str(v) for v in sizes])
+    ax.set_xlabel("Number of training levels")
+    ax.set_ylabel("Exit rate")
     ax.set_ylim(0.0, 1.0)
-    ax.set_title("Training-pool scaling closes the generalisation gap (5×5 / 2a / 1L)")
-    ax.legend(loc="upper left")
-    ax.grid(True, which="both", alpha=0.25)
+    ax.set_title("Training-pool scaling closes the generalisation gap")
+
+    # Two-dimensional legend: colour = algorithm, line style = pool
+    # (solid = train, dashed = test).
+    algo_handles = [Line2D([0], [0], color=ALGO_COLORS[a], lw=2, label=a) for a in ALGORITHMS]
+    split_handles = [
+        Line2D([0], [0], color="black", lw=2, linestyle="-", label="Train pool"),
+        Line2D([0], [0], color="black", lw=2, linestyle="--", label="Test pool"),
+    ]
+    leg_algo = ax.legend(handles=algo_handles, loc="upper right", fontsize="small",
+                         title="Algorithm", framealpha=0.9)
+    ax.add_artist(leg_algo)
+    ax.legend(handles=split_handles, loc="lower right", fontsize="small",
+              title="Pool", framealpha=0.9)
+
     fig.tight_layout()
     fig.savefig(args.out)
     plt.close(fig)

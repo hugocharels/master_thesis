@@ -234,7 +234,7 @@ cooperation profile analyser also introduced in @cooperation-detection.
 
 === Protocol
 
-For each of three cooperative generators (Constrained Random, Constructive, and Level-6-Style,
+For each of the three cooperative generators (Constrained Random, Constructive, and Level-6-Style,
 all in cooperative mode) and two grid configurations ($5 times 5$ with 2 agents and 1 laser,
 $8 times 8$ with 3 agents and 2 lasers), the script accepts 100 cooperative levels on the small
 grid and 50 on the large grid, then classifies each into one of the analyser's profile families:
@@ -242,16 +242,17 @@ grid and 50 on the large grid, then classifies each into one of the analyser's p
 
 === Results
 
+@fig-profile-distribution reports the profile breakdown for each generator and grid
+configuration. The two regimes behave very differently, and we discuss each in turn.
+
 #figure(
   image("../../results/profile_benchmark/profile_distribution.pdf", width: 90%),
   caption: [
-    Distribution of cooperation profiles among accepted cooperative levels, grouped by generator
-    and grid size. Each bar shows the fraction of accepted levels assigned to a given profile
-    family.
+    Distribution of cooperation profiles among accepted cooperative levels.
+    Each bar is one (generator, grid) configuration; stacked segments sum to 100 %.
+    `Fully coupled` is listed in the legend for completeness but was never observed (0 % everywhere).
   ],
-)
-
-=== Interpretation
+) <fig-profile-distribution>
 
 On the $5 times 5$ grid every accepted level from all three generators is classified as
 `asymmetric` (100 out of 100 in each case). With only 2 agents, the families `chain`,
@@ -294,11 +295,13 @@ profiles. The raw per-(generator, grid) profile counts are tabulated in
 
 The two benchmarks above characterise complementary aspects of the generation framework.
 
-The rejection-rate experiment measures *efficiency*. The headline finding is that the
+The rejection-rate experiment measures *generation efficiency*: how many candidate
+layouts a generator must propose before one is accepted. The headline finding is that the
 Constructive generator in cooperative mode runs at near-zero rejection (0–6 % across the
 three grid sizes, comparable to the solvable setting), thanks to the multi-colour
 structural-laser construction that guarantees cooperation by construction rather than by
-rejection sampling. This makes the generator practical for producing large pools at scale.
+rejection sampling. This near-zero rejection rate makes the Constructive generator practical
+for producing large pools at scale.
 
 The profile-distribution experiment measures *output diversity*. The headline finding is that
 the same Constructive cooperative generator produces predominantly `mutual` levels (92 % mutual
@@ -325,7 +328,8 @@ step. The learnability question is therefore not whether the levels are solvable
 common value-based methods within a modest training budget.
 
 We restrict ourselves to three baseline cooperative-MARL algorithms: independent
-$Q$-learning (IQL), value-decomposition networks (VDN), and QMIX. They form a natural
+$Q$-learning (IQL), in which each agent runs a separate deep $Q$-network @Mnih2015;
+value-decomposition networks (VDN) @Sunehag2018; and QMIX @Rashid2018. They form a natural
 progression in the strength of the credit-assignment assumption: from none (IQL), to additive
 team-value (VDN), to a monotonic mixing network (QMIX).
 
@@ -334,29 +338,26 @@ team-value (VDN), to a monotonic mixing network (QMIX).
 The experiment fixes a single small-grid configuration that exercises the cooperation pressure
 end-to-end while remaining within reach of a 200,000-step budget: a $5 times 5$ grid with two
 agents and one laser, horizon $T_("max") = 10$, and the Constructive cooperative generator. The
-configuration is summarised in @tab-learnability-config. An earlier $8 times 8$, three-agent, two-laser
-configuration produced $0%$ success for every algorithm and seed we ran, leaving open
-whether the algorithms are fundamentally unable or whether the task simply exceeds the budget.
-The $5 times 5$ rerun isolates the former question.
+configuration is summarised in @tab-learnability-config.
 
 #figure(
   table(
     columns: 6,
-    stroke: black,
-    inset: 8pt,
+    stroke: none,
+    inset: (x: 10pt, y: 4pt),
     align: horizon,
-    table.header(
-      [*Grid*], [*Agents*], [*Lasers*], [*$T_("max")$*],
-      [*Generator*], [*Steps*],
-    ),
+    table.hline(stroke: 1pt),
+    table.header([*Grid*], [*Agents*], [*Lasers*], [*$T_("max")$*], [*Generator*], [*Steps*]),
+    table.hline(stroke: 0.5pt),
     [5×5], [2], [1], [10], [Constructive (cooperative)], [200,000],
+    table.hline(stroke: 1pt),
   ),
   caption: [Learnability-experiment configuration.],
 ) <tab-learnability-config>
 
-The pre-flight script generates two disjoint level pools from independent seeded streams: a
-training pool of $|cal(D)_("train")| = 20$ levels (split seed 20260618) and a held-out test
-pool of $|cal(D)_("test")| = 20$ levels (split seed 20260619). The same pools are reused for all
+The pre-flight script generates two disjoint level pools: a
+training pool of $|cal(D)_("train")| = 20$ levels and a held-out test
+pool of $|cal(D)_("test")| = 20$ levels. The same pools are reused for all
 algorithms and all training seeds, so any cross-algorithm difference is attributable to
 optimisation rather than to a pool resample. Per-level renderings of both pools are reproduced
 in the appendix (@appendix-learnability-train, @appendix-learnability-test).
@@ -376,21 +377,21 @@ Within each training run, every episode samples one level $L in cal(D)_("train")
 replacement; the episode horizon equals the generator's $T_("max")$. Every 10,000 environment
 steps we run a greedy evaluation of 50 episodes on $cal(D)_("train")$ and 50 episodes on
 $cal(D)_("test")$, sampling levels uniformly from each pool. After the final training step we
-run a longer evaluation of 200 episodes per pool; the success rate $hat(s)$ reported below is
-this final greedy estimate, with one estimate per (algorithm, seed) cell:
-$
-  hat(s)_("train")(a, s) = 1/200 sum_(i=1)^200 bb(1)[text("episode") i text(" reaches all exits")]
-$
-and analogously for $hat(s)_("test")(a, s)$.
+run a longer evaluation of 200 episodes per pool. We use the success-rate metric defined in
+@lle-background: the success rate $hat(s)$ reported below is the fraction of these 200
+final-evaluation episodes in which the whole team reaches its exits, computed separately on the
+train and test pools, with one estimate per (algorithm, seed) cell.
 
 The headline aggregate per algorithm $a in cal(A)$ is the mean and standard deviation over the
-twenty seeds; we also report a 95 % confidence interval $plus.minus t_(19,0.025) sigma / sqrt(20)$
-($t_(19,0.025) approx 2.093$) in the per-seed appendix tables.
+20 seeds. We also report a 95 % confidence interval $plus.minus t^* sigma / sqrt(20)$ in the
+per-seed appendix tables, where $sigma$ is the across-seed standard deviation and
+$t^* approx 2.093$ is the 0.975 quantile of Student's $t$ distribution with $20 - 1 = 19$
+degrees of freedom.
 
 === Results
 
 @fig-learnability-curves reports the train- and test-pool success rates as a function of
-environment steps, averaged over the twenty seeds with a 95 % confidence band. All three
+environment steps, averaged over the 20 seeds with a 95 % confidence band. All three
 algorithms reach a non-trivial success rate on the training pool well before the 200,000-step
 budget is exhausted, confirming that the $5 times 5$ cooperative task is learnable in
 principle. The held-out test pool is markedly harder for every algorithm: the test curves
@@ -402,49 +403,59 @@ per-seed numbers in @tab-learnability-perseed).
   image("../../results/learnability_5x5/figures/learning_curves.pdf", width: 100%),
   caption: [
     Mean success rate (greedy exit rate) on the training and held-out test pools as a function
-    of environment steps, for IQL, VDN, and QMIX. Shaded bands are 95 % confidence intervals
-    over the twenty training seeds, clipped to the per-step minimum and maximum.
+    of environment steps. Colour encodes the algorithm (IQL, VDN, QMIX) and line style the pool
+    (solid: train; dashed: test). Shaded bands are 95 % confidence intervals over the 20
+    training seeds, clipped to the per-step minimum and maximum.
   ],
 ) <fig-learnability-curves>
 
-@fig-learnability-final shows the per-algorithm final success rates from the longer
-200-episode evaluation. The per-algorithm aggregates are summarised in
-@tab-learnability-final: VDN achieves the strongest training-pool success
-($0.70 plus.minus 0.05$), followed by IQL ($0.60 plus.minus 0.03$) and QMIX
-($0.59 plus.minus 0.03$); on the held-out pool the ranking flips slightly, with IQL at
-$0.23 plus.minus 0.03$, QMIX at $0.20 plus.minus 0.03$, and VDN at $0.18 plus.minus 0.03$.
-The cross-algorithm spread is small relative to the train/test gap, so the dominant signal in
-this configuration is generalisation, not credit assignment: every algorithm overfits the
-twenty training levels rather than abstracting the cooperation pattern across the pool.
+@fig-learnability-final and @tab-learnability-final summarise the final 200-episode evaluation.
+On the training pool VDN is strongest ($0.70 plus.minus 0.05$), ahead of IQL
+($0.60 plus.minus 0.03$) and QMIX ($0.59 plus.minus 0.03$); on the held-out pool the order
+reverses, with IQL at $0.23 plus.minus 0.03$, QMIX at $0.20 plus.minus 0.03$, and VDN at
+$0.18 plus.minus 0.03$. The three held-out means lie within each other's confidence intervals,
+so no algorithm generalises reliably better than another in this configuration.
+
+The contrast between the two pools is the substantive result, and VDN illustrates it most
+sharply. It fits the training pool best (on individual seeds its training success reaches
+$0.96$) yet ends with the lowest held-out success, so the extra capacity that additive
+value decomposition buys is spent memorising the 20 training levels rather than learning a
+transferable cooperation policy. The three algorithms span a deliberate range of
+credit-assignment strength (none for IQL, additive for VDN, monotonic mixing for QMIX) and
+nonetheless collapse to the same held-out band; the bottleneck here is therefore the number of
+distinct training levels, not the sophistication of the learning rule. This is what motivates
+the training-pool scaling experiment of @data-scaling-experiment, which holds the algorithms
+fixed and varies $|cal(D)_("train")|$.
 
 #figure(
   image("../../results/learnability_5x5/figures/final_bar_chart.pdf", width: 75%),
   caption: [
     Final-evaluation success rate per algorithm (200 episodes per pool), train versus test.
-    Error bars are 95 % confidence intervals over the twenty training seeds.
+    Error bars are 95 % confidence intervals over the 20 training seeds.
   ],
 ) <fig-learnability-final>
 
 #figure(
   table(
     columns: 5,
-    stroke: black,
-    inset: 8pt,
+    stroke: none,
+    inset: (x: 10pt, y: 4pt),
     align: horizon,
+    table.hline(stroke: 1pt),
     table.header(
-      [*Algorithm*], [*$n$*],
-      [*Train mean $plus.minus$ CI95*], [*Test mean $plus.minus$ CI95*],
-      [*Train $-$ test gap*],
+      [*Algorithm*], [*$n$*], [*Train mean $plus.minus$ CI95*], [*Test mean $plus.minus$ CI95*], [*Train $-$ test gap*]
     ),
-    [IQL],  [20], [$0.60 plus.minus 0.03$], [$0.23 plus.minus 0.03$], [$0.37$],
-    [VDN],  [20], [$0.70 plus.minus 0.05$], [$0.18 plus.minus 0.03$], [$0.52$],
+    table.hline(stroke: 0.5pt),
+    [IQL], [20], [$0.60 plus.minus 0.03$], [$0.23 plus.minus 0.03$], [$0.37$],
+    [VDN], [20], [$0.70 plus.minus 0.05$], [$0.18 plus.minus 0.03$], [$0.52$],
     [QMIX], [20], [$0.59 plus.minus 0.03$], [$0.20 plus.minus 0.03$], [$0.39$],
+    table.hline(stroke: 1pt),
   ),
   caption: [
     Per-algorithm final success rates on the $5 times 5$ cooperative pools, aggregated over
-    twenty training seeds. The 200-episode greedy evaluation is summarised as a mean and a
-    95 % confidence interval ($plus.minus t_(19,0.025) sigma / sqrt(20)$,
-    $t_(19,0.025) approx 2.093$).
+    20 training seeds. The 200-episode greedy evaluation is summarised as a mean and a
+    95 % confidence interval $plus.minus t^* sigma / sqrt(20)$ over the 20 seeds
+    ($t^* approx 2.093$, the 0.975 quantile of Student's $t$ with 19 degrees of freedom).
   ],
 ) <tab-learnability-final>
 
@@ -505,11 +516,13 @@ property of the data regime rather than of any single credit-assignment scheme.
     inset: 8pt,
     align: horizon,
     table.header(
-      [*$|cal(D)_("train")|$*], [*$n$*],
-      [*Train mean $plus.minus$ CI95*], [*Test mean $plus.minus$ CI95*],
+      [*$|cal(D)_("train")|$*],
+      [*$n$*],
+      [*Train mean $plus.minus$ CI95*],
+      [*Test mean $plus.minus$ CI95*],
       [*Train $-$ test gap*],
     ),
-    [20],  [60], [$0.65 plus.minus 0.02$], [$0.14 plus.minus 0.01$], [$0.50$],
+    [20], [60], [$0.65 plus.minus 0.02$], [$0.14 plus.minus 0.01$], [$0.50$],
     [100], [60], [$0.47 plus.minus 0.02$], [$0.28 plus.minus 0.02$], [$0.19$],
     [500], [60], [$0.43 plus.minus 0.02$], [$0.43 plus.minus 0.03$], [$0.00$],
   ),
@@ -597,13 +610,11 @@ rungs in random order throughout training.
     inset: 8pt,
     align: horizon,
     table.header(
-      [*Condition*], [*$n$*],
-      [*Train mean $plus.minus$ CI95*], [*Test mean $plus.minus$ CI95*],
-      [*Train $-$ test gap*],
+      [*Condition*], [*$n$*], [*Train mean $plus.minus$ CI95*], [*Test mean $plus.minus$ CI95*], [*Train $-$ test gap*]
     ),
-    [direct],  [24], [$0.41 plus.minus 0.05$], [$0.17 plus.minus 0.03$], [$0.24$],
+    [direct], [24], [$0.41 plus.minus 0.05$], [$0.17 plus.minus 0.03$], [$0.24$],
     [forward], [24], [$0.39 plus.minus 0.06$], [$0.15 plus.minus 0.03$], [$0.24$],
-    [mixed],   [24], [$0.39 plus.minus 0.07$], [$0.22 plus.minus 0.04$], [$0.17$],
+    [mixed], [24], [$0.39 plus.minus 0.07$], [$0.22 plus.minus 0.04$], [$0.17$],
     [reverse], [24], [$0.10 plus.minus 0.02$], [$0.07 plus.minus 0.02$], [$0.03$],
   ),
   caption: [
@@ -728,14 +739,12 @@ budget is increased tenfold.
     stroke: black,
     inset: 8pt,
     align: horizon,
-    table.header(
-      [*Task (grid / agents / lasers)*], [*Cooperation*], [*Budget*], [*Train*], [*Test*],
-    ),
-    [5×5 / 2 / 1],             [asymmetric], [200k], [$0.63$], [$0.20$],
-    [6×6 / 2 / 1],             [asymmetric], [400k], [$0.41$], [$0.17$],
-    [6×6 / 2 / 2],             [*mutual*],   [600k], [$0.08$], [$0.00$],
-    [5×5 / 2 / 2],             [*mutual*],   [200k], [$0.00$], [$0.00$],
-    [12×13 / 4 / 3 (Level 6)], [*mutual*],   [2M],   [$0.00$], [$0.00$],
+    table.header([*Task (grid / agents / lasers)*], [*Cooperation*], [*Budget*], [*Train*], [*Test*]),
+    [5×5 / 2 / 1], [asymmetric], [200k], [$0.63$], [$0.20$],
+    [6×6 / 2 / 1], [asymmetric], [400k], [$0.41$], [$0.17$],
+    [6×6 / 2 / 2], [*mutual*], [600k], [$0.08$], [$0.00$],
+    [5×5 / 2 / 2], [*mutual*], [200k], [$0.00$], [$0.00$],
+    [12×13 / 4 / 3 (Level 6)], [*mutual*], [2M], [$0.00$], [$0.00$],
   ),
   caption: [
     Greedy success rate as the cooperation requirement increases, pooled over algorithms and

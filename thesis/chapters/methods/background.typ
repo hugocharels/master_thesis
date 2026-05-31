@@ -17,6 +17,11 @@ teammates who are not immune to that colour. Crucially, this action is locally u
 helper agent receives no direct benefit from blocking its own beam. The reward is issued only
 when all agents simultaneously occupy their exits, which requires the full team to coordinate.
 
+We measure agent performance throughout this thesis by the *success rate*:
+the fraction of evaluation episodes in which the whole team succeeds, that is, every agent
+reaches an exit within the horizon. This is a strict team-level criterion: an episode in which
+only some agents exit counts as a failure.
+
 An annotated rendering of LLE Level 6 (the canonical hard target used throughout this thesis)
 is shown in @figure-lvl6.
 

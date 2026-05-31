@@ -24,6 +24,7 @@ matplotlib.use("Agg")
 
 import matplotlib.pyplot as plt
 import numpy as np
+from matplotlib.lines import Line2D
 
 from experiments.learnability.configs import ALGORITHMS
 
@@ -74,9 +75,10 @@ def _read_eval_csv(path: Path):
 
 
 def plot_learning_curves(runs_dir: Path, out_path: Path) -> None:
-    """1x2 subplots: train / test success rate per algo.
+    """Single axes overlaying train and test success rate per algo.
 
-    Uses CI95 bands (like marl UI default) when n > 1,
+    Colour encodes the algorithm; line style encodes the pool (solid =
+    train, dashed = test). CI95 bands (like marl UI default) when n > 1,
     falls back to raw line when n = 1.
     """
     out_path.parent.mkdir(parents=True, exist_ok=True)
@@ -94,9 +96,12 @@ def plot_learning_curves(runs_dir: Path, out_path: Path) -> None:
         print("[plot] WARN: no eval CSV data, skipping learning_curves", file=sys.stderr)
         return
 
-    fig, axes = plt.subplots(1, 2, figsize=(12, 4.5), sharey=True)
-    for ax, split in zip(axes, ("train", "test")):
-        for algo in ALGORITHMS:
+    split_style = {"train": "-", "test": "--"}
+
+    fig, ax = plt.subplots(figsize=(8, 5))
+    for algo in ALGORITHMS:
+        color = ALGO_COLORS[algo]
+        for split in ("train", "test"):
             seed_data = data[algo][split]
             if not seed_data:
                 continue
@@ -108,25 +113,36 @@ def plot_learning_curves(runs_dir: Path, out_path: Path) -> None:
             n = matrix.shape[0]
             mean = matrix.mean(axis=0)
             std = matrix.std(axis=0)
-            color = ALGO_COLORS[algo]
 
-            ax.plot(steps_ref, mean, label=algo, color=color)
+            ax.plot(steps_ref, mean, color=color, linestyle=split_style[split])
 
             if n > 1:
                 # CI95 band clipped to [min, max], matching marl style
                 ci95 = std * 1.96 / np.sqrt(n)
                 low = np.maximum(mean - ci95, matrix.min(axis=0))
                 high = np.minimum(mean + ci95, matrix.max(axis=0))
-                ax.fill_between(steps_ref, low, high, color=color, alpha=0.2)
+                ax.fill_between(steps_ref, low, high, color=color, alpha=0.15)
 
-        ax.set_xlabel("Time step")
-        ax.set_ylabel("exit_rate")
-        ax.set_title(f"Success rate ({split} set)")
-        ax.set_ylim(-0.05, 1.05)
-        ax.margins(x=0.01, y=0.01)
-        ax.legend(loc="upper left", fontsize="small", bbox_to_anchor=(0, 1.02))
+    ax.set_xlabel("Time step")
+    ax.set_ylabel("Exit rate")
+    ax.set_ylim(-0.05, 1.05)
+    ax.margins(x=0.01, y=0.01)
 
-    axes[0].set_ylabel("exit_rate")
+    # Two-dimensional legend: colour = algorithm, line style = pool. Two
+    # separate legends, both kept inside the axes frame.
+    algo_handles = [
+        Line2D([0], [0], color=ALGO_COLORS[a], lw=2, label=a) for a in ALGORITHMS
+    ]
+    split_handles = [
+        Line2D([0], [0], color="black", lw=2, linestyle="-", label="Train set"),
+        Line2D([0], [0], color="black", lw=2, linestyle="--", label="Test set"),
+    ]
+    leg_algo = ax.legend(handles=algo_handles, loc="upper left", fontsize="small",
+                         title="Algorithm", framealpha=0.9)
+    ax.add_artist(leg_algo)
+    ax.legend(handles=split_handles, loc="lower right", fontsize="small",
+              title="Pool", framealpha=0.9)
+
     fig.tight_layout()
     fig.savefig(out_path)
     plt.close(fig)
@@ -178,11 +194,11 @@ def plot_final_bar_chart(runs_dir: Path, out_path: Path) -> None:
 
     ax.set_xticks(x)
     ax.set_xticklabels(present)
-    ax.set_ylabel("exit_rate")
+    ax.set_ylabel("Exit rate")
     ax.set_title("Final success rate by algorithm")
     ax.set_ylim(0.0, 1.05)
     ax.margins(x=0.01, y=0.01)
-    ax.legend(loc="upper left", fontsize="small", bbox_to_anchor=(0, 1.02))
+    ax.legend(loc="upper right", fontsize="small", framealpha=0.9)
     fig.tight_layout()
     fig.savefig(out_path)
     plt.close(fig)

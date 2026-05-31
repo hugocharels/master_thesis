@@ -725,7 +725,7 @@ exact stage configurations are tabulated in @appendix-transfer-detail.
 
 ==== Results
 
-Across all three stages, no configuration learned to solve a mutually-cooperative target.
+Across all three steps, no configuration learned to solve a mutually-cooperative target.
 @tab-cliff places these outcomes next to the *reachable* results of the preceding sections on a
 single axis of increasing cooperation difficulty. The contrast is the result: success is
 non-trivial as long as cooperation is *asymmetric* (a one-way blocking action) and collapses to
@@ -734,30 +734,31 @@ budget is increased tenfold.
 
 #figure(
   table(
-    columns: 5,
+    columns: 8,
     stroke: none,
-    inset: (x: 10pt, y: 4pt),
+    inset: (x: 7pt, y: 4pt),
     align: horizon,
     table.hline(stroke: 1pt),
-    table.header([*Task (grid / agents / lasers)*], [*Cooperation*], [*Budget*], [*Train*], [*Test*]),
+    table.header(
+      [*Experiment*], [*Grid*], [*Agents*], [*Lasers*], [*Cooperation*], [*Budget*], [*Train*], [*Test*]
+    ),
     table.hline(stroke: 0.5pt),
-    [5×5 / 2 / 1], [asymmetric], [200k], [$0.63$], [$0.20$],
-    [6×6 / 2 / 1], [asymmetric], [400k], [$0.41$], [$0.17$],
-    [6×6 / 2 / 2], [*mutual*], [600k], [$0.08$], [$0.00$],
-    [5×5 / 2 / 2], [*mutual*], [200k], [$0.00$], [$0.00$],
-    [12×13 / 4 / 3 (Level 6)], [*mutual*], [2M], [$0.00$], [$0.00$],
+    [Learnability], [5×5], [2], [1], [asymmetric], [200k], [$0.63$], [$0.20$],
+    [Curriculum ordering], [6×6], [2], [1], [asymmetric], [400k], [$0.41$], [$0.17$],
+    [Frontier probe], [6×6], [2], [2], [*mutual*], [600k], [$0.08$], [$0.00$],
+    [Frontier probe], [5×5], [2], [2], [*mutual*], [200k], [$0.00$], [$0.00$],
+    [Level-6 transfer], [12×13], [4], [3], [*mutual*], [2M], [$0.00$], [$0.00$],
     table.hline(stroke: 1pt),
   ),
   caption: [
     Greedy success rate as the cooperation requirement increases, pooled over algorithms and
     seeds. "Train" is success on the levels seen during training (the held-out *generated* pool for
-    the Level-6 row); "Test" is success on the held-out target (Level 6 for the last row). The
+    the Level-6 transfer); "Test" is success on the held-out target (Level 6 for that row). The
     first two rows are the reachable asymmetric targets of @learnability-experiment and
     @curriculum-strategy-experiment; the last three are the mutual targets of this section. For the
-    mutual rows the value is the mean over the available algorithm and seed runs (the
-    $6 times 6$ / 2-laser row is the direct-training frontier probe); for the Level-6 row it is the
-    best achieved over the four conditions (B1, B2, B3, CURR). In every case held-out success is
-    zero. Per-run numbers are in @appendix-transfer-detail.
+    mutual rows the value is the mean over the available algorithm and seed runs; for the Level-6
+    transfer it is the best achieved over the four conditions (B1, B2, B3, CURR). In every case
+    held-out success is zero. Per-run numbers are in @appendix-transfer-detail.
   ],
 ) <tab-cliff>
 

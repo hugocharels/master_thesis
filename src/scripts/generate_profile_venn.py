@@ -15,12 +15,15 @@ asymmetric). In particular the chain *label* is the strictly stronger
 Relations drawn:
 
   - C, D, M are three overlapping circles (classical 3-circle layout).
-  - F is a shape inside C covering the regions C n D n M, C n D, and C-only,
-    because F subset.eq C and F n M subset.eq D (a fully-coupled graph always
-    contains a chain, and a mutual + fully-coupled graph is
-    also distributed, so F never touches the "C and M but not D" region).
-  - For n_a = 2 the only fully-coupled graph is the reciprocal pair, which
-    contains no chain; it sits as a small separate circle in the residual.
+  - F is a single ellipse inside M's top-right, clear of C and D, so the only
+    overlap drawn is M inter F. It marks the two-agent reciprocal pair: both
+    mutual and fully coupled (hence M inter F is non-empty) yet with no chain
+    and no in-degree-2 vertex, so it lies outside C and D. It is labelled fully
+    coupled because that label outranks mutual.
+  - For n_a >= 3 a fully-coupled graph always contains a chain (F subset.eq C)
+    and, when it has a reciprocal pair, is also distributed (F n M subset.eq D);
+    that part of F lies inside C and is not outlined here (see the ordering
+    section in the thesis).
 
 Referenced from thesis/chapters/contribution/cooperation.typ.
 """
@@ -89,14 +92,17 @@ def main() -> None:
             )
         )
 
-    # F: an ellipse inside C covering C-only, C n D, and the triple C n D n M,
-    # reaching the D-M overlap while staying clear of the C n M (no D) lens
-    # above D. Knobs: raise xy[1] to cover more of the triple, ease `angle`
-    # toward 0 to lift the right end, raise `height` to make it taller.
-    f_ellipse_kwargs = dict(xy=(4.6, 4.67), width=4.0, height=2.1, angle=-6)
+    # F: fully coupled, a single elongated ellipse that is the union of the two
+    # regions of F: the part inside C (C-only, C n D, and the triple C n D n M,
+    # for n_a >= 3 fully-coupled graphs) and the two-agent reciprocal pair in M's
+    # top-right (mutual + fully coupled, outside C and D). The ellipse therefore
+    # runs diagonally from inside C up into M. Knobs: `xy` is the centre, `angle`
+    # tilts the major axis from C toward M's top-right, `width`/`height` are the
+    # full axes. C is centred (4.5, 5.5) r 2.4; D is centred (5.9, 3.5) r 2.4.
+    f_kwargs = dict(xy=(5.1, 5.35), width=5.2, height=2.1, angle=19)
     ax.add_patch(
         patches.Ellipse(
-            **f_ellipse_kwargs,
+            **f_kwargs,
             facecolor=PREDICATE_COLOR["F"],
             edgecolor=PREDICATE_COLOR["F"],
             linewidth=2.0,
@@ -105,34 +111,22 @@ def main() -> None:
     )
     ax.add_patch(
         patches.Ellipse(
-            **f_ellipse_kwargs,
+            **f_kwargs,
             facecolor="none",
             edgecolor=PREDICATE_COLOR["F"],
             linewidth=2.0,
         )
     )
-
-    # F for n_a = 2: small separate circle in the residual region.
-    f2_center = (9.4, 1.4)
-    f2_radius = 0.62
-    ax.add_patch(
-        patches.Circle(
-            f2_center,
-            f2_radius,
-            facecolor=PREDICATE_COLOR["F"],
-            edgecolor=PREDICATE_COLOR["F"],
-            linewidth=2.0,
-            alpha=0.32,
-        )
-    )
-    ax.add_patch(
-        patches.Circle(
-            f2_center,
-            f2_radius,
-            facecolor="none",
-            edgecolor=PREDICATE_COLOR["F"],
-            linewidth=2.0,
-        )
+    # Label placed on the left, outside the ellipse, matching the other names.
+    ax.text(
+        1.3,
+        3.9,
+        "fully\n" + r"coupled ($\mathcal{F}$)",
+        fontsize=15,
+        fontweight="bold",
+        ha="center",
+        va="center",
+        color=PREDICATE_COLOR["F"],
     )
 
     # Predicate names (placed outside their shapes for breathing room)
@@ -162,25 +156,6 @@ def main() -> None:
         fontweight="bold",
         ha="center",
         color=PREDICATE_COLOR["D"],
-    )
-    ax.text(
-        1.35,
-        3.95,
-        "fully\n" + r"coupled ($\mathcal{F}$)",
-        fontsize=12.5,
-        fontweight="bold",
-        ha="center",
-        color=PREDICATE_COLOR["F"],
-    )
-    ax.text(
-        9.4,
-        2.35,
-        r"fully coupled" + "\n" + r"($n_a = 2$)",
-        fontsize=10.5,
-        fontweight="bold",
-        ha="center",
-        va="bottom",
-        color=PREDICATE_COLOR["F"],
     )
 
     # The bounding box is the base predicate A (cooperation required); the four

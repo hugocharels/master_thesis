@@ -196,11 +196,11 @@ precisely, with geometric examples, in @sec-profile-families:
 
 - *unsolvable*: $Phi(L, T_("max"))$ is UNSAT.
 - *independent*: cooperation is not required.
-- *asymmetric*: one-way helping that is never reciprocated.
+- *asymmetric*: one-way helping.
 - *chain*: help relayed along a line of agents.
 - *distributed*: one agent helped by several others.
 - *mutual*: two agents help each other.
-- *fully coupled*: every agent reaches every other.
+- *fully coupled*: every agent helps every other and is helped by every other (not necessary a direct help).
 
 Every label is constructible within LLE's $1 <= n_a <= 4$ regime: `asymmetric` and `fully_coupled`
 need at least two agents; the remaining labels are reachable from three agents upward.
@@ -441,7 +441,7 @@ base predicate and four structural refinements of it:
 - $cal(A)$ (asymmetric): cooperation is required, i.e. #fref(<thm-5-1>, [Theorem 5.1]) holds for
   $L$. This is the base case; the analyser builds $G_L$ only when cooperation is required, so each
   structured pattern below is a property of a cooperative level and hence a special case of it:
-  $cal(C), cal(D), cal(M), cal(F) subset.eq cal(A)$.
+  $cal(C), cal(D), cal(M), cal(F) subset cal(A)$.
 - $cal(C)$ (chain): $G_L$ contains a directed *simple* path of length at least two, i.e. some agent
   helps one agent and is helped by a *different* one (equivalently, the relay runs through at least
   three distinct agents). A bare reciprocal pair $c arrow.l.r c'$ is therefore not a chain: it
@@ -458,17 +458,22 @@ is required but none of the four structural patterns holds.
 
 @fig-profile-venn shows these predicates as an Euler diagram, with the base predicate $cal(A)$
 enclosing the four structural ones. They overlap rather than partition: chain, distributed, and
-mutual can co-occur freely, while fully coupled lies inside chain (and inside distributed when a
-reciprocal pair is present).
+mutual can co-occur freely. For $n_a >= 3$, fully coupled lies inside chain (and inside distributed
+when a reciprocal pair is present); the sole two-agent fully-coupled graph is the reciprocal pair,
+which carries no chain and instead sits inside mutual.
 
 #figure(
   image("../../../results/cooperation_examples/profile_venn.png", width: 90%),
   caption: [
     Euler diagram of the cooperation predicates on $G_L$. The bounding box is the base predicate
-    $cal(A)$; chain ($cal(C)$), distributed ($cal(D)$), and mutual ($cal(M)$) overlap, and fully
-    coupled ($cal(F)$) lies inside $cal(C)$ (the small separate circle is the two-agent case).
-    Each graph is labelled by the priority of @tab-profile-priority, predicate minus the inner
-    ones, leaving `asymmetric` as the residual area.
+    $cal(A)$; chain ($cal(C)$), distributed ($cal(D)$), and mutual ($cal(M)$) overlap. The fully
+    coupled ($cal(F)$) ellipse runs from inside $cal(C)$ up into $cal(M)$'s upper region: for
+    $n_a >= 3$ a fully-coupled graph always contains a chain (and is distributed when it has a
+    reciprocal pair), so that part of $cal(F)$ lies inside $cal(C)$ (and $cal(D)$); the two-agent
+    reciprocal pair carries no chain and reaches the part of $cal(M)$ outside $cal(C)$ and $cal(D)$.
+    Since fully coupled outranks mutual, that two-agent case is still labelled `fully_coupled`. Each
+    graph is labelled by the priority of @tab-profile-priority, predicate minus the inner ones,
+    leaving `asymmetric` as the residual area.
   ],
 ) <fig-profile-venn>
 
@@ -485,20 +490,18 @@ decided beforehand by the binary detector and do not appear there.
     inset: (x: 10pt, y: 4pt),
     align: (center, left, left, left),
     table.hline(stroke: 1pt),
-    table.header(
-      [*Priority*], [*Profile*], [*Predicate form*], [*Meaning*],
-    ),
+    table.header([*Priority*], [*Profile*], [*Predicate form*], [*Meaning*]),
     table.hline(stroke: 0.5pt),
     [1], [`fully_coupled`], [$cal(F)$],
-      [every agent reaches every other],
+    [every agent reaches every other],
     [2], [`mutual`], [$cal(M) without cal(F)$],
-      [direct reciprocal helping],
+    [direct reciprocal helping],
     [3], [`distributed`], [$cal(D) without (cal(M) union cal(F))$],
-      [one beneficiary, several helpers],
+    [one beneficiary, several helpers],
     [4], [`chain`], [$cal(C) without (cal(M) union cal(D) union cal(F))$],
-      [a relayed dependency (handoff)],
+    [a relayed dependency (handoff)],
     [5], [`asymmetric`], [$cal(A) without (cal(C) union cal(D) union cal(M) union cal(F))$],
-      [one-way help, no relay],
+    [one-way help, no relay],
     table.hline(stroke: 1pt),
   ),
   caption: [
@@ -544,9 +547,7 @@ shared dependence are *local* ones, so neither forces the other.
     inset: (x: 10pt, y: 4pt),
     align: (left, center, left, left),
     table.hline(stroke: 1pt),
-    table.header(
-      [*Witness* ($n_a = 3$)], [*Edges*], [*Realises*], [*Excludes*],
-    ),
+    table.header([*Witness* ($n_a = 3$)], [*Edges*], [*Realises*], [*Excludes*]),
     table.hline(stroke: 0.5pt),
     [pure chain], [$c_1 arrow c_2 arrow c_3$], [$cal(C)$], [$cal(D), cal(M), cal(F)$],
     [pure fan-in], [$c_1 arrow c_3$, $c_2 arrow c_3$], [$cal(D)$], [$cal(C), cal(M), cal(F)$],
@@ -573,9 +574,7 @@ settles the incomparable pairs by convention.
     inset: (x: 10pt, y: 4pt),
     align: (left, left, left),
     table.hline(stroke: 1pt),
-    table.header(
-      [*Profile*], [*Structurally more cooperative than*], [*Incomparable (ordered by convention)*],
-    ),
+    table.header([*Profile*], [*Structurally more cooperative than*], [*Incomparable (ordered by convention)*]),
     table.hline(stroke: 0.5pt),
     [`fully_coupled`], [`chain`, `asymmetric`], [`mutual`, `distributed`],
     [`mutual`], [`asymmetric`], [`chain`, `distributed`, `fully_coupled`],

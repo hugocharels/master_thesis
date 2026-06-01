@@ -82,7 +82,10 @@ must reach an exit tile. The formal model covers agent movement, inter-agent blo
 and a bounded-horizon solvability criterion. Collectible gems and the incentive-scoring layer that
 rewards them are outside the scope of this thesis. Void tiles are not handled in our model either;
 to use the solver on a level containing void tiles, the user must first replace each void tile with
-a wall, which yields the same verdict. These restrictions are deferred to future work.
+a wall. Unlike a wall, a void does not stop a laser beam (the beam passes through it), so this
+replacement preserves the verdict only when no beam crosses a void cell; otherwise it shortens any
+beam that did, which can change the solvability or cooperation verdict. These restrictions are
+deferred to future work.
 
 
 == Thesis structure

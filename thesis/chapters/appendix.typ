@@ -372,6 +372,10 @@ tables below give the supporting numbers and the exact stage geometries.
 Direct training from scratch on a fixed $6 times 6$ / 2-agent / 2-laser *mutual* target
 ($T_("max") = 18$, constructive cooperative generator constrained to the `fully_coupled` profile,
 a 20-level training pool and a 20-level held-out pool), 600,000 steps, three seeds per algorithm.
+The profile filter is `fully_coupled` rather than `mutual` because, for two agents, the reciprocal
+mutual-cooperation pattern is a strongly connected component spanning the whole agent set and is
+therefore labelled `fully_coupled` (@sec-ordering-structure); the `mutual` label is reachable only
+from three agents upward.
 @tab-frontier-probe reports the final greedy success rates: every algorithm reaches a small
 nonzero *training* success and exactly zero *held-out* success. Sixteen of the training levels are
 shown in @fig-frontier-pool.

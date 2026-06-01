@@ -28,7 +28,9 @@ is shown in @figure-lvl6.
 LLE additionally supports collectible gems and void tiles. Neither is used in this thesis: gems
 and the incentive-scoring layer they enable are out of scope, and the formal model developed
 below does not introduce a void-tile type. Levels that contain void tiles can still be handled
-by treating each void tile as a wall, since both are impassable to agents.
+by treating each void tile as a wall: both are impassable to agents. The two differ for beams,
+however. A wall stops a laser whereas a void lets it pass, so the substitution preserves the
+verdict only when no beam crosses a void cell.
 
 We positioned LLE within the cooperative-MARL benchmark landscape in @related-work; the present
 chapter makes the mechanics precise through a formal model suitable for reasoning about

@@ -200,7 +200,7 @@ precisely, with geometric examples, in @sec-profile-families:
 - *chain*: help relayed along a line of agents.
 - *distributed*: one agent helped by several others.
 - *mutual*: two agents help each other.
-- *fully coupled*: every agent helps every other and is helped by every other (not necessary a direct help).
+- *fully coupled*: every agent helps every other and is helped by every other (not necessarily a direct help).
 
 Every label is constructible within LLE's $1 <= n_a <= 4$ regime: `asymmetric` and `fully_coupled`
 need at least two agents; the remaining labels are reachable from three agents upward.

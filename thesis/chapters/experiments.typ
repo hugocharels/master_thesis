@@ -249,10 +249,13 @@ configuration. The two regimes behave very differently, and we discuss each in t
 
 On the $5 times 5$ grid every accepted level from all three generators is classified as
 `asymmetric` (100 out of 100 in each case). With only 2 agents, the families `chain`,
-`distributed`, and `fully_coupled` are *structurally impossible* by construction (they require
-at least 3 agents), and the `mutual` family, though reachable in principle, does not appear: with a
-single laser the cooperation pattern is restricted to a one-way blocking action by the laser's
-colour-matched agent.
+`distributed`, and `mutual` are *structurally impossible* by construction (they require
+at least 3 agents; recall from @sec-ordering-structure that a two-agent reciprocal pair is a
+strongly connected component spanning the whole agent set and is therefore labelled
+`fully_coupled`, not `mutual`). The only profiles a two-agent level can carry are thus
+`asymmetric` and `fully_coupled`, and `fully_coupled` does not appear here: with a single laser
+the cooperation pattern is restricted to a one-way blocking action by the laser's colour-matched
+agent, which yields `asymmetric`.
 
 The $8 times 8$ configuration with 3 agents and 2 lasers exposes the contrast between the three
 generators. The Constructive generator produces 46 `mutual`, 2 `asymmetric`, and 2 `distributed`
@@ -271,9 +274,9 @@ The Level-6-Style generator produces 34 `mutual`, 13 `asymmetric`, and 3 `distri
 out of 50 on the same configuration. The cluster-and-corridor geometry forces all agents through
 a shared corridor and tends to produce multiple agents helping each other simultaneously, much
 like the canonical LLE Level 6 itself (which the analyser also classifies as `mutual`). The
-two Constructive families therefore split their cooperative output as follows: the Constructive
-generator favours the mutual pattern by design (92 % mutual), and the Level-6-Style generator
-favours it by geometric pressure (68 % mutual).
+two construction-based generators therefore favour the mutual pattern for different reasons: the
+Constructive generator by design (92 % mutual), and the Level-6-Style generator
+by geometric pressure (68 % mutual).
 
 No level was classified as `fully_coupled`. That family needs a strongly connected dependency
 graph over at least three agents, which neither template targets; producing it reliably would
@@ -752,8 +755,9 @@ budget is increased tenfold.
   ),
   caption: [
     Greedy success rate as the cooperation requirement increases, pooled over algorithms and
-    seeds. The Experiment column names the source of each row: the Learnability and
-    Curriculum-ordering rows give the best result on the reachable asymmetric targets of
+    seeds. The Experiment column names the source of each row: the Learnability row is the mean
+    over the three algorithms and seeds, and the Curriculum-ordering row is the *direct* baseline
+    (the relevant comparison for the cliff), both on the reachable asymmetric targets of
     @learnability-experiment and @curriculum-strategy-experiment; the two Frontier-probe rows and
     the Level-6-transfer row are this section's mutual targets, both defined in the protocol above.
     "Train" is success on the levels seen during training (the held-out generated pool for the

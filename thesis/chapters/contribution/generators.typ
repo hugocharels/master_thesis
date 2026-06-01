@@ -163,9 +163,11 @@ cooperation dependency for every requested laser, rather than relying on the sol
   geometry;
 - a direction perpendicular to the lane axis, pointing toward the lane band.
 
-Each laser is given a *distinct colour* in ${0, ..., n_l - 1}$. We require $n_l <= n_a$ so
-that each laser colour corresponds to a unique agent of that colour, in line with the
-at-most-one-source-per-colour assumption of #fref(<def-3-1>, [Definition 3.1]). Distinctness
+Each laser is given a *distinct colour* in ${0, ..., n_l - 1}$. We require $n_l <= n_a$ so that
+every laser colour has a matching agent of that colour able to block it: a laser whose colour no
+agent shares is an unblockable obstacle rather than a cooperation lever. This is a design choice of
+the constructive generator, not a restriction of the model: #fref(<def-3-1>, [Definition 3.1])
+places no bound on the number of sources per colour. Distinctness
 of the perpendicular columns guarantees that the resulting beams are parallel straight lines
 on disjoint columns, so no two laser sources or beam segments coincide.
 

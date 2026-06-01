@@ -28,7 +28,8 @@ levels distributed with the environment, each paired with a horizon known to be 
 solvability. It can also benchmark custom levels constructed programmatically.
 
 The SAT encoding comparison reported in the following sections uses four representative levels:
-three synthetic instances of increasing size and one original benchmark level. This combination exposes both scaling
+three synthetic instances of increasing size and one hand-crafted LLE benchmark level (Level 6).
+This combination exposes both scaling
 behaviour and the behaviour of the solver on a realistic cooperative puzzle.
 
 

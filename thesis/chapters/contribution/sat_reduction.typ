@@ -181,7 +181,10 @@ $
     and.big_(t = 0)^(T_("max") - 1)
     not a_(c_1,x,y,t) or not a_(c_2,x,y,t+1)
   $
-  *Bounds.* At most $binom(n_a, 2) (3 tau - 2) p$ clauses; 2 literals per clause.
+  *Bounds.* At most $binom(n_a, 2) (3 tau - 2) p$ clauses (each *unordered* agent pair
+  ${c_1, c_2}$ contributes one same-time exclusion per step and two no-following clauses per
+  consecutive step pair; the ordered indices above generate each such clause once); 2 literals
+  per clause.
 ]) <constraint-4-7>
 
 #formalbox(kind: "constraint", [Constraint 4.8 (Victory condition)], [

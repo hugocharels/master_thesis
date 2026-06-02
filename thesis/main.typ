@@ -209,8 +209,6 @@ parts that answer research questions RQ3–RQ6 (RQ1 and RQ2 are settled by the f
 Software versions and seed conventions for every experiment in this chapter are summarised in
 @appendix-reproducibility.
 
-#include "chapters/contribution/benchmarking.typ"
-
 #include "chapters/experiments.typ"
 
 = Conclusion <conclusion>

@@ -1,9 +1,8 @@
 == Solver experiments
 
-This part evaluates the SAT solver that every generator relies on. The operating protocol is the
-one defined in @benchmarking; here we report only the benchmark levels, the clause counts and
-solving times of the global and local movement formulations of @sat-reduction, and what they
-imply for the default encoding.
+This part evaluates the SAT solver that every generator relies on. It compares the two movement
+formulations of @sat-reduction, the *local* one and the *global* one, on CNF size and runtime, and
+fixes the default encoding from the result.
 
 === Experimental question <encoding-comparison>
 
@@ -13,9 +12,22 @@ The experiment asks whether the *global* and *local* movement formulations intro
 This comparison is not one of the research questions of @introduction: it is a solver-engineering
 baseline for the solvability verifier behind RQ1, reported first because every later experiment
 relies on the chosen encoding. It matters because the uniqueness constraint appears at every time
-step for every agent, so a poor formulation affects the full reduction, not only a negligible
-subpart of it. The protocol itself is defined in @benchmarking; the present chapter reports only
-the level set, the observed results, and their interpretation.
+step for every agent, so a poor formulation affects the full reduction, not a negligible subpart.
+
+=== Protocol <benchmarking>
+
+All runs use the same SAT backend as the main solver, `Minisat22`, a descendant of the MiniSat
+solver of Eén and Sörensson @EenSorensson2003, accessed through the PySAT interface @Ignatiev2018.
+
+For each level and each movement formulation, the benchmark performs one profiled run to extract
+the exact clause counts and the full per-constraint-family breakdown, then repeats the same solver
+invocation for 100 runs, reporting the mean and standard deviation of generation and solve time.
+Each run starts from a freshly built world in its initial state, so the 100 repetitions are
+independent. No timeout or parallel speedup is applied, so the numbers are direct comparisons
+between the two formulations on the same machine, not hardware-independent absolute claims.
+
+Each run records the total clause count, the clauses contributed by each major constraint family,
+the CNF generation time, the SAT solving time, and their sum.
 
 
 === Benchmark instances
@@ -85,8 +97,9 @@ exclusions across the full position set. The per-constraint-family decomposition
 #figure(
   image("../../results/sat_encoding/times_per_level.pdf", width: 90%),
   caption: [
-    Per-run SAT generation duration (left) and solve duration (right), in seconds on a logarithmic
-    scale, for the local and global uniqueness formulations across the four benchmark levels.
+    Per-run SAT generation duration (left) and solve duration (right), in milliseconds on a
+    logarithmic scale, for the local and global uniqueness formulations across the four benchmark
+    levels.
     Each box spans the interquartile range with the median marked; whiskers reach 1.5 times the
     interquartile range and individual outliers are plotted as points, over the 100 timing runs.
   ],
@@ -202,10 +215,10 @@ candidate rarely requires beam-blocking.#footnote[
   The $8 times 8$ configuration of the Constrained Random generator in cooperative mode is the
   most expensive setting measured: 8 of its 20 trials exhausted the 30-second per-trial budget
   without finding an accepted level and are excluded from the reported mean, so that figure is an
-  optimistic estimate over the trials that did complete. Obtaining this row reliably also requires
-  running each generation attempt in an isolated worker subprocess, because attempts on this
-  configuration intermittently crash the underlying SAT solver's native extension; the isolation
-  discards only the offending candidate and resamples, rather than aborting the whole run.
+  optimistic estimate over the trials that did complete. Obtaining this row also relies on running
+  each generation attempt in an isolated worker subprocess: the pysat/Minisat native extension can
+  intermittently crash (SIGSEGV), and the isolation discards only the offending candidate and
+  resamples rather than aborting the whole run.
 ]
 
 The Level-6-Style generator sits between the two regimes. On the $3 times 3$ grid its rejection
@@ -742,9 +755,7 @@ budget is increased tenfold.
     inset: (x: 7pt, y: 4pt),
     align: horizon,
     table.hline(stroke: 1pt),
-    table.header(
-      [*Experiment*], [*Grid*], [*Agents*], [*Lasers*], [*Cooperation*], [*Budget*], [*Train*], [*Test*]
-    ),
+    table.header([*Experiment*], [*Grid*], [*Agents*], [*Lasers*], [*Cooperation*], [*Budget*], [*Train*], [*Test*]),
     table.hline(stroke: 0.5pt),
     [Learnability], [5×5], [2], [1], [asymmetric], [200k], [$0.63$], [$0.20$],
     [Curriculum ordering], [6×6], [2], [1], [asymmetric], [400k], [$0.41$], [$0.17$],

@@ -4,6 +4,7 @@ import os
 
 import matplotlib.pyplot as plt
 import numpy as np
+from matplotlib.ticker import FuncFormatter, NullFormatter
 
 from ._plot_style import DEFAULT_BAR_ALPHA, apply_thesis_style, pretty_label
 from .runner import METHODS
@@ -199,16 +200,17 @@ def plot_method_clauses_breakdown(results, output_dir):
     plt.close(fig)
 
 
-def _grouped_boxplot(ax, levels, x, width, results, time_key):
+def _grouped_boxplot(ax, levels, x, width, results, time_key, scale=1.0):
     """Draw one boxplot per (level, method) group from the raw per-run timings.
 
+    `scale` multiplies every timing (e.g. 1000 to convert seconds to milliseconds).
     Returns legend handles (one coloured patch per method).
     """
     colors = plt.rcParams["axes.prop_cycle"].by_key()["color"]
     handles = []
     for i, (method_key, method_label) in enumerate(METHODS.items()):
         offset = (i - (len(METHODS) - 1) / 2) * width
-        data = [list(results[method_key][lvl][time_key]) for lvl in levels]
+        data = [[v * scale for v in results[method_key][lvl][time_key]] for lvl in levels]
         color = colors[i % len(colors)]
         bp = ax.boxplot(
             data,
@@ -236,19 +238,27 @@ def _grouped_boxplot(ax, levels, x, width, results, time_key):
     return handles
 
 
+def _ms_tick(v, _pos):
+    """Format a millisecond log-axis tick as a plain number (0.1, 1, 10, ...)."""
+    return f"{v:g}"
+
+
 def plot_times_per_level(results, output_dir):
-    """Grouped boxplots: per-run generation and solve time, grouped by method."""
+    """Grouped boxplots: per-run generation and solve time in ms, grouped by method."""
     levels = _get_levels_from_results(results)
     x = np.arange(len(levels))
     width = 0.4
+    ms = 1000.0  # seconds -> milliseconds
 
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(16, 6))
 
-    handles = _grouped_boxplot(ax1, levels, x, width, results, "gen_times")
+    handles = _grouped_boxplot(ax1, levels, x, width, results, "gen_times", scale=ms)
     ax1.set_xlabel("Level")
-    ax1.set_ylabel("Duration, seconds (log scale)")
+    ax1.set_ylabel("Duration, milliseconds (log scale)")
     ax1.set_yscale("log")
-    ax1.set_ylim(bottom=1e-4)
+    ax1.set_ylim(bottom=1e-1)
+    ax1.yaxis.set_major_formatter(FuncFormatter(_ms_tick))
+    ax1.yaxis.set_minor_formatter(NullFormatter())
     ax1.set_title("Generation duration per level")
     ax1.set_xticks(x)
     ax1.set_xticklabels([_short_level_label(lvl) for lvl in levels])
@@ -256,11 +266,13 @@ def plot_times_per_level(results, output_dir):
     ax1.legend(handles=handles)
     ax1.grid(axis="y", which="major")
 
-    _grouped_boxplot(ax2, levels, x, width, results, "solve_times")
+    _grouped_boxplot(ax2, levels, x, width, results, "solve_times", scale=ms)
     ax2.set_xlabel("Level")
-    ax2.set_ylabel("Duration, seconds (log scale)")
+    ax2.set_ylabel("Duration, milliseconds (log scale)")
     ax2.set_yscale("log")
-    ax2.set_ylim(bottom=1e-5)
+    ax2.set_ylim(bottom=1e-2)
+    ax2.yaxis.set_major_formatter(FuncFormatter(_ms_tick))
+    ax2.yaxis.set_minor_formatter(NullFormatter())
     ax2.set_title("Solve duration per level")
     ax2.set_xticks(x)
     ax2.set_xticklabels([_short_level_label(lvl) for lvl in levels])

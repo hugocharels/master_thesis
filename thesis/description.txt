@@ -1,0 +1,5 @@
+This thesis develops a SAT-based framework for procedurally generating levels for the Laser Learning Environment (LLE), a multi-agent reinforcement learning benchmark. The goal is to produce levels that are guaranteed solvable and, on demand, guaranteed to require cooperation between agents through LLE's same-colour beam-blocking mechanic.
+
+We formalise bounded-horizon LLE solvability and the cooperation requirement as decidable decision problems, and prove the SAT reduction correct. A strict-beam counterfactual turns "does this level require cooperation?" into a second solver query, and an analyser sorts cooperative levels into five structural profiles. These procedures drive a family of generators that emit only solver-certified levels.
+
+An empirical study measures generation efficiency and output diversity, then tests whether value-based MARL algorithms (IQL, VDN, QMIX) can learn the generated levels, whether enlarging the training pool restores generalisation, and whether curriculum learning helps.

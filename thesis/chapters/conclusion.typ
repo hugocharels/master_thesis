@@ -72,15 +72,15 @@ We restate the six research questions of @introduction and assess what each chap
 
 Several directions extend the present work naturally.
 
-- *Complexity classification of bounded-horizon LLE solvability.* This thesis shows that
-  bounded-horizon LLE solvability is in NP and is polynomial-time reducible to SAT, but we do
-  not settle whether the problem is NP-hard. The exact classification has both theoretical and
-  practical consequences: if the problem is NP-hard, the SAT-based oracle is optimal up to
-  constant factors under the standard $"P" eq.not "NP"$ assumption; if it lies in P, then in
-  principle the SAT solver could be replaced by a polynomial-time algorithm tailored to the
-  LLE structure, with a corresponding speed-up for every generator in the family. Establishing
-  the lower bound is therefore both a theoretical complement to the present work and an
-  engineering lever for the generator pipeline.
+- *Complexity classification of bounded-horizon LLE solvability.* This thesis places the problem
+  in NP and reduces it to SAT, but settles neither bound: we prove neither NP-hardness nor
+  membership in P, so both remain open (see @sat-reduction). The two outcomes carry opposite
+  consequences. If the problem is NP-hard, the SAT-based oracle is optimal up to constant factors
+  under the standard $"P" eq.not "NP"$ assumption. If it lies in P, a polynomial-time algorithm
+  tailored to the LLE structure could replace the SAT solver, with a worst-case speed-up for every
+  generator in the family, although, as @sat-reduction notes, the solver is already fast on the
+  instances we generate. Settling the classification either way is both a theoretical complement
+  to this work and an engineering lever for the generator pipeline.
 - *Model extension to gems and void tiles.* The formal model deliberately omits gems and
   treats void tiles as walls. Incorporating gem tiles would add an additional reachability
   condition (every agent must visit a designated gem cell before reaching its exit) and would

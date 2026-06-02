@@ -63,13 +63,22 @@
 // Proof card. Rendered with the same `thmbox` styling but without a background fill — a
 // proof is a passage of reasoning rather than a highlighted statement, so it carries only
 // the neutral accent bar to set it apart from the surrounding body text.
-#let proofbox(body) = thmbox(
-  variant: text(fill: black)[Proof.],
-  title: none,
-  numbering: none,
-  color: rgb("#555555"), // grey accent bar; title forced black via the wrapped `text`
-  fill: none,
-  title-fonts: _box-font,
-  sans-fonts: _box-font,
-  body: body,
-)
+#let proofbox(body, breakable: true) = {
+  // thmbox wraps every card in a `figure`, and a figure does NOT split across a
+  // page boundary by default: an oversized proof is pushed whole onto the next
+  // page (leaving a gap) or overflows the page. The show rule below makes the
+  // figure's block breakable, so a long proof flows across as many pages as it
+  // needs. The title bar is `sticky`, so "Proof." is never orphaned at the foot
+  // of a page. Pass `breakable: false` to force a proof to stay on one page.
+  show figure.where(kind: "thmbox"): set block(breakable: breakable)
+  thmbox(
+    variant: text(fill: black)[Proof.],
+    title: none,
+    numbering: none,
+    color: rgb("#555555"), // grey accent bar; title forced black via the wrapped `text`
+    fill: none,
+    title-fonts: _box-font,
+    sans-fonts: _box-font,
+    body: body,
+  )
+}

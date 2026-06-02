@@ -12,11 +12,11 @@ LLE engine; this bound is an engine artefact, not a limitation of the encoding, 
 correct for any finite $n_a$.
 
 #formalbox(kind: "definition", [Definition 3.1 (LLE Level)], [
-  An LLE level is a tuple $L = (H, W, C, s, cal(W), cal(S), cal(E))$ where:
+  An LLE level is a tuple $L = (H, W, C, s_(p), cal(W), cal(S), cal(E))$ where:
 
   - $H, W in NN^+$: grid height and width.
   - $C = {0, 1, ..., n_a - 1}$: set of agent colours, with $1 <= n_a <= 4$.
-  - $s : C -> P$: injective map assigning an initial position to each agent.
+  - $s_(p) : C -> P$: injective map assigning an initial position to each agent.
   - $cal(W) subset P$: set of wall positions.
   - $cal(S) subset.eq C times D times P$: set of laser sources. A source $(c, d, p) in cal(S)$
     emits a laser of colour $c$ in direction $d$ from position $p$.
@@ -32,7 +32,7 @@ correct for any finite $n_a$.
   the set of grid positions that hold a laser source and the set of colours that have one,
   respectively.
 
-  We assume one structural invariant on every level: the sets $s(C)$, $cal(W)$, $cal(E)$, and
+  We assume one structural invariant on every level: the sets $s_(p)(C)$, $cal(W)$, $cal(E)$, and
   $P_("src")$ are pairwise disjoint. A colour may have any number of laser sources, in any
   directions.
 ]) <def-3-1>
@@ -50,12 +50,16 @@ relies on the blocking mechanism.
   direction $d$.
 
   - Under the *standard beam semantics*, the beam of source $(c, d, p_s)$ is active on every cell
-    of that ray up to, but not including, the first wall or the cell occupied by the unique agent
-    of colour $c$ (if any such cell lies on the ray).
+    of that ray up to, but not including, the first *blocker*, where a blocker is a wall, a
+    laser-source tile other than $p_s$, or the cell occupied by the unique agent of colour $c$ (if
+    any such cell lies on the ray).
   - Under the *strict beam semantics*, the beam of source $(c, d, p_s)$ is active on every cell of
-    that ray up to, but not including, the first wall.
+    that ray up to, but not including, the first wall or laser-source tile other than $p_s$; unlike
+    the standard semantics, a same-colour agent no longer blocks it.
 
-  For $c in C_("src")$, a laser of colour $c$ is active at a position when the beam of *some*
+  Source tiles are opaque: a beam stops before entering any source other than its own origin.
+
+  For $c in C_("src")$, a laser of colour $c$ is active at a position when the beam of some
   source of colour $c$ is active there; when a colour has several sources this is the disjunction
   over them.
 ]) <def-3-2>
@@ -70,7 +74,7 @@ relies on the blocking mechanism.
 
   A joint trajectory is *valid* if it satisfies the following conditions:
 
-  - *Initialisation:* $forall c in C, p_0(c) = s(c)$.
+  - *Initialisation:* $forall c in C, p_0(c) = s_(p)(c)$.
   - *Movement:* $forall t < T_("max"), forall c in C$, $p_(t+1)(c)$ is reachable from $p_t(c)$
     in one step: the agent may stay in place or move to a 4-neighbouring cell. Walls and
     laser-source cells are the only blocked destinations; exit tiles and cells crossed by the

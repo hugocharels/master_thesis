@@ -29,40 +29,56 @@
 // "Appendix A", "Appendix B", ... rather than as numbered chapters.
 #let in-appendix = state("in-appendix", false)
 
+// ── Heading spacing knobs ──────────────────────────────────────────────────
+// All the vertical whitespace around headings is defined here, in one place,
+// instead of being scattered as magic numbers through the show rule below.
+// Change a value and recompile.
+#let chapter-top-space = 100pt // blank space above a chapter / appendix title (after its pagebreak)
+#let chapter-title-gap = [ \ \ ] // blank lines around the chapter title (label ↔ title ↔ body)
+#let heading-space-above = [ \ ] // blank line ABOVE a section / subsection title (==, ===, ====)
+#let heading-space-below = 6pt // space UNDER a section / subsection title  ← tweak this one (was 10pt)
+
 #show heading: it => {
   if it.depth == 1 {
+    // Level-1 headings are chapter / appendix titles: page break, large gap on
+    // top, big bold title. Spacing comes from `chapter-top-space` and
+    // `chapter-title-gap` above.
     if in-appendix.at(it.location()) {
       pagebreak()
-      v(100pt)
+      v(chapter-top-space)
       let n = counter(heading).at(it.location()).at(0)
       let letters = ("A", "B", "C", "D", "E", "F", "G", "H")
       let label = text(strong("Appendix " + letters.at(n - 1, default: "?")), 22pt)
-      label + [ \ \ ] + text(strong(it.body), 30pt) + [ \ \ ]
+      label + chapter-title-gap + text(strong(it.body), 30pt) + chapter-title-gap
     } else {
       let chapter_num = counter(heading.where(level: 1)).at(it.location()).at(0)
 
       if { 0 < chapter_num and chapter_num < 8 } {
         pagebreak()
-        v(100pt)
+        v(chapter-top-space)
 
         let chapter = text(strong("Chapter " + str(chapter_num)), 22pt)
         let content = text(strong(it.body), 30pt)
-        chapter + [ \ \ ] + content + [ \ \ ]
+        chapter + chapter-title-gap + content + chapter-title-gap
       } else {
         if it.body == [Conclusion] or it.body == [Appendix] {
           pagebreak()
-          v(100pt)
+          v(chapter-top-space)
 
           let content = text(strong(it.body), 30pt)
-          content + [ \ \ ]
+          content + chapter-title-gap
         } else {
           it
         }
       }
     }
   } else {
-    [ \ ] + it
-    v(10pt)
+    // Everything below a chapter — sections (==), subsections (===), and
+    // subsubsections (====). `heading-space-above` is the blank line before the
+    // title; `heading-space-below` is the gap under it (the one you usually
+    // want to shrink).
+    heading-space-above + it
+    v(heading-space-below)
   }
 }
 
@@ -129,25 +145,7 @@
 #align(center, text(20pt, weight: "bold")[Abstract])
 #v(20pt)
 
-This thesis develops a SAT-based framework for the procedural generation of solvable,
-cooperative levels for the Laser Learning Environment (LLE), a multi-agent reinforcement
-learning benchmark. We formalise bounded-horizon LLE solvability as a propositional
-satisfiability decision problem and prove the reduction correct; we introduce a
-strict-beam-semantics counterfactual that turns the *cooperation-required* property into a
-second decidable problem on the same level; and we further classify cooperative levels by
-the structure of their inter-agent dependencies into five profiles: asymmetric, mutual,
-chain, distributed, and fully coupled. These decision
-procedures are embedded inside a family of procedural generators (Random, Constrained Random,
-Constructive, Level-6-Style) that emit only levels certified by the solver to be solvable
-and, on demand, to require cooperation, possibly of a specific profile (one of the five above). The empirical evaluation compares two SAT encodings, characterises per-generator
-rejection rates and cooperation-profile distributions, and shows that off-the-shelf
-value-based cooperative-MARL algorithms (IQL, VDN, QMIX) can learn certified cooperative levels at
-$5 times 5$ and that enlarging the generated training pool restores generalisation. A final set
-of curriculum experiments finds that curriculum scheduling offers no advantage over direct
-training on a reachable target, and that no curriculum — including a staged budget of two million
-steps — lets these algorithms solve the mutually-cooperative LLE Level 6, on which direct training
-also scores zero; we trace this negative result to the base task being unlearnable by these
-value-based methods rather than to a failure of curriculum design.
+This thesis develops a SAT-based framework for the procedural generation of solvable, cooperative levels for the Laser Learning Environment (LLE), a multi-agent reinforcement learning benchmark. We formalise bounded-horizon LLE solvability as a propositional satisfiability decision problem and prove the reduction correct; we introduce a strict-beam-semantics counterfactual that turns the *cooperation-required* property into a second decidable problem on the same level; and we further classify cooperative levels by the structure of their inter-agent dependencies into five profiles: asymmetric, mutual, chain, distributed, and fully coupled. These decision procedures are embedded inside a family of procedural generators (Random, Constrained Random, Constructive, Level-6-Style) that emit only levels certified by the solver to be solvable and, on demand, to require cooperation, possibly of a specific profile (one of the five above). The empirical evaluation compares two SAT encodings, characterises per-generator rejection rates and cooperation-profile distributions, and shows that off-the-shelf value-based cooperative-MARL algorithms (IQL, VDN, QMIX) can learn certified cooperative levels at $5 times 5$ and that enlarging the generated training pool restores generalisation. A final set of curriculum experiments finds that curriculum scheduling offers no advantage over direct training on a reachable target, and that no curriculum — including a staged budget of two million steps — lets these algorithms solve the mutually-cooperative LLE Level 6, on which direct training also scores zero; we trace this negative result to the base task being unlearnable by these value-based methods rather than to a failure of curriculum design.
 
 #v(20pt)
 *Keywords:* multi-agent reinforcement learning, procedural content generation, SAT solving,

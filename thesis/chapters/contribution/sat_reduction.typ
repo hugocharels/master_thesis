@@ -4,13 +4,13 @@
 
 We reuse the level objects introduced in @formalization: the grid dimensions $H$ and $W$, the
 position set $P$, the colour set $C$, the direction set $D$, the wall set $cal(W)$, the source
-set $cal(S)$, the exit set $cal(E)$, and the start map $s$.
+set $cal(S)$, the exit set $cal(E)$, and the start map $s_(p)$.
 
 The SAT reduction introduces a finite horizon $T_("max") in NN^+$, which is the maximum number of
 joint moves allowed in the bounded decision problem, together with the discrete time-step set
 $T = {0, 1, ..., T_("max")}$.
 
-The sets $P_("src")$ and $C_("src")$ are as defined in @formalization. We write $s(c)$ for the
+The sets $P_("src")$ and $C_("src")$ are as defined in @formalization. We write $s_(p)(c)$ for the
 initial position of agent $c in C$, as defined in #fref(<def-3-1>, [Definition 3.1]).
 
 For the clause-count and complexity statements throughout this chapter, we use the following
@@ -51,12 +51,12 @@ of *literals per clause*. These bounds feed directly into the polynomial-size an
 === Initialisation
 
 #formalbox(kind: "constraint", [Constraint 4.1 (Agent initialisation)], [
-  Each agent $c in C$ is placed at its designated starting position $s(c)$ at $t = 0$; all
+  Each agent $c in C$ is placed at its designated starting position $s_(p)(c)$ at $t = 0$; all
   other positions are unoccupied by that agent:
   $
     and.big_(c in C) and.big_((x, y) in P)
     cases(
-      a_(c,x,y,0) & "if" (x,y) = s(c),
+      a_(c,x,y,0) & "if" (x,y) = s_(p)(c),
       not a_(c,x,y,0) & "otherwise"
     )
   $
@@ -166,7 +166,8 @@ $
 
 #formalbox(kind: "constraint", [Constraint 4.7 (No simultaneous occupation)], [
   Two distinct agents cannot share the same position at the same time, nor can they swap
-  positions between consecutive time steps:
+  positions between consecutive time steps; the latter two cases encode the no-following-conflicts
+  rule of #fref(<def-3-3>, [Definition 3.3]):
   $
     and.big_(c_1 in C) and.big_(c_2 in C, c_2 eq.not c_1) and.big_((x,y) in P) and.big_(t in T)
     not a_(c_1,x,y,t) or not a_(c_2,x,y,t)
@@ -205,6 +206,13 @@ $
   Once an agent reaches an exit, it remains there for all subsequent time steps:
   $
     and.big_(c in C) and.big_((x,y) in cal(E)) and.big_(t = 0)^(T_("max") - 1)
+    a_(c,x,y,t) arrow.r a_(c,x,y,t+1)
+  $
+  $
+    arrow.t.b.double
+  $
+  $
+    and.big_(c in C) and.big_((x,y) in cal(E)) and.big_(t = 0)^(T_("max") - 1)
     not a_(c,x,y,t) or a_(c,x,y,t+1)
   $
   *Bounds.* Exactly $n_a e (tau - 1)$ clauses; 2 literals per clause.
@@ -212,9 +220,9 @@ $
 
 === Laser activity
 
-We define $"next"_d(x, y)$ as the position immediately adjacent to $(x, y)$ in direction $d$:
+We define $"next"_(d)(x, y)$ as the position immediately adjacent to $(x, y)$ in direction $d$:
 $
-  "next"_d(x,y) = cases(
+  "next"_(d)(x,y) = cases(
     (x, y - 1) & "if" d = N,
     (x + 1, y) & "if" d = E,
     (x, y + 1) & "if" d = S,
@@ -233,25 +241,25 @@ $
 
 #formalbox(kind: "constraint", [Constraint 4.11 (Beam propagation)], [
   Beam propagation clauses are instantiated only when the successor cell
-  $(x', y') = "next"_d(x, y)$ lies inside the grid, is not a wall, and is not itself a source
+  $(x', y') = "next"_(d)(x, y)$ lies inside the grid, is not a wall, and is not itself a source
   cell. Source cells are handled separately by #fref(<constraint-4-2>, [Constraint 4.2]).
   Under these conditions, the beam is active at $(x', y')$ iff it is active at $(x, y)$ and no
   agent of colour $c$ occupies $(x', y')$:
   $
     and.big_((c,d,p_s) in cal(S)) and.big_(t in T)
-    and.big_((x,y) in P without cal(W), \ "next"_d(x,y) in P without cal(W), \ "next"_d(x,y) in.not P_("src"))
+    and.big_((x,y) in P without cal(W), \ "next"_(d)(x,y) in P without cal(W), \ "next"_(d)(x,y) in.not P_("src"))
     b_(c,d,x',y',t) arrow.l.r (b_(c,d,x,y,t) and not a_(c,x',y',t))
     \ arrow.t.b.double \
     and.big_((c,d,p_s) in cal(S)) and.big_(t in T)
-    and.big_((x,y) in P without cal(W), \ "next"_d(x,y) in P without cal(W), \ "next"_d(x,y) in.not P_("src"))
+    and.big_((x,y) in P without cal(W), \ "next"_(d)(x,y) in P without cal(W), \ "next"_(d)(x,y) in.not P_("src"))
     not b_(c,d,x,y,t) or a_(c,x',y',t) or b_(c,d,x',y',t)
     \
     and.big_((c,d,p_s) in cal(S)) and.big_(t in T)
-    and.big_((x,y) in P without cal(W), \ "next"_d(x,y) in P without cal(W), \ "next"_d(x,y) in.not P_("src"))
+    and.big_((x,y) in P without cal(W), \ "next"_(d)(x,y) in P without cal(W), \ "next"_(d)(x,y) in.not P_("src"))
     b_(c,d,x,y,t) or not b_(c,d,x',y',t)
     \
     and.big_((c,d,p_s) in cal(S)) and.big_(t in T)
-    and.big_((x,y) in P without cal(W), \ "next"_d(x,y) in P without cal(W), \ "next"_d(x,y) in.not P_("src"))
+    and.big_((x,y) in P without cal(W), \ "next"_(d)(x,y) in P without cal(W), \ "next"_(d)(x,y) in.not P_("src"))
     not a_(c,x',y',t) or not b_(c,d,x',y',t)
   $
   *Bounds.* At most $3 s tau p$ clauses (three CNF clauses per admissible propagation edge);
@@ -260,7 +268,7 @@ $
 
 #formalbox(kind: "constraint", [Constraint 4.12 (Link between beam and laser variables)], [
   Let $D_c = {d in D | exists p_s, (c, d, p_s) in cal(S)}$ be the directions of the sources of
-  colour $c$. The laser of colour $c$ is active at a position iff *some* colour-$c$ beam is active
+  colour $c$. The laser of colour $c$ is active at a position iff some colour-$c$ beam is active
   there:
   $
     and.big_(c in C_("src")) and.big_((x,y) in P) and.big_(t in T)
@@ -352,8 +360,10 @@ solvability is polynomial-time reducible to SAT.
 
 #formalbox(kind: "proposition", [Proposition 4.14 (Correctness of the SAT Reduction)], [
   Let $L$ be an LLE level and let $T_("max")$ be a horizon. For either movement formulation
-  described above, the CNF formula $Phi(L, T_("max"))$ is satisfiable if and only if there exists a
-  valid joint trajectory of length $T_("max")$ for $L$.
+  described above, the CNF formula $Phi(L, T_("max"))$ is satisfiable if and only if $L$ is solvable
+  with horizon $T_("max")$ (#fref(<def-3-4>, [Definition 3.4])); equivalently, iff there exists a
+  valid joint trajectory of length $T_("max")$ whose final occupied positions are exactly the exit
+  set $cal(E)$.
 ]) <prop-4-14>
 
 #proofbox([
@@ -364,20 +374,44 @@ solvability is polynomial-time reducible to SAT.
   consistency, local exclusivity, and backward consistency. We may therefore derive a joint
   trajectory by setting $p_t(c) = (x, y)$, where $(x, y)$ is, for each colour $c$ and time $t$,
   the unique position at which the variable $a_(c,x,y,t)$ is true. The movement clauses enforce legal motion between consecutive steps; the collision clauses
-  enforce both simultaneous separation and the no-following-conflict rule; the laser clauses
-  enforce safety with respect to active beams; and the exit clauses enforce the terminal
-  condition. Hence the extracted trajectory is valid.
+  enforce both simultaneous separation and the no-following-conflict rule. It remains to verify
+  laser safety and the terminal condition. Fix any cell and colour $c$ at which the laser of colour
+  $c$ is active under the standard semantics of #fref(<def-3-2>, [Definition 3.2]); by definition
+  this cell lies on the live segment of some source $(c, d, p_s)$, between $p_s$ and the first
+  blocker along the ray. Every cell strictly before it on the segment is then non-wall, non-source,
+  and free of the colour-$c$ agent, so each propagation edge up to it is instantiated and
+  #fref(<constraint-4-11>, [Constraint 4.11]) reduces to the biconditional
+  $b_(c,d,x',y',t) arrow.l.r b_(c,d,x,y,t)$ between consecutive ray cells $(x,y)$ and
+  $(x',y') = "next"_(d)(x,y)$, the agent term $not a_(c,x',y',t)$ dropping out because no colour-$c$
+  agent lies on the segment. With the origin forced active by
+  #fref(<constraint-4-2>, [Constraint 4.2]), induction along the segment forces the beam variable
+  at the cell true, and the link clause #fref(<constraint-4-12>, [Constraint 4.12]) forces the
+  laser variable $l_(c,x,y,t)$ true there. #fref(<constraint-4-13>, [Constraint 4.13]) then yields
+  $not a_(c_1,x,y,t)$ for every colour $c_1 eq.not c$, so no agent of another colour occupies that
+  cell. (Beyond a blocker the beam variables are unconstrained, but a spurious active beam can only
+  add such exclusions, never suppress a genuine one, so safety is preserved.) This is exactly the
+  laser-safety condition of #fref(<def-3-3>, [Definition 3.3]). Finally,
+  #fref(<constraint-4-8>, [Constraint 4.8]) places an agent on every exit at $T_("max")$; since the
+  $n_a$ agents occupy distinct cells (#fref(<constraint-4-7>, [Constraint 4.7])) and there are
+  exactly $n_a$ exits, the final positions coincide with $cal(E)$. The extracted trajectory is
+  therefore valid and solves $L$.
 
-  For completeness, assume a valid joint trajectory of length $T_("max")$ is given. Set each
+  For completeness, assume $L$ is solvable at horizon $T_("max")$, that is, a valid joint trajectory
+  of length $T_("max")$ whose final positions occupy all exits is given. Set each
   $a_(c,x,y,t)$ according to whether agent $c$ occupies $(x, y)$ at time $t$ in the trajectory.
   Set beam variables $b_(c,d,x,y,t)$ and laser variables $l_(c,x,y,t)$ according to the
-  deterministic beam dynamics induced by the same agent positions. Every clause family is then
+  deterministic beam dynamics of #fref(<def-3-2>, [Definition 3.2]) induced by the same agent
+  positions (beams stopping at walls, at other source tiles, and at same-colour agents). Every clause family is then
   satisfied by construction: initialisation matches the start state; the movement, uniqueness,
   and collision clauses match the trajectory semantics; the propagation iff and beam-laser link
   clauses hold because $b$ and $l$ are set exactly to those deterministic values; the
   agent-laser blocking clauses hold because trajectory validity already forbids any agent from
   standing on an active laser of a different colour; and the final positions occupy all exits.
   Therefore $Phi(L, T_("max"))$ is satisfiable.
+
+  Having proved both directions of the equivalence, we need no separate argument for the
+  unsolvable case: "$L$ unsolvable at horizon $T_("max")$ $<==>$ $Phi(L, T_("max"))$ unsatisfiable"
+  is the contrapositive of the equivalence just established, hence already implied.
   $square.stroked$
 ])
 
@@ -404,6 +438,17 @@ algorithm for this decision problem with only polynomial overhead from the reduc
 Whether bounded-horizon LLE solvability is also *NP-hard* remains open in the present work.
 Establishing NP-hardness would require a polynomial-time reduction in the opposite direction, from
 a known NP-hard problem to LLE solvability. This thesis does not claim such a result.
+
+One may also ask the opposite: whether the problem is easy, that is, in *P*. This is open too. We
+placed it in NP and reduced it to SAT, but did not prove it NP-hard, so a polynomial-time procedure
+is not ruled out. Suppose one existed and, as is widely believed, $"P" eq.not "NP"$. Then
+bounded-horizon LLE solvability would be strictly easier than SAT: decidable in polynomial time,
+whereas our route is not. Under $"P" eq.not "NP"$ no polynomial-time SAT algorithm exists, and CDCL
+solvers are exponential in the worst case. A dedicated algorithm would then beat our encoding
+asymptotically. That advantage would be worst-case only. Our instances are small and regular, and
+the solver decides them quickly (@encoding-comparison). We never observed the exponential blow-up
+on the instances we ran, though we cannot rule it out. An undiscovered polynomial algorithm is
+therefore no reason to abandon the SAT pipeline.
 
 We must also distinguish proved statements from standard complexity-theoretic beliefs.
 Whether $"P" = "NP"$ remains open, so statements here about worst-case difficulty should be read

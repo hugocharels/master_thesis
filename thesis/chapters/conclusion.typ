@@ -60,7 +60,7 @@ We restate the six research questions of @introduction and assess what each chap
   experiments of @curriculum-strategy-experiment and @transfer-experiment show that, for the
   value-based algorithms evaluated here, a curriculum of generated levels confers no advantage. On
   a reachable asymmetric target, ordering the stages does not beat direct training and only data
-  diversity helps; on the mutually-cooperative LLE Level 6, no condition, including a four-stage
+  diversity helps; on the mutually cooperative LLE Level 6, no condition, including a four-stage
   curriculum trained for two million steps, exceeds zero success, and neither does direct training.
   Because the agents also fail on the in-distribution generated pool, the obstacle is that the base
   task is unlearnable by these methods, not that curriculum transfer fails. We therefore read RQ6

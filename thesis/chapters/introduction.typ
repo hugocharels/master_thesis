@@ -22,7 +22,7 @@ broader transfer to future work.
 == Motivation
 
 In cooperative environments whose mechanics create explicit inter-agent dependencies, level design
-is particularly challenging. A useful training level should not merely appear cooperative, it
+is particularly challenging. A useful training level should not merely appear cooperative; it
 should provably contain the intended coordination structure.
 
 Procedural Content Generation (PCG) offers a way to scale level creation beyond what manual design

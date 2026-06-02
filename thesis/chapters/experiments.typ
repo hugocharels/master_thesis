@@ -560,7 +560,8 @@ Curriculum learning targets the other two regimes: the *ordering* of staged expo
 direct training can already reach, and targets too *hard* to learn directly at all. This part
 takes each in turn, asking whether ordering matters on a reachable target
 (@curriculum-strategy-experiment) and whether a curriculum lets agents reach a mutual-cooperation
-target they cannot learn directly (@transfer-experiment). A joint discussion closes the part.
+target they cannot learn directly (@transfer-experiment, which escalates in three steps from a
+minimal two-laser probe up to the full LLE Level 6). A joint discussion closes the part.
 
 === Curriculum ordering on a reachable 6×6 cooperative target <curriculum-strategy-experiment>
 
@@ -688,7 +689,7 @@ actually designed for, namely a target the agent cannot reach directly, which @t
 addresses.
 
 
-=== The limits of curriculum learning on mutually-cooperative targets <transfer-experiment>
+=== The limits of curriculum learning on mutually cooperative targets <transfer-experiment>
 
 This section addresses RQ6 of @introduction: does a staged curriculum of generated levels of
 growing geometric and cooperative complexity reach the hand-crafted LLE Level 6 more successfully
@@ -741,7 +742,7 @@ exact stage configurations are tabulated in @appendix-transfer-detail.
 
 ==== Results
 
-Across all three steps, no configuration learned to solve a mutually-cooperative target.
+Across all three steps, no configuration learned to solve a mutually cooperative target.
 @tab-cliff places these outcomes next to the *reachable* results of the preceding sections on a
 single axis of increasing cooperation difficulty. The contrast is the result: success is
 non-trivial as long as cooperation is *asymmetric* (a one-way blocking action) and collapses to
@@ -845,14 +846,14 @@ this bottleneck untouched.
 These three failures converge on one conclusion, and the Level-6 transfer pins it down. Every
 condition reached zero not only on Level 6 but also on the in-distribution held-out generated pool,
 and the full curriculum (CURR) did no better than training directly on Level 6 (B3). The failure is
-therefore neither one of transfer or distribution shift between generated levels and the
+therefore neither one of transfer nor distribution shift between generated levels and the
 hand-crafted target, nor one of curriculum design: the agents never learned the base
-mutually-cooperative task at all, because it lies beyond the reach of the value-based methods
+mutually cooperative task at all, because it lies beyond the reach of the value-based methods
 evaluated here.
 
 *Scope and threats to validity.* We are careful not to overclaim. These experiments establish that the value-based
 algorithms evaluated here (IQL, VDN, QMIX), under a fixed set of hyperparameters and a sparse
-joint-exit reward, do not solve mutually-cooperative LLE targets, and that no curriculum over
+joint-exit reward, do not solve mutually cooperative LLE targets, and that no curriculum over
 generated levels changes this. We do *not* claim that curriculum learning can never succeed on
 such targets. Three caveats bound the claim. First, the algorithm family is narrow; centralised-critic
 actor-critic methods and approaches with explicit coordinated exploration were not tested and

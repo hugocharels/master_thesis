@@ -306,7 +306,8 @@ pooled summary of @tab-curriculum-strategy.
   caption: [
     Final greedy success rate per (condition, algorithm) on the $6 times 6$ / 2-agent / 1-laser
     target, each aggregated over eight seeds. Means with $95%$ confidence intervals
-    ($plus.minus t_(7,0.025) sigma / sqrt(8)$, $t_(7,0.025) approx 2.365$). Source:
+    ($plus.minus t^* sigma / sqrt(8)$, $t^* approx 2.365$, the 0.975 quantile of Student's $t$ with
+    7 degrees of freedom). Source:
     `results/curriculum_strategy/runs/`.
   ],
 ) <tab-curriculum-strategy-perchart>
@@ -364,7 +365,7 @@ coincide. Unspecified wall budgets fall back to the generator default $floor("gr
 
 This appendix collects the configurations and per-run results behind the three stages of
 @transfer-experiment: the frontier probe, the two-laser curriculum, and the Level-6 transfer.
-Across all three, held-out success on the mutually-cooperative target is uniformly zero; the
+Across all three, held-out success on the mutually cooperative target is uniformly zero; the
 tables below give the supporting numbers and the exact stage geometries.
 
 === Frontier probe and diagnostic checks

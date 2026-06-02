@@ -166,7 +166,7 @@ $
 
 #formalbox(kind: "constraint", [Constraint 4.7 (No simultaneous occupation)], [
   Two distinct agents cannot share the same position at the same time, nor can they swap
-  positions between consecutive time steps; the latter two cases encode the no-following-conflicts
+  positions between consecutive time steps; the latter two cases encode the no-following-conflict
   rule of #fref(<def-3-3>, [Definition 3.3]):
   $
     and.big_(c_1 in C) and.big_(c_2 in C, c_2 eq.not c_1) and.big_((x,y) in P) and.big_(t in T)
@@ -336,7 +336,7 @@ These are *asymptotic upper bounds*. The local formulation dominates the global 
 asymptotically, since its uniqueness term is linear in $p$ rather than quadratic; the
 dominance is not pointwise, however. On sufficiently small grids the global formulation
 actually produces fewer clauses than the local one, because the local formulation pays a
-constant overhead the global one avoids: a separate backward-consistency family of size
+constant overhead that the global one avoids: a separate backward-consistency family of size
 $n_a (tau - 1) p$ (#fref(<constraint-4-6>, [Constraint 4.6])) and a per-cell pairs sum
 $sum_(u in V) binom(|"next"(u)|, 2)$ which is large relative to $binom(p, 2)$ when $p$ itself
 is small. The grid size at which the global formulation's quadratic uniqueness term overtakes this

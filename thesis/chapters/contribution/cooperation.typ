@@ -295,7 +295,7 @@ exits do not cross any beam at all (@fig-profile-independent).
 
 *Asymmetric.* The residual category: cooperation is required, but $G_L$ matches none of the four
 structural patterns below: no relay (chain), no agent helped by two others (distributed), no
-reciprocal pair (mutual), and not strongly connected (fully coupled). The label covers both the
+reciprocal pair (mutual), and no strong connectivity (fully coupled). The label covers both the
 typical case (a small set of one-way edges) and the degenerate case where the extracted plan
 contains no observable helper event at all (e.g. when the helper sits at the last cell of its own
 beam path).
@@ -505,7 +505,7 @@ decided beforehand by the binary detector and do not appear there.
     table.hline(stroke: 1pt),
   ),
   caption: [
-    Priority-based labelling of cooperative-required levels. The classifier walks the rows from
+    Priority-based labelling of cooperation-required levels. The classifier walks the rows from
     top to bottom and assigns the first label whose predicate matches.
   ],
 ) <tab-profile-priority>

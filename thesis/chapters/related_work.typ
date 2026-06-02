@@ -69,7 +69,7 @@ explicit *inter-agent blocking* rather than from partial observability or large 
     // Labels
     place(top + left, dx: 8.5 * _lvl6_tile, dy: 0.2 * _lvl6_tile, _lvl6_box[Start tiles])
     place(top + left, dx: 7.3 * _lvl6_tile, dy: 4.1 * _lvl6_tile, _lvl6_box[Red laser])
-    place(top + left, dx: 7.3 * _lvl6_tile, dy: 5.1 * _lvl6_tile, _lvl6_box[Laser source])
+    place(top + left, dx: 9.6 * _lvl6_tile, dy: 5.1 * _lvl6_tile, _lvl6_box[Laser source])
     place(top + left, dx: 4.5 * _lvl6_tile, dy: 8.6 * _lvl6_tile, _lvl6_box[Gem])
     place(top + left, dx: 7.5 * _lvl6_tile, dy: 10.5 * _lvl6_tile, _lvl6_box[Exit tiles])
   }),
@@ -162,7 +162,7 @@ coupled to a formal decision procedure, and the solver acts as an acceptance ora
 as a post-hoc descriptive tool.
 
 
-== Curriculum Learning and generated environments
+== Curriculum learning and generated environments
 
 The general idea of training on a sequence of progressively harder tasks predates the modern
 deep-learning era; #cite(<Bengio2009>, form: "prose") formalised *curriculum learning* as a meta-learning
@@ -238,7 +238,7 @@ used to define cooperation. The MAPF literature therefore supplies a methodologi
 not a drop-in solution.
 
 
-== Formal methods coupled to reinforcement Learning
+== Formal methods coupled to reinforcement learning
 
 A separate line of work uses formal methods as an explicit component of the reinforcement
 learning loop rather than as a post-hoc analysis. The canonical example is *shielded RL*

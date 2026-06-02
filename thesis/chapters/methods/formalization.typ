@@ -85,7 +85,7 @@ relies on the blocking mechanism.
     $p_(t+1)(c_1) eq.not p_t(c_2)$ and $p_t(c_1) eq.not p_(t+1)(c_2)$. This follows the LLE
     engine convention: agents act simultaneously without coordinating their moves, so an agent
     cannot enter a cell that another agent only vacates in the same step; it must wait one
-    step. The same rule rules out direct swaps.
+    step. The same rule excludes direct swaps.
   - *Laser safety:* No agent $c_1$ occupies a cell at time $t$ where a laser of colour
     $c_2 in C_("src")$, with $c_2 eq.not c_1$, is active under the standard beam semantics of
     #fref(<def-3-2>, [Definition 3.2]). The restriction $c_2 eq.not c_1$ encodes *immunity*:
@@ -114,7 +114,7 @@ same joint position map twice can have the intervening segment truncated without
 reachability of later states; the stay-on-exit rule does not break this argument, since any
 agent on an exit at the start of the loop must remain on that same exit throughout the loop.
 Hence, if a level is solvable at all, it admits a valid trajectory whose length is at most the
-number of collision-free joint position maps, which is bounded by $|P|^(n_a)$. A sufficient $T_("max")$ therefore always exists. In practice $T_("max")$ is
+number of collision-free joint position maps, which is bounded by $|P|^(n_a)$. A sufficient $T_("max")$ therefore always exists. In practice, $T_("max")$ is
 chosen by the generation process, and all formal guarantees in this thesis are stated relative
 to that choice.
 

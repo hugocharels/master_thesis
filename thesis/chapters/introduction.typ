@@ -39,7 +39,7 @@ solution). A formally-verified generator is therefore a candidate building block
 learning*: rather than train directly on a hard hand-crafted target, an agent can be trained on a
 sequence of progressively harder generated levels.
 
-The thesis delivers three contributions and an empirical study. The contributions are a
+The thesis delivers three contributions and an empirical study#footnote[The source code (solver, generators, and experiment scripts) and the thesis itself are available at #link("https://github.com/hugocharels/master_thesis").]. The contributions are a
 bounded-horizon SAT encoding of LLE solvability with a correctness proof and complexity
 placement; a strict-semantics counterfactual that turns the informal "cooperation required"
 intuition into a decidable property, refined into five increasingly rich cooperation profiles; and a

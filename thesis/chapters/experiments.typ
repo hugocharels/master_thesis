@@ -249,7 +249,7 @@ grid and 50 on the large grid, then classifies each into one of the analyser's p
 ==== Results
 
 @fig-profile-distribution reports the profile breakdown for each generator and grid
-configuration. The two regimes behave very differently, and we discuss each in turn.
+configuration. The two regimes behave differently.
 
 #figure(
   image("../../results/profile_benchmark/profile_distribution.pdf", width: 90%),

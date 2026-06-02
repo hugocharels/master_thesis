@@ -86,7 +86,7 @@ coordination*, *interdependence*, and *zero-incentive dynamics* @Molinghen2025Ze
 create bottlenecks in which one agent must perform a locally unrewarded action that enables
 another agent to progress.
 
-This framing is directly relevant here. The thesis does not try to improve MARL algorithms on
+The thesis does not try to improve MARL algorithms on
 LLE; it addresses an upstream question the benchmark paper leaves open: how can we generate LLE
 levels guaranteed to be solvable and to contain the beam-blocking dependency the benchmark relies
 on?

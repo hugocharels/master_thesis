@@ -634,8 +634,8 @@ claimed to exhaust every possible interpretation of cooperation in multi-agent e
 it is the specific mechanism studied in this benchmark, and the formal guarantee is scoped
 accordingly.
 
-*Model-dependence of finer-grained analyses.* It is worth restating which outputs are intrinsic
-to the level and which are not. The binary detector is: the satisfiability of
+*Model-dependence of finer-grained analyses.* Some outputs are intrinsic to the level and some
+are not. The binary detector is: the satisfiability of
 $Phi(L, T_("max"))$ and $Phi_("strict")(L, T_("max"))$ does not depend on which satisfying
 assignment the solver returns, and the necessary-helper set is likewise an invariant, being a
 sequence of one-shot counterfactual checks. The profile label is not: it is read from a single

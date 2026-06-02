@@ -37,9 +37,7 @@ so only category (c) survives.
     columns: 3,
     gutter: 10pt,
     align: center,
-    [*(a)* Unsolvable],
-    [*(b)* Solvable, no cooperation],
-    [*(c)* Solvable and cooperative],
+    [*(a)* Unsolvable], [*(b)* Solvable, no cooperation], [*(c)* Solvable and cooperative],
 
     image("../../../assets/unsolvable_map_example.png", width: 100%),
     image("../../../assets/bad_map_example.png", width: 100%),
@@ -100,21 +98,19 @@ rejected configurations in full.
     inset: (x: 9pt, y: 6pt),
     align: (left, left, left),
     table.hline(stroke: 1pt),
-    table.header(
-      [*Rejected configuration*], [*Geometric condition*], [*Why it is degenerate*],
-    ),
+    table.header([*Rejected configuration*], [*Geometric condition*], [*Why it is degenerate*]),
     table.hline(stroke: 0.5pt),
     [Laser firing off the grid],
-      [the cell immediately in front of the source is out of bounds (e.g. a source on the
-        bottom edge facing south)],
-      [the beam covers no tile, so the source behaves like an inert wall],
+    [the cell immediately in front of the source is out of bounds (e.g. a source on the
+      bottom edge facing south)],
+    [the beam covers no tile, so the source behaves like an inert wall],
     [Zero-length beam],
-      [the cell immediately in front of the source is a wall or another laser source],
-      [the beam is blocked at its first step and emits no active beam],
+    [the cell immediately in front of the source is a wall or another laser source],
+    [the beam is blocked at its first step and emits no active beam],
     [Exit on a beam tile],
-      [an exit cell coincides with a tile covered by some laser beam],
-      [the exit is reachable only by standing on a live beam, so it is unusable unless the
-        beam is blocked],
+    [an exit cell coincides with a tile covered by some laser beam],
+    [the exit is reachable only by standing on a live beam, so it is unusable unless the
+      beam is blocked or the agent reaching it is immune (the beam is its own colour)],
     table.hline(stroke: 1pt),
   ),
   caption: [
@@ -134,7 +130,14 @@ instances. The geometric filters do not themselves prove solvability or cooperat
 discarding inert-laser and beam-stranded layouts they ensure that accepted levels actually
 contain the laser interactions the experiments depend on. In the cooperative setting, where
 an active beam is a *prerequisite* for the same-colour blocking mechanism, they also avoid many
-SAT calls that could never have yielded a cooperative level. The generator
+SAT calls that could never have yielded a cooperative level.
+
+This filter set is extensible: new geometric rejection rules slot in the same way. The exit-on-beam
+test is itself the conservative version, rejecting an exit on any beam even when its own-colour
+agent could occupy it by immunity; a finer, immunity-aware test could replace it without touching
+the rest of the pipeline.
+
+The generator
 otherwise offers the same formal guarantees as the random generator (solvable, optionally
 cooperative with profile filter), and is the default we use when the experiments call for
 "random sampling" of solvable or cooperative levels. The effect is visible by comparing the
@@ -165,9 +168,8 @@ cooperation dependency for every requested laser, rather than relying on the sol
 
 Each laser is given a *distinct colour* in ${0, ..., n_l - 1}$. We require $n_l <= n_a$ so that
 every laser colour has a matching agent of that colour able to block it: a laser whose colour no
-agent shares is an unblockable obstacle rather than a cooperation lever. This is a design choice of
-the constructive generator, not a restriction of the model: #fref(<def-3-1>, [Definition 3.1])
-places no bound on the number of sources per colour. Distinctness
+agent shares is an unblockable obstacle rather than a cooperation lever. LLE forbids such a laser
+anyway: a source must carry the colour of an existing agent. Distinctness
 of the perpendicular columns guarantees that the resulting beams are parallel straight lines
 on disjoint columns, so no two laser sources or beam segments coincide.
 
@@ -223,22 +225,20 @@ at three grid sizes (up to the $12 times 13$ Level 6 footprint) are shown in
     column-gutter: 14pt,
     align: (left, left, left),
     table.hline(stroke: 1pt),
-    table.header(
-      [*Generator*], [*Pre-SAT construction bias*], [*Profile tendency*],
-    ),
+    table.header([*Generator*], [*Pre-SAT construction bias*], [*Profile tendency*]),
     table.hline(stroke: 0.5pt),
     [Random],
-      [Uniform random sampling of every layout component],
-      [Mostly `asymmetric`],
+    [Uniform random sampling of every layout component],
+    [Mostly `asymmetric`],
     [Constrained random],
-      [Uniform sampling + geometric rejection (@tab-constrained-random-filters)],
-      [Mostly `asymmetric`],
+    [Uniform sampling + geometric rejection (@tab-constrained-random-filters)],
+    [Mostly `asymmetric`],
     [Constructive],
-      [Reserved agent lanes + a deliberately planted laser dependency],
-      [`asymmetric` (1 laser), `mutual` (2 lasers), `distributed` ($>= 3$ lasers)],
+    [Reserved agent lanes + a deliberately planted laser dependency],
+    [`asymmetric` (1 laser), `mutual` (2 lasers), `distributed` ($>= 3$ lasers)],
     [Level-6-style],
-      [Clustered starts and exits with a corridor of lasers between them],
-      [`mutual` by design],
+    [Clustered starts and exits with a corridor of lasers between them],
+    [`mutual` by design],
     table.hline(stroke: 1pt),
   ),
   caption: [

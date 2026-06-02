@@ -345,10 +345,9 @@ helping role (@fig-profile-chain). The graph is $"red" arrow "green" arrow "blue
 *Distributed.* At least one agent has in-degree $>= 2$ in the dependency graph. *Example.*
 Three agents in which two distinct same-colour helpers (the red and green agents) must each
 block their respective beams to free the blue agent's path to its exit (@fig-profile-distributed).
-The edges are ${"red" arrow "green", "red" arrow "blue", "green" arrow "blue"}$, so the blue
+The edges are ${"red" arrow "blue", "green" arrow "blue"}$, so the blue
 agent has in-degree two and the level is
-`distributed`. (The extra edge $"red" arrow "green"$ does not promote the level to `mutual` because the
-reciprocal edge $"green" arrow "red"$ is absent.) Note that the taxonomy grades cooperation by *in-degree*,
+`distributed`. Note that the taxonomy grades cooperation by *in-degree*,
 how many distinct helpers a single beneficiary depends on, and deliberately gives no separate
 profile to the mirror case of one helper that shields several beneficiaries (a high *out-degree*
 hub). We classify the structure of *support received* rather than of *help given*; such a hub
@@ -366,7 +365,7 @@ under `asymmetric`.
   caption: [
     `distributed`: the blue agent must traverse both the red and the green beam to reach its exit,
     requiring blocking from both other agents. In-degree of the blue agent is two. Edges:
-    ${"red" arrow "green", "red" arrow "blue", "green" arrow "blue"}$.
+    ${"red" arrow "blue", "green" arrow "blue"}$.
   ],
 ) <fig-profile-distributed>
 
@@ -403,9 +402,10 @@ component at size two while $n_a = 3$.
 
 *Fully coupled.* The dependency graph is strongly connected: its single strongly connected
 component (SCC) spans the entire agent set (size $n_a > 1$). *Example.* Three agents in which every
-pair helps each other, so the dependency graph is the complete digraph $K_(n_a)^("*")$ (the
-digraph with all $n_a (n_a - 1)$ edges between distinct agents), which is trivially strongly
-connected (@fig-profile-fully-coupled). This is the highest-priority profile and is rare on
+pair helps each other, so the dependency graph is the complete
+digraph#footnote[A digraph is a directed graph: every edge has a direction. "Complete" means there
+  is an arc between every ordered pair of distinct vertices.] $K_(n_a)^("*")$, which is
+trivially strongly connected (@fig-profile-fully-coupled). This is the highest-priority profile and is rare on
 small grids.
 
 #figure(
@@ -517,17 +517,10 @@ dependency graph realising the first, equivalently when the first predicate enta
 
 *Why some pairs are ordered.* `asymmetric` is the base predicate, so it lies below all four
 structural patterns. Beyond that, the only entailment between two structural patterns is
-$cal(F) arrow.r.double cal(C)$: a graph strongly connected on $n_a >= 3$ agents always contains a
-directed simple path of length two. (If none existed, then for every helping edge $c arrow c'$ the
-beneficiary $c'$ could only help $c$ back, so no agent could have two distinct helpers; strong
-connectivity would then force every in-degree to be exactly one, making the graph a single cycle
-through all agents, which itself contains a length-two path.) Hence every fully coupled graph is
-also a chain, and `fully_coupled` sits above `chain`. (A related fact, the conditional
-$cal(F) inter cal(M) arrow.r.double cal(D)$, holds because a strongly connected graph with a
-reciprocal pair must contain a vertex of in-degree at least two: otherwise every in-degree is one,
-forcing a single Hamiltonian cycle, which for $n_a >= 3$ has no reciprocal pair. This containment
-shapes the Euler diagram, but being conditional it does not on its own order `fully_coupled`
-against `distributed`.)
+$cal(F) arrow.r.double cal(C)$, and only for $n_a >= 3$: a graph strongly connected on three or more
+agents always contains a directed simple path of length two. Hence every fully
+coupled graph on $n_a >= 3$ agents is also a chain, so `fully_coupled` sits above `chain` (the
+two-agent reciprocal pair is the exception: mutual, not a chain).
 
 *Why the rest are incomparable.* Every other pair is incomparable, which four *pure* witness graphs
 on three distinct agents $c_1, c_2, c_3 in C$ (the agents being identified by their colour) settle

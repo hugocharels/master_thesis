@@ -69,6 +69,8 @@
 #my-slide[
   = Context & motivation
 
+  #v(10pt)
+
   #toolbox.side-by-side(columns: (1.6fr, 1fr))[
     == Laser Learning Environment (LLE)
     - 2D grid-based fully cooperative multi-agent puzzle
@@ -95,6 +97,8 @@
 // =============================================================================
 #my-slide[
   = Part 1 — Verification (RQ1–2)
+
+  #v(10pt)
 
   #text(
     size: 14pt,
@@ -127,6 +131,8 @@
 // =============================================================================
 #my-slide[
   = Bounded-horizon solvability #sym.arrow.r SAT
+
+  #v(10pt)
 
   #toolbox.side-by-side(columns: (1fr, 1fr))[
     #beamerbox(color: c-info, [Decision problem])[
@@ -165,6 +171,8 @@
 #my-slide[
   = Detecting cooperation
 
+  #v(10pt)
+
   *Idea:* keep the SAT encoding, change *one* rule: beams no longer block same-colour agents
   #sym.arrow.r the cooperation mechanic is *disabled*.
 
@@ -198,6 +206,8 @@
 // =============================================================================
 #my-slide[
   = Horizon matters
+
+  #v(10pt)
 
   #toolbox.side-by-side(columns: (1fr, 1.3fr))[
     #set align(center + horizon)
@@ -234,6 +244,8 @@
 // =============================================================================
 #my-slide[
   = Cooperation profiles
+
+  #v(10pt)
 
   From one SAT model #sym.arrow.r a *dependency graph (edges: helper #sym.arrow.r beneficiary)* \
   classify by priority: $"fully coupled" succ "mutual" succ "distributed" succ "chain" succ "asymmetric"$.
@@ -274,6 +286,8 @@
 #my-slide[
   = Part 2 — Construction (RQ3–4)
 
+  #v(10pt)
+
   #text(
     size: 14pt,
   )[*How can we embed formal verification inside a procedural generator so that every accepted level is certified, and can we control the cooperation structure by targeting specific profiles?*]
@@ -305,6 +319,8 @@
 // =============================================================================
 #my-slide[
   = Random Generator
+
+  #v(10pt)
 
   #align(center + horizon)[
     #grid(
@@ -342,6 +358,8 @@
 #my-slide[
   = Constructive Generator
 
+  #v(10pt)
+
   Oriented *lane-based* design. Each agent gets a reserved lane, cooperation
   arises from crossing lasers. Near-zero rejection rate.
 
@@ -353,7 +371,7 @@
     align: top + center,
     stack(
       spacing: 4pt,
-      image("generated_examples/constructive_02_agents_exits.png", width: 70%),
+      image("generated_examples/constructive_generated_02_agents_exits.png", width: 70%),
       text(size: 10pt)[1. Reserve lanes, place agents + exits],
     ),
     [
@@ -367,7 +385,7 @@
       #uncover("2-")[
         #stack(
           spacing: 4pt,
-          image("generated_examples/constructive_03_walls.png", width: 70%),
+          image("generated_examples/constructive_generated_03_walls.png", width: 70%),
           text(size: 10pt, weight: "bold")[2. Place walls in free cells],
         )
       ]
@@ -383,7 +401,7 @@
       #uncover("3-")[
         #stack(
           spacing: 4pt,
-          image("generated_examples/constructive_04_full.png", width: 70%),
+          image("generated_examples/constructive_generated_04_full.png", width: 70%),
           text(size: 10pt, weight: "bold")[3. Add lasers crossing lanes],
         )
       ]
@@ -397,76 +415,55 @@
 #my-slide[
   = Level-6-Style Generator
 
+  #v(10pt)
+
   Clustered starts + exits on opposite sides. Shared laser corridor = mutual
   by design. SAT verifies.
 
   #v(12pt)
 
-  #only(1)[
-    #grid(
-      columns: (1fr, 1fr, 1fr, 1fr, 1fr),
-      column-gutter: 6pt,
-      align: center + horizon,
-      stack(
-        spacing: 4pt,
-        image("generated_examples/level6style_02_agents_exits.png", width: 85%),
-        text(size: 10pt)[1. Place clusters on opposite sides],
-      ),
-    )
-  ]
-
-  #only(2)[
-    #grid(
-      columns: (1fr, 0.15fr, 1fr),
-      column-gutter: 6pt,
-      align: center + horizon,
-      stack(
-        spacing: 4pt,
-        image("generated_examples/level6style_02_agents_exits.png", width: 85%),
-        text(size: 10pt)[1. Place clusters on opposite sides],
-      ),
-      stack(
-        spacing: 0pt,
-        text(size: 20pt)[→],
-      ),
-      stack(
-        spacing: 4pt,
-        image("generated_examples/level6style_03_lasers.png", width: 85%),
-        text(size: 10pt, weight: "bold")[2. Fill the central corridor with lasers],
-      ),
-    )
-  ]
-
-  #only(3)[
-    #grid(
-      columns: (1fr, 0.15fr, 1fr, 0.15fr, 1fr),
-      column-gutter: 6pt,
-      align: center + horizon,
-      stack(
-        spacing: 4pt,
-        image("generated_examples/level6style_02_agents_exits.png", width: 85%),
-        text(size: 10pt)[1. Place clusters on opposite sides],
-      ),
-      stack(
-        spacing: 0pt,
-        text(size: 20pt)[→],
-      ),
-      stack(
-        spacing: 4pt,
-        image("generated_examples/level6style_03_lasers.png", width: 85%),
-        text(size: 10pt)[2. Fill the central corridor with lasers],
-      ),
-      stack(
-        spacing: 0pt,
-        text(size: 20pt)[→],
-      ),
-      stack(
-        spacing: 4pt,
-        image("generated_examples/level6style_04_full.png", width: 85%),
-        text(size: 10pt, weight: "bold")[3. Add walls to shape the solution space],
-      ),
-    )
-  ]
+  #grid(
+    columns: (1fr, 0.1fr, 1fr, 0.1fr, 1fr),
+    column-gutter: 4pt,
+    align: top + center,
+    stack(
+      spacing: 4pt,
+      image("generated_examples/level6_generated_02_agents_exits.png", width: 85%),
+      text(size: 10pt)[1. Place clusters on opposite sides],
+    ),
+    [
+      #uncover("2-")[
+        #align(center + horizon)[
+          #text(size: 25pt)[#sym.arrow.r]
+        ]
+      ]
+    ],
+    [
+      #uncover("2-")[
+        #stack(
+          spacing: 4pt,
+          image("generated_examples/level6_generated_03_lasers.png", width: 85%),
+          text(size: 10pt)[2. Fill the central corridor with lasers],
+        )
+      ]
+    ],
+    [
+      #uncover("3-")[
+        #align(center + horizon)[
+          #text(size: 25pt)[#sym.arrow.r]
+        ]
+      ]
+    ],
+    [
+      #uncover("3-")[
+        #stack(
+          spacing: 4pt,
+          image("generated_examples/level6_generated_04_full.png", width: 85%),
+          text(size: 10pt, weight: "bold")[3. Add walls to shape the solution space],
+        )
+      ]
+    ],
+  )
 ]
 
 // =============================================================================
@@ -475,14 +472,26 @@
 #my-slide[
   = Generator efficiency (RQ3)
 
+  #v(10pt)
+
   // #toolbox.side-by-side(columns: (2fr, 0.6fr), gutter: 30pt, align: center)[
   //   #image("../../results/rejection_benchmark/rejection_rate_by_generator.png", width: 100%)
   // ][
   //   - ""
   // ]
 
-  #align(center)[
-    #image("../../results/rejection_benchmark/rejection_rate_by_generator.png", width: 75%)
+  // #align(center)[
+  //   #image("../../results/rejection_benchmark/rejection_rate_by_generator.png", width: 75%)
+  // ]
+
+  #toolbox.side-by-side(columns: (1.6fr, 0.4fr))[
+    #align(center)[
+      #image("../../results/rejection_benchmark/rejection_rate_by_generator.png", width: 100%)
+    ]
+  ][
+    - 3x3 / 2-agents / 1-laser
+    - 5x5 / 3-agents / 2-lasers
+    - 8x8 / 4-agents / 3-lasers
   ]
 ]
 
@@ -492,9 +501,11 @@
 #my-slide[
   = Output diversity (RQ4)
 
-  #align(center)[
-    #image("../../results/profile_benchmark/profile_distribution.png", width: 90%)
-  ]
+  #v(10pt)
+
+  // #align(center)[
+  //   #image("../../results/profile_benchmark/profile_distribution.png", width: 90%)
+  // ]
 
   // #v(8pt)
   // #align(center)[
@@ -503,6 +514,19 @@
   //   - Level-6-style #sym.arrow.r $68 %$ `mutual` (geometry).
   //   - Random #sym.arrow.r mostly `asymmetric`.
   // ]
+
+  #toolbox.side-by-side(columns: (1.6fr, 0.4fr))[
+    #align(center)[
+      #image("../../results/profile_benchmark/profile_distribution.png", width: 100%)
+    ]
+  ][
+    - Constructive #sym.arrow.r $92 %$ `mutual`.
+    - Level-6-style #sym.arrow.r $68 %$ `mutual`.
+    - Random #sym.arrow.r mostly `asymmetric`.
+  ]
+  #align(center)[
+    (8x8 / 3-agents / 2-lasers)
+  ]
 ]
 
 // =============================================================================
@@ -510,6 +534,8 @@
 // =============================================================================
 #my-slide[
   = Part 3 — Experiment (RQ5–6)
+
+  #v(10pt)
 
   #text(
     size: 14pt,
@@ -536,8 +562,17 @@
 #my-slide[
   = Learnability (RQ5)
 
-  #align(center)[
-    #image("../../results/learnability_5x5/figures/learning_curves.pdf", width: 70%)
+  #v(10pt)
+
+  #toolbox.side-by-side(columns: (1.4fr, 0.6fr))[
+    #align(center)[
+      #image("../../results/learnability_5x5/figures/learning_curves.pdf", width: 100%)
+    ]
+  ][
+    #align(center)[
+      (200k steps, 5x5 / 2-agents / 1-laser, asymmetric)
+      #takeaway[Learnable at 5×5, but too few levels #sym.arrow.double overfitting]
+    ]
   ]
 ]
 
@@ -547,8 +582,17 @@
 #my-slide[
   = Scaling data (RQ5)
 
-  #align(center)[
-    #image("../../results/data_scaling/data_scaling_curve.pdf", width: 70%)
+  #v(10pt)
+
+  #toolbox.side-by-side(columns: (1.4fr, 0.6fr))[
+    #align(center)[
+      #image("../../results/data_scaling/data_scaling_curve.pdf", width: 100%)
+    ]
+  ][
+    #align(center)[
+      (300k steps, 5x5 / 2-agents / 1-laser, asymmetric)
+      #takeaway[Unlimited certified levels ⇒ overfitting becomes generalisation.]
+    ]
   ]
 ]
 
@@ -558,13 +602,14 @@
 #my-slide[
   = Curriculum ordering (RQ6)
 
+  #v(10pt)
+
   #align(center)[
     #image("../../results/curriculum_strategy/figures/final_success.pdf", width: 85%)
   ]
 
-  #v(8pt)
   #align(center)[
-    Four budget-matched schedules (400k steps, 6×6 / 2-agents / 1-laser, asymmetric):
+    Four budget-matched schedules (400k steps, 6×6 / 2-agents / 1-laser, asymmetric)
   ]
 ]
 
@@ -573,6 +618,8 @@
 // =============================================================================
 #my-slide[
   = Curriculum targets (RQ6)
+
+  #v(10pt)
 
   #toolbox.side-by-side(columns: (1.1fr, 1fr))[
     #set text(size: 13pt)
@@ -605,6 +652,8 @@
 #my-slide[
   = Beyond the thesis: upstream
 
+  #v(10pt)
+
   Solver, cooperation detector, and generators are *merged into the official LLE library* \
   (`laser-learning-environment[generator]`, PyPI, v2.9.0+).
 
@@ -622,6 +671,7 @@
 // =============================================================================
 #my-slide[
   = Conclusion
+  #v(10pt)
 
   #set text(size: 14pt)
   - *RQ1* ✓ --- SAT verification tool for solvability; in NP, $<= ""_p$ SAT.
@@ -641,16 +691,20 @@
 #my-slide[
   = Future work
 
+  #v(10pt)
+
   #toolbox.side-by-side(columns: (1fr, 1fr))[
     == Theory & model
+    #v(10pt)
     - Settle *NP-hardness* of LLE solvability.
     - Add *gems* and true *void* tiles.
     - Richer (time-indexed / weighted) cooperation graphs.
   ][
     == Learning
+    #v(10pt)
     - *Make mutual coordination learnable*: dense / intrinsic rewards.
+    - Deeper research into cooperation structures: how do they affect learnability? Is the learning of one profile a stepping to another?
     - Beyond value-based: actor-critics (MADDPG, COMA), MAVEN.
-    - Surface the `fully coupled` profile.
   ]
 
   #v(8pt)
@@ -661,11 +715,31 @@
 //  THANK YOU
 // =============================================================================
 #my-slide[
-  = Thank you
 
-  #place(top + right, image(height: 13%, "../../assets/logos/MLG_logo.png"))
-  #place(top + right, dx: -9cm, image(height: 13%, "../../assets/logos/Université_libre_de_Bruxelles_logo.svg"))
-  #place(bottom + right, dx: -1cm, dy: -1.6cm, image(height: 50%, "../../assets/qr-code_repo-link.png"))
+  = Summary
+
+  #v(10pt)
+
+  #place(
+    top + right,
+    dx: 0cm,
+    dy: 0cm,
+    image(height: 15%, "../../assets/logos/MLG_logo.png"),
+  )
+
+  #place(
+    top + right,
+    dx: -9cm,
+    dy: 0cm,
+    image(height: 15%, "../../assets/logos/Université_libre_de_Bruxelles_logo.svg"),
+  )
+
+  #place(
+    bottom + right,
+    dx: -1cm,
+    dy: -2cm,
+    image(height: 60%, "../../assets/qr-code_repo-link.png"),
+  )
 
   #v(6pt)
   #toolbox.side-by-side(columns: (1.1fr, 1fr))[
@@ -676,14 +750,11 @@
     + Merged into the official LLE library.
 
     *Key results*
-    + Local encoding scales; constructive generator $approx$ free.
+    + Constructive generator $approx$ free.
     + Scaling certified data closes the generalisation gap.
     + A learnability *cliff* at mutual cooperation.
   ][
   ]
-
-  #v(4pt)
-  #align(center, text(size: 18pt, weight: "bold")[Questions?])
 ]
 
 // ###############################################################################
@@ -692,172 +763,4 @@
 #slide[
   #set align(horizon + center)
   #text(size: 22pt, weight: "bold")[Backup slides]
-]
-
-// ─── B: full encoding ────────────────────────────────────────────────────────
-#slide[
-  = Backup — Full SAT encoding
-
-  == Variables
-  - $a_{c,x,y,t}$: agent $c$ at $(x,y)$ at step $t$
-  - $b_{c,d,x,y,t}$: beam of colour $c$, direction $d$, active at $(x,y,t)$
-  - $l_{c,x,y,t}$: laser of colour $c$ active at $(x,y,t)$
-
-  == Constraints (4.1–4.13)
-  #toolbox.side-by-side()[
-    *Init*
-    - 4.1 agent start tiles
-    - 4.2 laser-source cells
-  ][
-    *Movement*
-    - 4.3 forward consistency
-    - 4.4 global / 4.5 local uniqueness
-    - 4.6 backward consistency
-    - 4.7 no overlap / no following
-    - 4.8 victory · 4.9 stay-on-exit
-  ][
-    *Lasers*
-    - 4.10 walls block beams
-    - 4.11 beam propagation
-    - 4.12 beam↔laser link
-    - 4.13 no step on foreign laser
-  ]
-
-  $O((n_a + s) p tau)$ variables; clause count polynomial in $n_a, p, s, tau$.
-]
-
-// ─── B: local vs global ──────────────────────────────────────────────────────
-#slide[
-  = Backup — Local vs global uniqueness
-
-  *Global (A):* $ and.big_(c) and.big_(t) and.big_((x_1,y_1) eq.not (x_2,y_2)) not a_(c,x_1,y_1,t) or not a_(c,x_2,y_2,t) quad O(n_a tau p^2) $
-
-  *Local (B):* neighbourhood exclusivity over $"next"(x,y)$ + backward consistency $ quad O(n_a tau p) $
-
-  Both admit the *same* satisfying assignments. Local is asymptotically smaller in $p$ but pays a
-  fixed overhead; below the *crossover* grid size the global form is more compact.
-
-  #v(4pt)
-  #table(
-    columns: 5,
-    stroke: none,
-    inset: (x: 8pt, y: 4pt),
-    align: center,
-    table.hline(stroke: 1pt),
-    [*Level*], [3×3], [5×5], [8×8], [Level 6],
-    table.hline(stroke: 0.5pt),
-    [global], [753], [8 214], [166 736], [1 167 640],
-    [local], [785], [6 204], [77 516], [252 964],
-    table.hline(stroke: 1pt),
-  )
-  #text(size: 12pt)[Clause counts. Level 6: 7× more clauses than 8×8 yet solves faster — search structure, not size.]
-]
-
-// ─── B: why the encoding is correct ────────────────────────────────────────────
-#slide[
-  = Backup — Why the encoding is correct
-
-  #beamerbox(color: c-info, [Decision equivalence])[
-    For either movement formulation, $Phi(L, T_"max")$ is satisfiable #sym.arrow.l.r.double a
-    valid joint trajectory of length $T_"max"$ exists.
-  ]
-
-  *SAT ⇒ trajectory.* Init fixes one start per agent; forward consistency + uniqueness (global) — or
-  forward + local + backward (local) — force exactly one legal position per agent per step.
-  Movement / collision / laser / exit clauses make the extracted trajectory valid.
-
-  *Trajectory ⇒ SAT.* Given a valid trajectory, set $a$ from positions and $b, l$ from the
-  deterministic beam dynamics; every clause family holds by construction.
-
-  *Consequence.* Poly-time, poly-size reduction ⇒ bounded-horizon LLE solvability $in$ NP and
-  $<=_p$ SAT. NP-hardness open.
-]
-
-// ─── B: why the cooperation criterion holds ──────────────────────────────────
-#slide[
-  = Backup — Why the cooperation criterion holds
-
-  #beamerbox(color: c-info, [Cooperation criterion])[
-    $L$ requires cooperation at $T_"max"$ #sym.arrow.l.r.double $Phi$ SAT and $Phi_{"strict"}$ UNSAT.
-  ]
-
-  *(⇒)* Cooperation ⇒ solvable, so $Phi$ SAT. If $Phi_{"strict"}$ were SAT, the strict trajectory
-  would be a valid standard solution *without* blocking — contradiction.
-
-  *(⇐)* $Phi$ SAT ⇒ solvable. If some standard solution used *no* blocking, both semantics give
-  identical beams along it, so it would satisfy $Phi_{"strict"}$ — contradicting UNSAT. Hence every
-  solution blocks at least one beam.
-
-  Strict encoding changes one clause family:
-  $b_(c,d,x',y',t) <-> b_(c,d,x,y,t)$ instead of $b_(c,d,x',y',t) <-> (b_(c,d,x,y,t) and not a_(c,x',y',t))$.
-]
-
-// ─── B: horizon dependence ─────────────────────────────────────────────────────
-#slide[
-  = Backup — Horizon-dependence of cooperation
-
-  #toolbox.side-by-side(columns: (1fr, 1.3fr))[
-    #set align(center + horizon)
-    #image("../../results/cooperation_examples/horizon_demo.png", width: 70%)
-  ][
-    Same level, three labels depending on $T_"max"$:
-    #table(
-      columns: 3,
-      stroke: none,
-      inset: (x: 8pt, y: 4pt),
-      align: (left, center, center),
-      table.hline(stroke: 1pt),
-      [*Horizon*], [*Solvable*], [*Coop.*],
-      table.hline(stroke: 0.5pt),
-      [$T_"max" <= 2$], [no], [n/a],
-      [$3 <= T_"max" <= 8$], [yes], [yes],
-      [$T_"max" >= 9$], [yes], [no],
-      table.hline(stroke: 1pt),
-    )
-    Too generous ⇒ a *detour* fits ⇒ under-detected. Too tight ⇒ rejected as unsolvable.
-    We pick the smallest horizon fitting a short solution + margin.
-  ]
-]
-
-// ─── B: cooperation profiles in detail ───────────────────────────────────────
-#slide[
-  = Backup — Cooperation profiles in detail
-
-  #grid(
-    columns: (1fr, 1fr, 1fr, 1fr, 1fr),
-    column-gutter: 6pt,
-    align: center,
-
-    stack(
-      spacing: 4pt,
-      image("../../results/cooperation_examples/asymmetric.png", width: 85%),
-      text(size: 10pt)[*asymmetric*],
-      image("../../results/cooperation_examples/dep_asymmetric.png", width: 85%),
-    ),
-    stack(
-      spacing: 4pt,
-      image("../../results/cooperation_examples/chain.png", width: 85%),
-      text(size: 10pt)[*chain*],
-      image("../../results/cooperation_examples/dep_chain.png", width: 85%),
-    ),
-    stack(
-      spacing: 4pt,
-      image("../../results/cooperation_examples/distributed.png", width: 85%),
-      text(size: 10pt)[*distributed*],
-      image("../../results/cooperation_examples/dep_distributed.png", width: 85%),
-    ),
-    stack(
-      spacing: 4pt,
-      image("../../results/cooperation_examples/mutual.png", width: 85%),
-      text(size: 10pt)[*mutual*],
-      image("../../results/cooperation_examples/dep_mutual.png", width: 85%),
-    ),
-    stack(
-      spacing: 4pt,
-      image("../../results/cooperation_examples/fully_coupled.png", width: 85%),
-      text(size: 10pt)[*fully coupled*],
-      image("../../results/cooperation_examples/dep_fully_coupled.png", width: 85%),
-    ),
-  )
-  // Priority: fully-coupled ≻ mutual ≻ distributed ≻ chain ≻ asymmetric.
 ]

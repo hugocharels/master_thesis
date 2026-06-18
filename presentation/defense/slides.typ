@@ -4,21 +4,11 @@
 // =============================================================================
 //  Master thesis defense — Hugo Charels (ULB, 2025–2026)
 //  "Procedural Generation of Solvable Cooperative Levels for the LLE"
-//  Style inherited from presentation/MLG-Student-Day/slides.typ.
-//  Speaker notes are inline Typst comments (// ...) on each slide.
 //  ~20 min talk: keep spoken detail in the notes, not on the slides.
-//  The progress bar (progress_bar.typ) fills to 100% on the last `my-slide`
-//  ("Thank you"); backup slides use plain `#slide` and carry no bar.
 // =============================================================================
 
 #set text(size: 16pt, font: "Lato")
 
-// A little more air: slightly looser lines and more space between bullets.
-// #set par(leading: 0.75em)
-// #set list(spacing: 1.0em, indent: 0.4em)
-// #set enum(spacing: 1.0em, indent: 0.4em)
-
-// Slide titles and sub-headings — bigger and bold, with space beneath.
 #show heading.where(level: 1): set text(size: 22pt, weight: "bold")
 #show heading.where(level: 2): set text(size: 20pt, weight: "bold")
 #show heading.where(level: 3): set text(size: 18pt, weight: "bold")
@@ -30,11 +20,9 @@
 )
 
 // ─── Palette ──────────────────────────────────────────────────────────────────
-// Two accents only: a clean blue for statements/info, a warm orange for the
-// takeaway, plus an amber for the one caveat box. No teal/blue-green.
-#let c-info = rgb("#1F5FA8")   // statements, criteria, guarantees, definitions
-#let c-take = rgb("#E0701B")   // takeaways
-#let c-warn = rgb("#C08A12")   // caveats
+#let c-info = rgb("#1F5FA8")
+#let c-take = rgb("#E0701B")
+#let c-warn = rgb("#C08A12")
 
 // ─── Coloured callout boxes ───────────────────────────────────────────────────
 #let beamerbox(title, body, color: c-info) = block(
@@ -52,7 +40,7 @@
 #let takeaway(body) = beamerbox([Takeaway], body, color: c-take)
 
 // =============================================================================
-//  TITLE / COVER  (plain `#slide` — carries no progress bar)
+//  TITLE / COVER
 // =============================================================================
 #slide[
   #set align(horizon)
@@ -62,7 +50,7 @@
   #place(top + left, image(height: 20%, "../../assets/logos/Université_libre_de_Bruxelles_logo.svg"))
   #place(bottom + right, dx: 0.5cm, dy: -0.8cm, image(height: 60%, "../../assets/lvl6-annotated.png"))
 
-  #text("")
+  #v(4cm)
 
   #text(size: 26pt, weight: "bold")[
     Procedural Generation of \ Solvable Cooperative Levels \ for the Laser Learning Environment
@@ -72,11 +60,11 @@
   #v(2pt)
   #text(size: 15pt)[Supervisors: Tom Lenaerts #sym.dot.c Yannick Molinghen]
   #v(2pt)
-  #text(size: 14pt, fill: luma(90))[ULB --- Academic year 2025-2026 #sym.dot.c #emph[17/06/2026]]
+  #text(size: 14pt, fill: luma(90))[ULB --- Academic year 2025-2026 #sym.dot.c #emph[18/06/2026]]
 ]
 
 // =============================================================================
-//  CONTEXT  (Context + LLE merged into one background slide)
+//  CONTEXT
 // =============================================================================
 #my-slide[
   = Context & motivation
@@ -100,60 +88,75 @@
     #image("../../assets/lvl6-annotated.png", width: 100%)
     #text(size: 12pt)[LLE Level 6 — the hard target]
   ]
-  // Notes: certified levels, not plausible-looking ones. LLE is hard for value-based MARL
-  // perfect coordination, interdependence, zero-incentive dynamics. Scope: exit-reaching only;
-  // gems / void out of scope; n_a <= 4. Metric = team success rate (every agent exits).
 ]
 
 // =============================================================================
-//  RESEARCH QUESTIONS
+//  PART 1: VERIFICATION (RQ1–2)
 // =============================================================================
 #my-slide[
-  = Research questions
+  = Part 1 — Verification (RQ1–2)
 
-  Generate levels *provably solvable* and *provably cooperative* — and use them to train MARL.
+  #text(
+    size: 14pt,
+  )[*How can we formally verify that a level is solvable and that solving it genuinely requires cooperation?*]
+
+  In this part we present our SAT-based verification tool:
 
   #v(8pt)
   #toolbox.side-by-side(columns: (1fr, 1fr))[
-    *Formal (contributions)*
-    - *RQ1* --- verify *solvable*.
-    - *RQ2* --- verify *requires cooperation*.
-    - *RQ3* --- verification *inside a generator*.
-    - *RQ4* --- *control* the cooperation *structure*.
+    *RQ1* --- Bounded-horizon solvability
+    - Formalise the decision problem
+    - Reduce to SAT: level + horizon #sym.arrow.r Boolean formula
+    - Verify solvability with a SAT solver
   ][
-    *Empirical*
-    - *RQ5* --- can MARL agents *learn* generated levels?
-    - *RQ6* --- does a *curriculum* reach Level 6?
+    *RQ2* --- Cooperation detection
+    - Reuse the SAT encoding, change one rule
+    - Detect whether cooperation is required
+    - Classify cooperation structures
   ]
 
   #v(8pt)
-  #takeaway[Verification (RQ1–2) #sym.dot.c Construction (RQ3–4) #sym.dot.c Experiment (RQ5–6).]
+  #beamerbox(color: c-info, [Key idea])[
+    SAT solver as a verification oracle: given a level and a horizon $T_"max"$,
+    answer "solvable?" in bounded time.
+  ]
 ]
 
 // =============================================================================
-//  FORMALISATION + REDUCTION
+//  BOUNDED-HORIZON SOLVABILITY → SAT
 // =============================================================================
 #my-slide[
   = Bounded-horizon solvability #sym.arrow.r SAT
 
   #toolbox.side-by-side(columns: (1fr, 1fr))[
-    == Model
-    - Level $L = (H, W, C, s_p, cal(W), cal(S), cal(E))$, horizon $T_("max")$.
-    - *Valid trajectory*: legal moves, no collisions, laser safety, all agents on exits at $T_("max")$.
-    - *Solvable* = such a trajectory exists.
-
-    == Variables (per step $t$)
-    - $a_(c,x,y,t)$ #sym.dot.c $b_(c,d,x,y,t)$ #sym.dot.c $l_(c,x,y,t)$
-    - Constraints: *init* #sym.dot.c *movement* #sym.dot.c *lasers*
-  ][
-    #beamerbox(color: c-info, [Verification tool])[
-      SAT solver decides weither $Phi(L, T_("max"))$ is satisfiable #sym.arrow.l.r.double a valid trajectory of length $T_("max")$ exists.
+    #beamerbox(color: c-info, [Decision problem])[
+      Given a level $L$ and a horizon $T_"max"$,
+      does a valid joint trajectory exist?
     ]
-    #v(4pt)
-    #takeaway[Poly-size, poly-time encoding $=>$
-      LLE solvability $in$ NP and $<= ""_p$ SAT.\ NP-hardness *open*.]
+  ][
+    #beamerbox(color: c-info, [SAT reduction])[
+      Build a Boolean formula $Phi(L, T_"max")$.
+      Satisfiable #sym.arrow.l.r.double solvable within $T_"max"$.
+    ]
   ]
-  // formulations (local vs global) are in the backup slides.
+
+  #v(12pt)
+
+  #align(center)[
+    #text(size: 20pt)[
+      $(L, T_"max")$ #sym.arrow.r
+      #box(stroke: c-info + 1.5pt, fill: c-info.lighten(90%), radius: 3pt, inset: 8pt, baseline: 30%)[encode $Phi$]
+      #sym.arrow.r
+      #box(stroke: c-info + 1.5pt, fill: c-info.lighten(90%), radius: 3pt, inset: 8pt, baseline: 30%)[SAT solver]
+      #sym.arrow.r SAT / UNSAT #sym.arrow.r solvable / unsolvable
+    ]
+  ]
+
+  #v(12pt)
+
+  *Why SAT?* Fast, well-known problem, modern solvers are highly efficient.
+
+  *Complexity:* LLE solvability $in$ NP and $<= ""_p$ SAT. NP-hardness *open*.
 ]
 
 // =============================================================================
@@ -162,24 +165,66 @@
 #my-slide[
   = Detecting cooperation
 
-  #toolbox.side-by-side(columns: (1.2fr, 1fr))[
-    *Idea:* keep the encoding, change *one* rule: beams no longer block same-colour agents, so the cooperation mechanic is *disabled*.
+  *Idea:* keep the SAT encoding, change *one* rule: beams no longer block same-colour agents
+  #sym.arrow.r the cooperation mechanic is *disabled*.
 
-    #beamerbox(color: c-info, [Verification criterion])[
-      $L$ requires cooperation with $T_("max")$ #sym.arrow.l.r.double
-      $Phi(L, T_("max"))$ *SAT* and $Phi_("strict")(L, T_("max"))$ *UNSAT*.
-    ]
+  #v(8pt)
 
-    Solvable normally but impossible without blocking #sym.arrow.double every solution uses the mechanic.
+  #beamerbox(color: c-info, [Cooperation criterion])[
+    $L$ requires cooperation with $T_"max"$ #sym.arrow.l.r.double
+    $Phi(L, T_"max")$ *SAT* and $Phi_"strict" (L, T_"max")$ *UNSAT*.
+  ]
+
+  #v(8pt)
+
+  Three possible outcomes:
+  #table(
+    columns: 3,
+    stroke: none,
+    inset: (x: 12pt, y: 6pt),
+    align: (left, left, left),
+    table.hline(stroke: 1pt),
+    [*Condition*], [*Label*], [*Meaning*],
+    table.hline(stroke: 0.5pt),
+    [$Phi$ UNSAT], [UNSOLVABLE], [No valid trajectory exists],
+    [$Phi_"strict"$ UNSAT], [COOPERATIVE], [Every solution blocks a beam — cooperation required],
+    [Otherwise], [NON_COOPERATIVE], [A solution exists without the blocking mechanic],
+    table.hline(stroke: 1pt),
+  )
+]
+
+// =============================================================================
+//  HORIZON MATTERS
+// =============================================================================
+#my-slide[
+  = Horizon matters
+
+  #toolbox.side-by-side(columns: (1fr, 1.3fr))[
+    #set align(center + horizon)
+    #image("../../results/cooperation_examples/horizon_demo.png", width: 70%)
   ][
-    *Two SAT calls:*
-    + $"Solver" =$ UNSAT → `UNSOLVABLE`
-    + $"Strict" =$ UNSAT → `COOPERATIVE`
-    + else → `NON_COOPERATIVE`
+    // Same level, three labels depending on T_max:
+    #table(
+      columns: 3,
+      stroke: none,
+      inset: (x: 8pt, y: 8pt),
+      align: (left, center, center),
+      table.hline(stroke: 1pt),
+      [*Horizon*], [*Solvable*], [*Coop.*],
+      table.hline(stroke: 0.5pt),
+      [$T_"max" <= 2$], [no], [n/a],
+      [$3 <= T_"max" <= 8$], [yes], [yes],
+      [$T_"max" >= 9$], [yes], [no],
+      table.hline(stroke: 1pt),
+    )
 
-    #v(5pt)
-    #beamerbox(color: c-warn, [Horizon matters])[
-      Label is relative to $T_("max")$. a too-long horizon lets a detour bypass the beam.
+    #v(6pt)
+    - *Too small* #sym.arrow.r agents run out of moves; the level is falsely marked unsolvable
+    - *Too large* #sym.arrow.r agents can take longer detours that bypass cooperation requirements
+
+    #beamerbox(color: c-warn, [Trade-off])[
+      Larger $T_"max"$ #sym.arrow.r more actions (more solutions), but bigger formula (longer solve duration).
+      Pick the *smallest* $T_"max"$ that still admits a solution.
     ]
   ]
 ]
@@ -190,114 +235,254 @@
 #my-slide[
   = Cooperation profiles
 
-  From one SAT model #sym.arrow.r a *helper #sym.arrow.r beneficiary graph* \
+  From one SAT model #sym.arrow.r a *dependency graph (edges: helper #sym.arrow.r beneficiary)* \
   classify by priority: $"fully coupled" succ "mutual" succ "distributed" succ "chain" succ "asymmetric"$.
 
-  #v(4pt)
+  #v(6pt)
   #grid(
     columns: (1fr, 1fr, 1fr, 1fr, 1fr),
-    column-gutter: 10pt,
+    column-gutter: 8pt,
+    row-gutter: 6pt,
     align: center,
-    image("../../results/cooperation_examples/asymmetric.png", width: 90%),
-    image("../../results/cooperation_examples/chain.png", width: 90%),
-    image("../../results/cooperation_examples/distributed.png", width: 90%),
-    image("../../results/cooperation_examples/mutual.png", width: 90%),
-    image("../../results/cooperation_examples/fully_coupled.png", width: 90%),
 
-    text(size: 12pt)[*asymmetric*],
-    text(size: 12pt)[*chain*],
-    text(size: 12pt)[*distributed*],
-    text(size: 12pt)[*mutual*],
-    text(size: 12pt)[*fully coupled*],
+    // ── labels (row 1) ──
+    uncover("2-")[#text(size: 11pt, weight: "bold")[*asymmetric*]],
+    uncover("3-")[#text(size: 11pt, weight: "bold")[*chain*]],
+    uncover("4-")[#text(size: 11pt, weight: "bold")[*distributed*]],
+    uncover("5-")[#text(size: 11pt, weight: "bold")[*mutual*]],
+    uncover("6-")[#text(size: 11pt, weight: "bold")[*fully coupled*]],
+
+    // ── level images (row 2) ──
+    uncover("2-")[#image("../../results/cooperation_examples/asymmetric.png", width: 85%)],
+    uncover("3-")[#image("../../results/cooperation_examples/chain.png", width: 85%)],
+    uncover("4-")[#image("../../results/cooperation_examples/distributed.png", width: 85%)],
+    uncover("5-")[#image("../../results/cooperation_examples/mutual.png", width: 85%)],
+    uncover("6-")[#image("../../results/cooperation_examples/fully_coupled.png", width: 85%)],
+
+    // ── dependency graphs (row 3) ──
+    uncover("2-")[#image("../../results/cooperation_examples/dep_asymmetric.png", width: 85%)],
+    uncover("3-")[#image("../../results/cooperation_examples/dep_chain.png", width: 85%)],
+    uncover("4-")[#image("../../results/cooperation_examples/dep_distributed.png", width: 85%)],
+    uncover("5-")[#image("../../results/cooperation_examples/dep_mutual.png", width: 85%)],
+    uncover("6-")[#image("../../results/cooperation_examples/dep_fully_coupled.png", width: 85%)],
   )
-
-  #v(4pt)
-  #takeaway[The profile is the *generation target* a generator can request.]
-  // Notes: first taxonomy recovering dependency structure from a SAT certificate in LLE.
-  // Binary verdict + necessary-helper set are level invariants; the label is plan-dependent.
 ]
 
 // =============================================================================
-//  GENERATORS
+//  PART 2: CONSTRUCTION (RQ3–4)
 // =============================================================================
 #my-slide[
-  = Generators
+  = Part 2 — Construction (RQ3–4)
 
+  #text(
+    size: 14pt,
+  )[*How can we embed formal verification inside a procedural generator so that every accepted level is certified, and can we control the cooperation structure by targeting specific profiles?*]
+
+  In this part we present our level generators:
+
+  #v(8pt)
   #toolbox.side-by-side(columns: (1fr, 1fr))[
-    *SAT as an acceptance oracle, in the loop.* Solvability is the floor; *cooperation* and
-    *profile* are optional layers.
+    *RQ3* — Generator efficiency
+    - Random placement with geometric constraints
+    - Constructive lane-based approach
+    - Level-6-style clustered design
+    - SAT oracle filters solvable / cooperative levels
+  ][
+    *RQ4* — Output diversity
+    - Five-profile taxonomy of cooperation structures
+    - Generators can steer towards specific profiles
+    - Constructive #sym.arrow.r mutual by design
+  ]
 
-    #v(2pt)
+  #v(8pt)
+  #beamerbox(color: c-info, [Key idea])[
+    Place-and-check with a SAT oracle: every accepted level is *provably* solvable.
+  ]
+]
+
+// =============================================================================
+//  GENERATORS — RANDOM
+// =============================================================================
+#my-slide[
+  = Random Generator
+
+  #align(center + horizon)[
     #grid(
-      columns: 3,
-      gutter: 6pt,
-      align: center,
-      image("../../assets/unsolvable_map_example.png", width: 100%),
-      image("../../assets/bad_map_example.png", width: 100%),
-      image("../../assets/good_map_example.png", width: 100%),
-
-      text(size: 11pt)[(a) unsolvable\ #text(fill: red)[rejected]],
-      text(size: 11pt)[(b) solvable,\ no coop.],
-      text(size: 11pt)[(c) cooperative\ #text(fill: rgb("#2E8B45"))[accepted]],
+      columns: (1fr, 0.05fr, 1fr),
+      column-gutter: 24pt,
+      align: top + center,
+      // Left: bad random (always visible)
+      stack(
+        spacing: 6pt,
+        image("generated_examples/random_bad.png", width: 60%),
+        text(size: 12pt, weight: "bold")[*Pure random* \ ],
+        text(size: 10pt, fill: luma(50))[Lasers point off-grid, a wall block a laser source],
+      ),
+      // Right: progressive reveal (single grid cell)
+      only(2)[
+        #align(center + horizon)[
+          #text(size: 25pt)[#sym.arrow.r]
+        ]
+      ],
+      only(2)[
+        #stack(
+          spacing: 6pt,
+          image("generated_examples/random_constrained.png", width: 60%),
+          text(size: 12pt, weight: "bold")[*Constrained random* \ ],
+          text(size: 10pt, fill: luma(50))[Filters out laser sources that behave like walls.],
+        )
+      ],
     )
-  ][
-    #set text(size: 13pt)
-    #table(
-      columns: (auto, 1fr),
-      stroke: none,
-      inset: (x: 5pt, y: 5pt),
-      table.hline(stroke: 1pt),
-      [*Generator*], [*Profile tendency*],
-      table.hline(stroke: 0.5pt),
-      [Random], [mostly `asymmetric`],
-      [Constructive], [`asym`/`mutual`/`distrib` by laser count],
-      [Level-6-style], [`mutual` by design],
-      table.hline(stroke: 1pt),
-    )
-    #v(3pt)
-    #beamerbox(color: c-info, [Guarantee])[
-      Every accepted level is *solvable* for a bounded horizon $T_"max"$.
-    ]
   ]
 ]
 
 // =============================================================================
-//  RESULT 1: SAT ENCODING
+//  GENERATORS — CONSTRUCTIVE (step-by-step)
 // =============================================================================
 #my-slide[
-  = Result 1 --- SAT encoding
+  = Constructive Generator
 
-  #toolbox.side-by-side(columns: (1fr, 1fr))[
-    #set align(center + horizon)
-    #image("../../results/sat_encoding/clauses_per_level.png", width: 100%)
-  ][
-    Enforcing "one position per agent per step":
-    - *global* — pairwise over the grid, $O(p^2)$;
-    - *local* — neighbourhood-based, $O(p)$.
+  Oriented *lane-based* design. Each agent gets a reserved lane, cooperation
+  arises from crossing lasers. Near-zero rejection rate.
 
-    Local scales far better: *253k vs 1.17M* clauses on Level 6, and faster to solve.
+  #v(12pt)
 
-    #takeaway[The internal *encoding* drives cost. Local is the default.]
+  #grid(
+    columns: (1fr, 0.1fr, 1fr, 0.1fr, 1fr),
+    column-gutter: 4pt,
+    align: top + center,
+    stack(
+      spacing: 4pt,
+      image("generated_examples/constructive_02_agents_exits.png", width: 70%),
+      text(size: 10pt)[1. Reserve lanes, place agents + exits],
+    ),
+    [
+      #uncover("2-")[
+        #align(center + horizon)[
+          #text(size: 25pt)[#sym.arrow.r]
+        ]
+      ]
+    ],
+    [
+      #uncover("2-")[
+        #stack(
+          spacing: 4pt,
+          image("generated_examples/constructive_03_walls.png", width: 70%),
+          text(size: 10pt, weight: "bold")[2. Place walls in free cells],
+        )
+      ]
+    ],
+    [
+      #uncover("3-")[
+        #align(center + horizon)[
+          #text(size: 25pt)[#sym.arrow.r]
+        ]
+      ]
+    ],
+    [
+      #uncover("3-")[
+        #stack(
+          spacing: 4pt,
+          image("generated_examples/constructive_04_full.png", width: 70%),
+          text(size: 10pt, weight: "bold")[3. Add lasers crossing lanes],
+        )
+      ]
+    ],
+  )
+]
+
+// =============================================================================
+//  GENERATORS — LEVEL-6-STYLE (step-by-step)
+// =============================================================================
+#my-slide[
+  = Level-6-Style Generator
+
+  Clustered starts + exits on opposite sides. Shared laser corridor = mutual
+  by design. SAT verifies.
+
+  #v(12pt)
+
+  #only(1)[
+    #grid(
+      columns: (1fr, 1fr, 1fr, 1fr, 1fr),
+      column-gutter: 6pt,
+      align: center + horizon,
+      stack(
+        spacing: 4pt,
+        image("generated_examples/level6style_02_agents_exits.png", width: 85%),
+        text(size: 10pt)[1. Place clusters on opposite sides],
+      ),
+    )
   ]
-  // Notes: global wins only below the crossover (tiny grids). Level 6 has 7x more clauses
-  // than 8x8 yet solves faster — runtime is search structure, not formula size.
+
+  #only(2)[
+    #grid(
+      columns: (1fr, 0.15fr, 1fr),
+      column-gutter: 6pt,
+      align: center + horizon,
+      stack(
+        spacing: 4pt,
+        image("generated_examples/level6style_02_agents_exits.png", width: 85%),
+        text(size: 10pt)[1. Place clusters on opposite sides],
+      ),
+      stack(
+        spacing: 0pt,
+        text(size: 20pt)[→],
+      ),
+      stack(
+        spacing: 4pt,
+        image("generated_examples/level6style_03_lasers.png", width: 85%),
+        text(size: 10pt, weight: "bold")[2. Fill the central corridor with lasers],
+      ),
+    )
+  ]
+
+  #only(3)[
+    #grid(
+      columns: (1fr, 0.15fr, 1fr, 0.15fr, 1fr),
+      column-gutter: 6pt,
+      align: center + horizon,
+      stack(
+        spacing: 4pt,
+        image("generated_examples/level6style_02_agents_exits.png", width: 85%),
+        text(size: 10pt)[1. Place clusters on opposite sides],
+      ),
+      stack(
+        spacing: 0pt,
+        text(size: 20pt)[→],
+      ),
+      stack(
+        spacing: 4pt,
+        image("generated_examples/level6style_03_lasers.png", width: 85%),
+        text(size: 10pt)[2. Fill the central corridor with lasers],
+      ),
+      stack(
+        spacing: 0pt,
+        text(size: 20pt)[→],
+      ),
+      stack(
+        spacing: 4pt,
+        image("generated_examples/level6style_04_full.png", width: 85%),
+        text(size: 10pt, weight: "bold")[3. Add walls to shape the solution space],
+      ),
+    )
+  ]
 ]
 
 // =============================================================================
 //  RESULT 2: GENERATOR EFFICIENCY
 // =============================================================================
 #my-slide[
-  = Result 2 --- Generator efficiency (RQ3)
+  = Generator efficiency (RQ3)
 
-  #toolbox.side-by-side(columns: (1fr, 1fr))[
-    #set align(center + horizon)
-    #image("../../results/rejection_benchmark/rejection_rate_by_generator.png", width: 100%)
-  ][
-    - *Constructive (coop.)*: $approx$ $0–6 %$ --- cooperation is *built in*.
-    - *Random (coop.)*: up to $98.7%$ --- coop. levels are a rare subset.
-    - *Level-6-style*: in between.
+  // #toolbox.side-by-side(columns: (2fr, 0.6fr), gutter: 30pt, align: center)[
+  //   #image("../../results/rejection_benchmark/rejection_rate_by_generator.png", width: 100%)
+  // ][
+  //   - ""
+  // ]
 
-    #takeaway[Construction beats blind sampling: near-free certified data.]
+  #align(center)[
+    #image("../../results/rejection_benchmark/rejection_rate_by_generator.png", width: 75%)
   ]
 ]
 
@@ -305,18 +490,43 @@
 //  RESULT 3: PROFILE DIVERSITY
 // =============================================================================
 #my-slide[
-  = Result 3 — Output diversity (RQ4)
+  = Output diversity (RQ4)
 
+  #align(center)[
+    #image("../../results/profile_benchmark/profile_distribution.png", width: 90%)
+  ]
+
+  // #v(8pt)
+  // #align(center)[
+  //   Profiles of accepted cooperative levels (8×8, 3 agents, 2 lasers):
+  //   - Constructive #sym.arrow.r $92 %$ `mutual` (by design).
+  //   - Level-6-style #sym.arrow.r $68 %$ `mutual` (geometry).
+  //   - Random #sym.arrow.r mostly `asymmetric`.
+  // ]
+]
+
+// =============================================================================
+//  PART 3: EXPERIMENT (RQ5–6)
+// =============================================================================
+#my-slide[
+  = Part 3 — Experiment (RQ5–6)
+
+  #text(
+    size: 14pt,
+  )[*Can MARL agents trained on certified levels generalise to held-out ones, and does a staged curriculum outperform direct training on a hard target?*]
+
+  In this part we investigate whether generated levels are learnable:
+
+  #v(8pt)
   #toolbox.side-by-side(columns: (1fr, 1fr))[
-    #set align(center + horizon)
-    #image("../../results/profile_benchmark/profile_distribution.png", width: 100%)
+    *RQ5* — Learnability
+    - Train IQL / VDN / QMIX on certified levels
+    - Measure train vs. test success
+    - Scale training data to close the generalisation gap
   ][
-    Profiles of accepted cooperative levels (8×8, 3 agents, 2 lasers):
-    - *Constructive* #sym.arrow.r $92 %$ `mutual` (by design).
-    - *Level-6-style* #sym.arrow.r $68 %$ `mutual` (geometry).
-    - *Random* #sym.arrow.r mostly `asymmetric`.
-
-    #takeaway[We can *choose* the cooperation structure of generated levels.]
+    *RQ6* — Curriculum learning
+    - Compare curriculum orderings (direct, forward, mixed, reverse)
+    - Test harder cooperation targets (mutual, Level-6)
   ]
 ]
 
@@ -324,56 +534,45 @@
 //  RESULT 4: LEARNABILITY
 // =============================================================================
 #my-slide[
-  = Result 4 --- Learnability (RQ5)
+  = Learnability (RQ5)
 
-  #toolbox.side-by-side(columns: (1.1fr, 1fr))[
-    #set align(center + horizon)
-    #image("../../results/learnability_5x5/figures/learning_curves.pdf", width: 100%)
-  ][
-    5×5, 2 agents, 1 laser #sym.dot.c IQL/VDN/QMIX #sym.dot.c 20 seeds.
-    - All reach non-trivial *training* success.
-    - Large *train–test gap* ($<= 0.52$): they *memorise* the 20 levels.
-
-    #takeaway[Learnable at 5×5, but too few levels #sym.arrow.double overfitting]
+  #align(center)[
+    #image("../../results/learnability_5x5/figures/learning_curves.pdf", width: 70%)
   ]
-  // Notes: held-out means coincide => generalisation, not credit assignment, is the bottleneck.
 ]
 
 // =============================================================================
 //  RESULT 5: DATA SCALING
 // =============================================================================
 #my-slide[
-  = Result 5 --- Scaling data closes the gap (RQ5)
+  = Scaling data (RQ5)
 
-  #toolbox.side-by-side(columns: (1fr, 1fr))[
-    #set align(center + horizon)
-    #image("../../results/data_scaling/data_scaling_curve.pdf", width: 100%)
-  ][
-    Same task but only *pool size* varies ($20 arrow.r 100 arrow.r 500$).
-
-    #table(
-      columns: 4,
-      stroke: none,
-      inset: (x: 6pt, y: 3pt),
-      align: center,
-      table.hline(stroke: 1pt),
-      [*|train|*], [*train*], [*test*], [*gap*],
-      table.hline(stroke: 0.5pt),
-      [20], [0.65], [0.14], [0.50],
-      [100], [0.47], [0.28], [0.19],
-      [500], [0.43], [0.43], [*0.00*],
-      table.hline(stroke: 1pt),
-    )
-
-    #takeaway[Unlimited certified levels ⇒ overfitting becomes generalisation.]
+  #align(center)[
+    #image("../../results/data_scaling/data_scaling_curve.pdf", width: 70%)
   ]
 ]
 
 // =============================================================================
-//  RESULT 6: CURRICULUM / THE CLIFF
+//  RESULT 6A: CURRICULUM ORDERING
 // =============================================================================
 #my-slide[
-  = Result 6 — Curriculum & its limit (RQ6)
+  = Curriculum ordering (RQ6)
+
+  #align(center)[
+    #image("../../results/curriculum_strategy/figures/final_success.pdf", width: 85%)
+  ]
+
+  #v(8pt)
+  #align(center)[
+    Four budget-matched schedules (400k steps, 6×6 / 2-agents / 1-laser, asymmetric):
+  ]
+]
+
+// =============================================================================
+//  RESULT 6B: CURRICULUM TARGETS
+// =============================================================================
+#my-slide[
+  = Curriculum targets (RQ6)
 
   #toolbox.side-by-side(columns: (1.1fr, 1fr))[
     #set text(size: 13pt)
@@ -394,12 +593,10 @@
     )
   ][
     - Reachable target: ordering doesn't beat *direct*; only data *diversity* helps.
-    - A *cliff* at *mutual* cooperation: success → *zero*, even at 10× budget.
+    - A *cliff* at *mutual* cooperation: success #sym.arrow.r *zero*, even at 10× budget.
 
-    #takeaway[Scoped *negative* result: the base *mutual* task is unlearnable by IQL/VDN/QMIX
-      — not a curriculum failure.]
+    #takeaway[Scoped *negative* result: the base *mutual* task is unlearnable by IQL/VDN/QMIX.]
   ]
-  // Notes: 3 reasons in backup — no reward to amplify, no partial skill, IGM/monotonic factorisation.
 ]
 
 // =============================================================================
@@ -461,7 +658,7 @@
 ]
 
 // =============================================================================
-//  THANK YOU  (last main slide — progress bar reaches 100% here)
+//  THANK YOU
 // =============================================================================
 #my-slide[
   = Thank you
@@ -482,15 +679,16 @@
     + Local encoding scales; constructive generator $approx$ free.
     + Scaling certified data closes the generalisation gap.
     + A learnability *cliff* at mutual cooperation.
-  ][]
+  ][
+  ]
 
   #v(4pt)
   #align(center, text(size: 18pt, weight: "bold")[Questions?])
 ]
 
-// #############################################################################
-//  BACKUP SLIDES  (plain `#slide` — no progress bar — Q&A only, detail is fine)
-// #############################################################################
+// ###############################################################################
+//  BACKUP SLIDES
+// ###############################################################################
 #slide[
   #set align(horizon + center)
   #text(size: 22pt, weight: "bold")[Backup slides]
@@ -501,9 +699,9 @@
   = Backup — Full SAT encoding
 
   == Variables
-  - $a_(c,x,y,t)$: agent $c$ at $(x,y)$ at step $t$
-  - $b_(c,d,x,y,t)$: beam of colour $c$, direction $d$, active at $(x,y,t)$
-  - $l_(c,x,y,t)$: laser of colour $c$ active at $(x,y,t)$
+  - $a_{c,x,y,t}$: agent $c$ at $(x,y)$ at step $t$
+  - $b_{c,d,x,y,t}$: beam of colour $c$, direction $d$, active at $(x,y,t)$
+  - $l_{c,x,y,t}$: laser of colour $c$ active at $(x,y,t)$
 
   == Constraints (4.1–4.13)
   #toolbox.side-by-side()[
@@ -528,7 +726,7 @@
   $O((n_a + s) p tau)$ variables; clause count polynomial in $n_a, p, s, tau$.
 ]
 
-// ─── B: local vs global ───────────────────────────────────────────────────────
+// ─── B: local vs global ──────────────────────────────────────────────────────
 #slide[
   = Backup — Local vs global uniqueness
 
@@ -555,13 +753,13 @@
   #text(size: 12pt)[Clause counts. Level 6: 7× more clauses than 8×8 yet solves faster — search structure, not size.]
 ]
 
-// ─── B: why the encoding is correct ──────────────────────────────────────────
+// ─── B: why the encoding is correct ────────────────────────────────────────────
 #slide[
   = Backup — Why the encoding is correct
 
   #beamerbox(color: c-info, [Decision equivalence])[
-    For either movement formulation, $Phi(L, T_("max"))$ is satisfiable #sym.arrow.l.r.double a
-    valid joint trajectory of length $T_("max")$ exists.
+    For either movement formulation, $Phi(L, T_"max")$ is satisfiable #sym.arrow.l.r.double a
+    valid joint trajectory of length $T_"max"$ exists.
   ]
 
   *SAT ⇒ trajectory.* Init fixes one start per agent; forward consistency + uniqueness (global) — or
@@ -579,15 +777,15 @@
 #slide[
   = Backup — Why the cooperation criterion holds
 
-  #beamerbox(color: c-info, [Verification criterion])[
-    $L$ requires cooperation at $T_("max")$ #sym.arrow.l.r.double $Phi$ SAT and $Phi_("strict")$ UNSAT.
+  #beamerbox(color: c-info, [Cooperation criterion])[
+    $L$ requires cooperation at $T_"max"$ #sym.arrow.l.r.double $Phi$ SAT and $Phi_{"strict"}$ UNSAT.
   ]
 
-  *(⇒)* Cooperation ⇒ solvable, so $Phi$ SAT. If $Phi_("strict")$ were SAT, the strict trajectory
+  *(⇒)* Cooperation ⇒ solvable, so $Phi$ SAT. If $Phi_{"strict"}$ were SAT, the strict trajectory
   would be a valid standard solution *without* blocking — contradiction.
 
   *(⇐)* $Phi$ SAT ⇒ solvable. If some standard solution used *no* blocking, both semantics give
-  identical beams along it, so it would satisfy $Phi_("strict")$ — contradicting UNSAT. Hence every
+  identical beams along it, so it would satisfy $Phi_{"strict"}$ — contradicting UNSAT. Hence every
   solution blocks at least one beam.
 
   Strict encoding changes one clause family:
@@ -602,7 +800,7 @@
     #set align(center + horizon)
     #image("../../results/cooperation_examples/horizon_demo.png", width: 70%)
   ][
-    Same level, three labels depending on $T_("max")$:
+    Same level, three labels depending on $T_"max"$:
     #table(
       columns: 3,
       stroke: none,
@@ -611,9 +809,9 @@
       table.hline(stroke: 1pt),
       [*Horizon*], [*Solvable*], [*Coop.*],
       table.hline(stroke: 0.5pt),
-      [$T_("max") <= 2$], [no], [n/a],
-      [$3 <= T_("max") <= 8$], [yes], [yes],
-      [$T_("max") >= 9$], [yes], [no],
+      [$T_"max" <= 2$], [no], [n/a],
+      [$3 <= T_"max" <= 8$], [yes], [yes],
+      [$T_"max" >= 9$], [yes], [no],
       table.hline(stroke: 1pt),
     )
     Too generous ⇒ a *detour* fits ⇒ under-detected. Too tight ⇒ rejected as unsolvable.
@@ -621,145 +819,45 @@
   ]
 ]
 
-// ─── B: selective strict / necessary helpers ───────────────────────────────────
+// ─── B: cooperation profiles in detail ───────────────────────────────────────
 #slide[
-  = Backup — Selective-strict & necessary helpers
+  = Backup — Cooperation profiles in detail
 
-  *Selective-strict ($K subset.eq C_("src")$):* strict clauses for colours in $K$, standard for the
-  rest. $K = nothing$ → standard; $K = C_("src")$ → strict.
+  #grid(
+    columns: (1fr, 1fr, 1fr, 1fr, 1fr),
+    column-gutter: 6pt,
+    align: center,
 
-  *Necessary-helper set:* for each colour $c$, run one selective-strict call with $K = {c}$;
-  if UNSAT, $c$ is *necessary*.
-
-  #beamerbox(color: c-info, [Invariants vs plan-dependent])[
-    - *Level invariants*: binary verdict, necessary-helper set.
-    - *Plan-dependent*: helper events, dependency graph, profile *label*.
-  ]
-]
-
-// ─── B: profile order ──────────────────────────────────────────────────────────
-#slide[
-  = Backup — Profile ordering structure
-
-  #toolbox.side-by-side(columns: (1.1fr, 1fr))[
-    #set align(center + horizon)
-    #image("../../results/cooperation_examples/profile_venn.png", width: 100%)
-  ][
-    Predicates on $G_L$: $cal(A)$ asymmetric (base), $cal(C)$ chain, $cal(D)$ distributed,
-    $cal(M)$ mutual, $cal(F)$ fully coupled.
-
-    Only structural entailment: $cal(F) => cal(C)$. The rest are *incomparable* (pure chain /
-    fan-in / reciprocal pair / 3-cycle witnesses).
-
-    Priority $cal(F) succ cal(M) succ cal(D) succ cal(C) succ cal(A)$ is one linear extension,
-    fixed by convention.
-  ]
-]
-
-// ─── B: constructive generator ─────────────────────────────────────────────────
-#slide[
-  = Backup — Constructive generator
-
-  - Pick orientation; sample $n_a$ distinct *lanes*; place start/exit at lane ends; reserve lane cells.
-  - Cooperative mode plants a dependency per laser: distinct colour ($n_l <= n_a$), beam crossing the
-    lane band; reserve the full beam segment before placing walls.
-  - Shuffle remaining cells; place $n_w$ walls; verify with the SAT oracle.
-
-  #beamerbox(color: c-info, [Profile by laser count])[
-    $n_l = 1$ → `asymmetric` · $n_l = 2$ → `mutual` · $n_l >= 3$ → shifts to `distributed`.
-  ]
-
-  Level-6-style: clustered starts/exits + a laser corridor ⇒ `mutual` like Level 6.
-]
-
-// ─── B: learnability detail ────────────────────────────────────────────────────
-#slide[
-  = Backup — Learnability detail (5×5)
-
-  #toolbox.side-by-side(columns: (1fr, 1fr))[
-    #set align(center + horizon)
-    #image("../../results/learnability_5x5/figures/final_bar_chart.pdf", width: 100%)
-  ][
-    #table(
-      columns: 4,
-      stroke: none,
-      inset: (x: 8pt, y: 4pt),
-      align: horizon,
-      table.hline(stroke: 1pt),
-      [*Algo*], [*Train*], [*Test*], [*Gap*],
-      table.hline(stroke: 0.5pt),
-      [IQL], [$0.60 plus.minus 0.03$], [$0.23 plus.minus 0.03$], [0.37],
-      [VDN], [$0.70 plus.minus 0.05$], [$0.18 plus.minus 0.03$], [0.52],
-      [QMIX], [$0.59 plus.minus 0.03$], [$0.20 plus.minus 0.03$], [0.39],
-      table.hline(stroke: 1pt),
-    )
-    20 seeds, 200k steps. VDN fits train best yet generalises worst — capacity spent memorising.
-  ]
-]
-
-// ─── B: curriculum ordering ────────────────────────────────────────────────────
-#slide[
-  = Backup — Curriculum ordering (reachable 6×6)
-
-  Four budget-matched schedules, 400k steps, 6×6 / 2-agent / 1-laser (asymmetric):
-
-  #table(
-    columns: 4,
-    stroke: none,
-    inset: (x: 9pt, y: 4pt),
-    align: horizon,
-    table.hline(stroke: 1pt),
-    [*Condition*], [*Train*], [*Test*], [*Gap*],
-    table.hline(stroke: 0.5pt),
-    [Mixed (dom. rand.)], [$0.39$], [*$0.22$*], [0.17],
-    [Direct], [$0.41$], [$0.17$], [0.24],
-    [Forward (easy→hard)], [$0.39$], [$0.15$], [0.24],
-    [Reverse (hard→easy)], [$0.10$], [$0.07$], [0.03],
-    table.hline(stroke: 1pt),
+    stack(
+      spacing: 4pt,
+      image("../../results/cooperation_examples/asymmetric.png", width: 85%),
+      text(size: 10pt)[*asymmetric*],
+      image("../../results/cooperation_examples/dep_asymmetric.png", width: 85%),
+    ),
+    stack(
+      spacing: 4pt,
+      image("../../results/cooperation_examples/chain.png", width: 85%),
+      text(size: 10pt)[*chain*],
+      image("../../results/cooperation_examples/dep_chain.png", width: 85%),
+    ),
+    stack(
+      spacing: 4pt,
+      image("../../results/cooperation_examples/distributed.png", width: 85%),
+      text(size: 10pt)[*distributed*],
+      image("../../results/cooperation_examples/dep_distributed.png", width: 85%),
+    ),
+    stack(
+      spacing: 4pt,
+      image("../../results/cooperation_examples/mutual.png", width: 85%),
+      text(size: 10pt)[*mutual*],
+      image("../../results/cooperation_examples/dep_mutual.png", width: 85%),
+    ),
+    stack(
+      spacing: 4pt,
+      image("../../results/cooperation_examples/fully_coupled.png", width: 85%),
+      text(size: 10pt)[*fully coupled*],
+      image("../../results/cooperation_examples/dep_fully_coupled.png", width: 85%),
+    ),
   )
-
-  - *Forward* curriculum does *not* beat *direct* (budget stolen from the target).
-  - *Reverse* collapses → *catastrophic forgetting*.
-  - Only *mixed* helps — that is data *diversity*, not ordering.
-]
-
-// ─── B: why mutual is unlearnable ──────────────────────────────────────────────
-#slide[
-  = Backup — Why mutual cooperation is unlearnable here
-
-  + *No reward to amplify.* Mutual reward arrives only after the whole jointly-gated sequence;
-    return stays negative. A curriculum amplifies a faint signal — it cannot create one.
-  + *No partial skill in easier stages.* Asymmetric coop. admits partial credit; mutual is a
-    deadlock-style discontinuity — staging laser count (0→1→2) ended at ≈0.
-  + *Representation limit.* VDN/QMIX monotonic factorisation enforces IGM; the mutual move is
-    individually suboptimal for *both* agents (relative overgeneralisation). IQL has no joint value.
-
-  #takeaway[Nonzero *train* but zero *held-out* = memorised trajectories, not a policy.]
-]
-
-// ─── B: related work ───────────────────────────────────────────────────────────
-#slide[
-  = Backup — Related work & positioning
-
-  - *Cooperative MARL / LLE* (Molinghen et al.): coordination bottlenecks; VDN, QMIX, MADDPG, COMA, MAVEN.
-  - *Dependency structure*: coordination graphs (assume structure) vs ours (recovered from a SAT certificate).
-  - *PCG under constraints*: search-based / ASP oracles; PCGML (no guarantees); PCGRL (opposite direction).
-  - *Curriculum / env. design*: POET, PAIRED (adaptive, adversarial) — ours is a *static* certified generator.
-  - *Compilation*: SAT-planning (SATPLAN), compilation-based MAPF (we add laser propagation + strict counterfactual).
-  - *Formal methods + RL*: shielded RL filters *actions*; we filter *training material*.
-]
-
-// ─── B: scope / threats ────────────────────────────────────────────────────────
-#slide[
-  = Backup — Scope & threats to validity
-
-  *Scope.* Exit-reaching task only; gems and scoring out of scope; void tiles modelled as walls
-  (valid only when no beam crosses a void). $1 <= n_a <= 4$ is an engine bound, not an encoding limit.
-
-  *RQ6 caveats (we do not overclaim):*
-  - Narrow algorithm family (IQL/VDN/QMIX); centralised critics / coordinated exploration untested.
-  - Sparse, unshaped reward; a dense signal could change the bottleneck.
-  - Small seed counts on mutual targets — enough to establish *zero*, not small effects.
-
-  *Cooperation criterion* is horizon-relative; the profile *label* is plan-dependent.
+  // Priority: fully-coupled ≻ mutual ≻ distributed ≻ chain ≻ asymmetric.
 ]

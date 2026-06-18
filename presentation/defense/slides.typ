@@ -356,7 +356,7 @@
 //  GENERATORS — CONSTRUCTIVE (step-by-step)
 // =============================================================================
 #my-slide[
-  = Constructive Generator
+  = Constructive Cooperative Generator
 
   #v(10pt)
 
